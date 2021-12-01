@@ -9,7 +9,7 @@ From now on (30th November 2021) all the changes in the pipeline shall be record
 
 The following scripts were copied from the Script Breakdown folder and renamed as follows:
 
-#original script 													--> renamed script
+# original script 													--> renamed script
 
 00_search_pdb.py 													--> 00_search_pdb.py
 01_download_files.py 												--> 01_download_files.py
