@@ -1,4 +1,5 @@
-![alt text](https://github.com/Utilon/Pipeline_Git/debs_files/pipeline_simple_flowchart.jpeg)
+![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/debs_files/Pipeline_detailled_workflow.jpeg)
+
 
 # PDB Pipeline to identify high quality mutant and WT structures for genes of interest
 ```diff
