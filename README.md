@@ -1,6 +1,3 @@
-![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/debs_files/Pipeline_detailled_workflow.jpeg)
-
-
 # PDB Pipeline to identify high quality mutant and WT structures for genes of interest
 ```diff
 +TO BE NOTED: We are always working to improve PDB Pipeline so any bug reports or suggestions are highly welcome. 
@@ -31,7 +28,7 @@ PDB pipeline is a fast and efficient bioinformatics pipeline to screen the Prote
 
 This allows researchers to efficiently screen the PDB for the most suitable template structures for a specific gene/protein which can be used for further in silico analysis like mutagenesis experiments or molecular dynmamics simulations.
 
-
+![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/debs_files/Pipeline_simple_flowchart.jpeg)
 
 
 Figure 1. Central panel: Pipeline overview. DNAscan accepts sequencing data, and optionally variant files. The pipeline firstly performs an alignment step (details in the left panel), followed by a customizable data analysis protocol (details in the right panel). Finally, results are annotated and a user friendly report is generated. Right panel: detailed description of the post alignment analysis pipeline (intensive mode). Aligned reads are used by the variant calling pipeline (Freebayes + GATK HC + Bcftools), both aligned and unaligned reads are used by Manta and ExpensionHunter (for which known repeat description files have to be provided)  to look for structural variants. The unaligned reads are mapped to a database of known viral genomes (NCBI database) to screen for the presence of their genetic material in the input sequencing data. Left panel: Alignment stage description. Raw reads are aligned with HISAT2. Resulting soft/hard-clipped reads and unaligned reads are realigned with BWA mem and then merged with the others using samtools.
@@ -55,7 +52,7 @@ Work has not yet been published (Dec 2021)
 In order to run the scripts in the pipeline, a fasta file containing reference proteomes / canonical sequences for the organism in question (=Homo sapiens) will have to be downloaded from UNIPROT and stored in a folder called Uniprot_reference_seqs which should be in the same directory as the scripts. The filename should be UP000005640_9606.fasta for the script to work properly.
 The latest version of this fasta file can be accessed via the Uniprot ftp client: https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/Eukaryota/UP000005640/
 
-
+![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/debs_files/Pipeline_detailled_workflow.jpeg)
 
 
 **Version:** 0.1
