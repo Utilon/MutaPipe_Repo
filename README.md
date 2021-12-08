@@ -30,7 +30,7 @@ Figure 1. *Pipeline overview. MutaPipe requires a list of gene names in txt form
 This work has not yet been published (Dec 2021). 
 
 However, a dataset produced with Mutapipe for all genes available in the ClinVar Database has been presented as a poster at an international research conference in Italy in September 2021 ("THE 1° MASBIC - DISVA ANNUAL SYMPOSIUM - From structure to function: unveiling the role of proteins in health and disease")
-The dataset is available here: https://drive.google.com/drive/folders/1hqvAOLGMJuYqKuB1poH5_JPXFHDxwX80?usp=sharing
+The dataset is available [here](https://drive.google.com/drive/folders/1hqvAOLGMJuYqKuB1poH5_JPXFHDxwX80?usp=sharing)
 
 ## Documentation
 
@@ -78,7 +78,7 @@ git clone https://github.com/Utilon/Pipeline_Git/tree/main/MutaPipe
 ### Usage
 
 In order to run the scripts in the pipeline, a fasta file containing reference proteomes / canonical sequences for the organism in question (=Homo sapiens) will have to be downloaded from UNIPROT and stored in a folder called Uniprot_reference_seqs which should be in the same directory as the scripts. The filename should be UP000005640_9606.fasta for the script to work properly.
-The latest version of this fasta file can be accessed via the Uniprot ftp client: https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/Eukaryota/UP000005640/
+The latest version of this fasta file can be accessed via the [Uniprot ftp client](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/Eukaryota/UP000005640/)
 
 When installing MutaPipe (see Local Deployment below) this file will be included (version from December 2021). Do feel free to update with a newer version if one is available (we will also regularly update the reference proteome file on here, but this is currently not done automatically)
 
@@ -146,7 +146,7 @@ DNAscan output tree:
 MutaPipe will need a fasta file with all canonical protein sequences of the species of interest.
 
 In order to run the scripts in the pipeline, a fasta file containing reference proteomes / canonical sequences for the organism in question (=Homo sapiens) will have to be downloaded from UNIPROT and stored in a folder called Uniprot_reference_seqs which should be in the same directory as the python scripts. The filename should be UP000005640_9606.fasta for MutaPipe to work properly.
-The latest version can be accessed via the Uniprot ftp client: https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/Eukaryota/UP000005640/
+The latest version can be accessed via the [Uniprot ftp client](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/Eukaryota/UP000005640/)
 
 When installing MutaPipe (see Local Deployment below) this file will be included (version from December 2021). Do feel free to update with a newer version if one is available (we will also regularly update the reference proteome file on here, but this is currently not done automatically)
 
