@@ -1,4 +1,5 @@
-# MutaPipe - a bioinformatics pipeline to identify high quality mutant and WT PDB structures for genes of interest
+#       **** **MutaPipe** **** 
+# A bioinformatics pipeline to identify high quality mutant and WT PDB structures for genes of interest
 ```diff
 +TO BE NOTED: We are always working to improve MutaPipe, so any bug reports or suggestions are highly welcome.
 ```
