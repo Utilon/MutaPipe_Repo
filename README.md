@@ -36,23 +36,29 @@ The dataset is available here: https://drive.google.com/drive/folders/1hqvAOLGMJ
 
 There are currently 9 different python scripts which are incorporated in MutaPipe:
 
-| Script name | Input       | Operations  | Output      |
-| ----------- | ----------- |-----------  | ----------- |
-| 00_search_pdb.py      | - genes in .txt format (e.g. SOD1 ALS2 FUS) | - Creates a folder called Results in the current working directory where all the output is going to be stored - searches the pdb for all structures associated with each gene name (in Homo Sapiens) |     -  directory: Results/ - 00_search_overview_PDBids.csv contains all gene names and corresponding PDB IDs if available  |
-| 01_download_files.py   | Text        |             |             |
-| 02_parse_cif_files.py   | Text        |             |             |
-| 03_parse_fasta_files.py   | Text        |             |             |
-| 04_blast_against_reference.py   | Text        |             |             |
-| 05_pdb_extract_unsolved_res.py   | Text        |             |             |
-| 06_best_structure_per_mutation.py   | Text        |             |             |
-| 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py   | Text        |             |             |
-| 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py   | Text        |             |             |
-| 08_add_ClinVar_Annotations_to_best_structures.py   | Text        |             |             |
+| Script  | Input       | Operations  | Output      |
+| ------- | ----------- |-----------  | ----------- |
+| [00](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00_search_pdb.py)      | - genes in .txt format (e.g. SOD1 ALS2 FUS) | - Creates a folder called Results in the current working directory where all the output is going to be stored - searches the pdb for all structures associated with each gene name (in Homo Sapiens) |     -  directory: Results/ - 00_search_overview_PDBids.csv contains all gene names and corresponding PDB IDs if available  |
+| [01](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/01_download_files.py)  | Text        |             |             |
+| [02](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/02_parse_cif_files.py)   | Text        |             |             |
+| [03](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/03_parse_fasta_files.py)   | Text        |             |             |
+| [04](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/04_blast_against_reference.py)   | Text        |             |             |
+| [05](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/05_pdb_extract_unsolved_res.py)   | Text        |             |             |
+| [06](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06_best_structure_per_mutation.py)   | Text        |             |             |
+| [07_a](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_a_ClinVar_Annotations_edirect_per_gene_download_files.py)   | Text        |             |             |
+| [07_b](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py)   | Text        |             |             |
+| [08](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/08_add_clinvar_annotations_to_best_structrures.py)   | Text        |             |             |
+
+
+
+
+
+
 
 
 ![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/debs_files/Pipeline_detailled_workflow.jpeg)
 
-Figure 2. Detailled description of the analyses performed by MutaPipe
+Figure 2. *Detailled description of the analyses performed by MutaPipe*
 
 ### Minimum Requirements
 
