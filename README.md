@@ -38,7 +38,7 @@ There are currently 9 different python scripts which are incorporated in MutaPip
 
 | Script  | Input       | Operations  | Output      |
 | ------- | ----------- |-----------  | ----------- |
-| [00](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00_search_pdb.py)      | - genes in .txt format (e.g. SOD1 ALS2 FUS) | - Creates a folder called Results in the current working directory where all the output is going to be stored - searches the pdb for all structures associated with each gene name (in Homo Sapiens) |     -  directory: Results/ - 00_search_overview_PDBids.csv contains all gene names and corresponding PDB IDs if available  |
+| [00](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00_search_pdb.py)      | - genes in .txt format <br />(e.g. SOD1 ALS2 FUS) | - Creates a folder called Results in the current working directory where all the output is going to be stored <br />- searches the pdb for all structures associated with each gene name (in Homo Sapiens) |     -  directory: Results/ <br />- 00_search_overview_PDBids.csv contains all gene names and corresponding PDB IDs if available  |
 | [01](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/01_download_files.py)  | Text        |             |             |
 | [02](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/02_parse_cif_files.py)   | Text        |             |             |
 | [03](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/03_parse_fasta_files.py)   | Text        |             |             |
