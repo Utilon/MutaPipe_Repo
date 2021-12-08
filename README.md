@@ -7,6 +7,8 @@
 1. [Introduction](#introduction)
 2. [Citation](#citation)
 3. [Documentation](#documentation)
+  * [Workflow](#workflow)
+  * [Incorporated scripts](#incorporated-scripts)
 	* [Minimum Requirements](#minimum-requirements)
 	* [Local Deployment](#local-deployment)
 	* [Usage](#usage)
