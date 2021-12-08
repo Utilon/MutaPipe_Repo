@@ -15,13 +15,13 @@
 
 ## Introduction
 
-MutaPipe is a fast and efficient bioinformatics pipeline to screen the Protein Data Bank for genes of interest and retrieve the highest quality protein structure (best resolution) for each unique sequence associated with a gene (for the species Homo sapiens). Additionally, whenever information on variants is available, variants will be annotated using information from ClinVar.
+MutaPipe is a fast and efficient bioinformatics pipeline to screen the Protein Data Bank (PDB) for genes of interest and retrieve the highest quality protein structure (best resolution) for each unique sequence associated with a gene (currently only available for the species Homo sapiens). Additionally, whenever corresponding data is available, variants will be annotated using information on variant pathogenicity from ClinVar.
 
 This allows researchers to efficiently screen the PDB for the most suitable template structures for a specific WT or mutant gene/protein which can be used for further in silico analysis like mutagenesis experiments or molecular dynmamics simulations.
 
 ![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/debs_files/pipeline_simple_flowchart.jpeg)
 
-Figure 1. Pipeline overview. MutaPipe requires a list of gene names in txt format as input. The pipeline firstly performs a search of the entire PDB database to retrieve information on all protein structures available in the PDB which are associated with the input genes (species: Homo sapiens). In a second step, a BLASTp against the canonical reference sequence for a given input gene (obtained from UNIPROT) is performed for each sequence of every identified protein structure associated with said gene of interest. The BLASTp alignment is used to identify mismatches in the amino acid sequence of the PDB structures relative to the canonical sequence. In a subsequent step, the data is filtered and rearranged to output a table listing the highest quality structure for all available sequences in the PDB which are associated with the input genes. Additionally, if a given amino acid change in an input gene is listed in ClinVar, this information will be added to the output table.
+Figure 1. Pipeline overview. MutaPipe requires a list of gene names in txt format as input. The pipeline firstly performs a search of the entire Protein Data Bank (PDB) to retrieve information on all protein structures available in the PDB which are associated with the input genes (and the species: Homo sapiens). In a second step, a BLASTp against the canonical reference sequence for a given input gene (obtained from Uniprot) is performed for each sequence of every identified protein structure associated with said gene of interest. The BLASTp alignment is used to identify mismatches in the amino acid sequence of the PDB structures relative to the canonical sequence. In a subsequent step, the data is filtered and rearranged to output a table listing the highest quality structure for all available sequences in the PDB which are associated with the input genes. Additionally, if a given amino acid change in an input gene is listed in ClinVar, this information will be added to the output table.
 
 
 Here I am going to write some more about the pipeline and maybe will also include the table (like in my word file) of the scripts and what they do (needs to be adapted to fit new names etc.)
@@ -34,7 +34,10 @@ Figure 2. Detailled description of the analyses performed by MutaPipe
 
 ## Citation
 
-This work has not yet been published (Dec 2021). However, a dataset produced with Mutapipe for all genes available in the ClinVar Database has been presented as a poster at an international research conference in Italy in September 2021 ("THE 1° MASBIC - DISVA ANNUAL SYMPOSIUM - From structure to function: unveiling the role of proteins in health and disease")
+This work has not yet been published (Dec 2021). 
+
+However, a dataset produced with Mutapipe for all genes available in the ClinVar Database has been presented as a poster at an international research conference in Italy in September 2021 ("THE 1° MASBIC - DISVA ANNUAL SYMPOSIUM - From structure to function: unveiling the role of proteins in health and disease")
+The dataset is available here: https://drive.google.com/drive/folders/1hqvAOLGMJuYqKuB1poH5_JPXFHDxwX80?usp=sharing
 
 ## Documentation
 
@@ -126,5 +129,5 @@ MutaPipe will need a fasta file with all canonical protein sequences of the spec
 In order to run the scripts in the pipeline, a fasta file containing reference proteomes / canonical sequences for the organism in question (=Homo sapiens) will have to be downloaded from UNIPROT and stored in a folder called Uniprot_reference_seqs which should be in the same directory as the python scripts. The filename should be UP000005640_9606.fasta for MutaPipe to work properly.
 The latest version can be accessed via the Uniprot ftp client: https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/Eukaryota/UP000005640/
 
-When installing MutaPipe (see Local Deployment below) this file will be included (version from November 2021). Do feel free to update with a newer version if one is available (we will also regularly update the reference proteome file on here, but this is currently not done automatically)
+When installing MutaPipe (see Local Deployment below) this file will be included (version from December 2021). Do feel free to update with a newer version if one is available (we will also regularly update the reference proteome file on here, but this is currently not done automatically)
 
