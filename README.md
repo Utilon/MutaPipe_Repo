@@ -1,4 +1,4 @@
-# :dna::dna::dna:    **M  u  t  a  P  i  p  e**     :dna::dna::dna:   :dna::dna::dna:    **M  u  t  a  P  i  p  e**     :dna::dna::dna:   :dna::dna::dna:    **M  u  t  a  P  i  p  e**     :dna::dna::dna:
+# :dna::dna::dna:    **M    u    t    a    P    i    p    e**     :dna::dna::dna:   
 # A bioinformatics pipeline to identify high quality mutant and WT PDB structures for genes of interest
 ```diff
 +TO BE NOTED: We are always working to improve MutaPipe, so any bug reports or suggestions are highly welcome.
