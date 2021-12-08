@@ -38,8 +38,16 @@ There are currently 9 different python scripts which are incorporated in MutaPip
 
 | Script name | Input       | Operations  | Output      |
 | ----------- | ----------- |-----------  | ----------- |
-| Header      | Title       |             |             |
-| Paragraph   | Text        |             |             |
+| 00_search_pdb.py      | Title       |             |             |
+| 01_download_files.py   | Text        |             |             |
+| 02_parse_cif_files.py   | Text        |             |             |
+| 03_parse_fasta_files.py   | Text        |             |             |
+| 04_blast_against_reference.py   | Text        |             |             |
+| 05_pdb_extract_unsolved_res.py   | Text        |             |             |
+| 06_best_structure_per_mutation.py   | Text        |             |             |
+| 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py   | Text        |             |             |
+| 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py   | Text        |             |             |
+| 08_add_ClinVar_Annotations_to_best_structures.py   | Text        |             |             |
 
 
 ![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/debs_files/Pipeline_detailled_workflow.jpeg)
