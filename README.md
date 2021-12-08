@@ -21,15 +21,8 @@ This allows researchers to efficiently screen the PDB for the most suitable temp
 
 ![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/debs_files/pipeline_simple_flowchart.jpeg)
 
-Figure 1. Pipeline overview. MutaPipe requires a list of gene names in txt format as input. The pipeline firstly performs a search of the entire Protein Data Bank (PDB) to retrieve information on all protein structures available in the PDB which are associated with the input genes (and the species: Homo sapiens). In a second step, a BLASTp against the canonical reference sequence for a given input gene (obtained from Uniprot) is performed for each sequence of every identified protein structure associated with said gene of interest. The BLASTp alignment is used to identify mismatches in the amino acid sequence of the PDB structures relative to the canonical sequence. In a subsequent step, the data is filtered and rearranged to output a table listing the highest quality structure for all available sequences in the PDB which are associated with the input genes. Additionally, if a given amino acid change in an input gene is listed in ClinVar, this information will be added to the output table.
+Figure 1. *Pipeline overview. MutaPipe requires a list of gene names in txt format as input. The pipeline firstly performs a search of the entire Protein Data Bank (PDB) to retrieve information on all protein structures available in the PDB which are associated with the input genes (and the species: Homo sapiens). In a second step, a BLASTp against the canonical reference sequence for a given input gene (obtained from Uniprot) is performed for each sequence of every identified protein structure associated with said gene of interest. The BLASTp alignment is used to identify mismatches in the amino acid sequence of the PDB structures relative to the canonical sequence. In a subsequent step, the data is filtered and rearranged to output a table listing the highest quality structure for all available sequences in the PDB which are associated with the input genes. Additionally, if a given amino acid change in an input gene is listed in ClinVar, this information will be added to the output table.*
 
-
-Here I am going to write some more about the pipeline and maybe will also include the table (like in my word file) of the scripts and what they do (needs to be adapted to fit new names etc.)
-
-
-![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/debs_files/Pipeline_detailled_workflow.jpeg)
-
-Figure 2. Detailled description of the analyses performed by MutaPipe
 
 
 ## Citation
@@ -40,6 +33,18 @@ However, a dataset produced with Mutapipe for all genes available in the ClinVar
 The dataset is available here: https://drive.google.com/drive/folders/1hqvAOLGMJuYqKuB1poH5_JPXFHDxwX80?usp=sharing
 
 ## Documentation
+
+There are currently 9 different python scripts which are incorporated in MutaPipe:
+
+| Script name | Input       | Operations  | Output      |
+| ----------- | ----------- |-----------  | ----------- |
+| Header      | Title       |             |             |
+| Paragraph   | Text        |             |             |
+
+
+![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/debs_files/Pipeline_detailled_workflow.jpeg)
+
+Figure 2. Detailled description of the analyses performed by MutaPipe
 
 ### Minimum Requirements
 
