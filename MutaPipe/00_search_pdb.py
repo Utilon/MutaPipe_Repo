@@ -41,8 +41,12 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-ap = argparse.ArgumentParser(description="***   This script takes a list of genes as input and will output a file called search_overview.csv containing the PDB id's for all available structures in the PDB for each gene   ***")
-ap.add_argument('-g','--genes', nargs='+', required=False, help=f'Specify genes for which to search pdb structures, default = {gene_list}; to pass a file containing all genes use $(cat filename)')
+ap = argparse.ArgumentParser(description="""****   This script takes a list of genes in txt. format as input and performs the following:
+1. searches the pdb for all structures associated with each gene name (in Homo Sapiens)
+2. outputs a csv file called 00_search_overview_PDBids.csv containing all gene names and corresponding PDB structure id's if available
+3. outputs a csv file called 00_search_overview_availability.csv containing a boolean value for each gene to indicate whether there are any structures available or not   ***""")
+
+ap.add_argument('-g','--genes', nargs='+', required=False, help=f'Specify genes for which to search pdb structures, default = {gene_list}; to pass a file containing all genes use -g $(cat filename)')
 ap.add_argument("-o", "--organism", required = False, help=f'Specify species for which to search pdb structures, default = {species_name}')
 ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in current directory if set to True, default = {str(create_search_log)}')
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
