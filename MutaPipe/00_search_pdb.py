@@ -10,6 +10,7 @@ import pandas as pd
 import sys
 import argparse
 import requests
+from datetime import datetime
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 #  read in gene_list from textfile
@@ -98,9 +99,13 @@ os.chdir(results_dir)
     
 #  create log file for console output:
 if create_search_log == True:
-    with open('search_log.txt', 'w') as search_log:
+    with open('search_log_00.txt', 'w') as search_log:
         search_log.write(f'Search log for search with genes {gene_list}\n')
-    sys.stdout = open('search_log.txt', 'a')
+    sys.stdout = open('search_log_00.txt', 'a')
+
+# store current date and time in an object and print to console / write to log file
+start_time = datetime.now()
+print(f'start: {start_time}')
 
 # Initiate loop over all genes in gene_list to find all PDB id's of available structures
 gene_counter = 1
@@ -230,6 +235,10 @@ print('The following files have been created:')
 print('   o      00_search_overview_availability.csv      (contains information on which genes have available structures)')
 print('   o      00_search_overview_PDBids.csv            (contains information on which PDB IDs are available per structures)\n\n')
 
+
+# store current date and time in an object and print to console / write to log file
+end_time = datetime.now()
+print(f'end: {end_time}\n\n')
 
 # close search log
 if create_search_log == True:
