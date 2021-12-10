@@ -1,5 +1,3 @@
-# Set up
-
 import sys
 import argparse
 from datetime import datetime
@@ -53,10 +51,26 @@ create_search_log  = create_search_log  if args["log"]   == None else args["log"
 target_directory  = target_directory if args["target"]   == None else args["target"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
+#  create log file for console output:
+if create_search_log == True:
+    with open('search_log_01.txt', 'w') as search_log:
+        search_log.write(f'Search log for 01_download_files.py\n')
+    sys.stdout = open('search_log_01.txt', 'a')
 
-if 'cif' in download_format:
-    print('downloading mmCif...')
-if 'fasta' in download_format:
-    print('downloading fasta...')
-if 'pdb' in download_format:
-    print('downloading pdb...')
+# store current date and time in an object and print to console / write to log file
+start_time = datetime.now()
+print(f'start: {start_time}')
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+# store current date and time in an object and print to console / write to log file
+end_time = datetime.now()
+print(f'end: {end_time}\n\n')
+
+# close search log
+if create_search_log == True:
+    sys.stdout.close()

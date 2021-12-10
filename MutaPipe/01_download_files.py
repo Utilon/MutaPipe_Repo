@@ -70,7 +70,7 @@ target_directory  = target_directory if args["target"]   == None else args["targ
 #  create log file for console output:
 if create_search_log == True:
     with open('search_log_01.txt', 'w') as search_log:
-        search_log.write(f'Search log for search with genes {gene_list}\n')
+        search_log.write(f'Search log for 01_download_files.py\n')
     sys.stdout = open('search_log_01.txt', 'a')
 
 # store current date and time in an object and print to console / write to log file

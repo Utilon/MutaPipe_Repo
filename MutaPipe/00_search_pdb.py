@@ -49,8 +49,9 @@ ap = argparse.ArgumentParser(description="""****   This script takes a list of g
 
 ap.add_argument('-g','--genes', nargs='+', required=False, help=f'Specify genes for which to search pdb structures, default = {gene_list}; to pass a file containing all genes use -g $(cat filename)')
 ap.add_argument("-o", "--organism", required = False, help=f'Specify species for which to search pdb structures, default = {species_name}')
-ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in current directory if set to True, default = {str(create_search_log)}')
-ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
+ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'Write output to .log file in current directory if set to True, default = {str(create_search_log)}')
+ap.add_argument("-t", "--target", required = False, help=f'Specify target directory, default = {target_directory}')
+ap.add_argument("-a", "--all", type=str2bool, required = False, help=f'Retrieve all (True) vs max. 10 pdb IDs per gene (False), default = {str(all_hits)}')
 
 args = vars(ap.parse_args())
 
@@ -59,6 +60,7 @@ gene_list = gene_list if args["genes"] == None else args["genes"]
 species_name = species_name if args["organism"] == None else args["organism"]
 create_search_log  = create_search_log  if args["log"]   == None else args["log"]
 target_directory  = target_directory if args["target"]   == None else args["target"]
+all_hits = all_hits if args["all"] == None else args["all"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 # set up search request
@@ -100,7 +102,7 @@ os.chdir(results_dir)
 #  create log file for console output:
 if create_search_log == True:
     with open('search_log_00.txt', 'w') as search_log:
-        search_log.write(f'Search log for search with genes {gene_list}\n')
+        search_log.write(f'Search log for 00_search_pdb.py with genes {gene_list}\n')
     sys.stdout = open('search_log_00.txt', 'a')
 
 # store current date and time in an object and print to console / write to log file
