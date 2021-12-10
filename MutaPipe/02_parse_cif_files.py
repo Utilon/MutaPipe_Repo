@@ -83,9 +83,6 @@ target_directory  = target_directory if args["target"]   == None else args["targ
 
 results_dir = f'{target_directory}/Results' #define path to results directory
 
-# create Results folder if it doesn't already exist
-if not os.path.exists(results_dir):
-        os.makedirs(results_dir)
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 #  create log file for console output:
