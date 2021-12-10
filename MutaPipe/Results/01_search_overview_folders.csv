@@ -1,4 +1,0 @@
-gene_name,folder_name,full_path,n_mmCIF,n_pdb,n_fasta,mmCIF_ids,pdb_ids,fasta_ids
-OPTN,OPTN_8structures,/Users/debs/OneDrive - King's College London/Pipeline/Pipeline_Git/MutaPipe/Results/OPTN_8structures,8,0,0,"['2lo4.cif', '2lue.cif', '5aaz.cif', '5b83.cif', '5eoa.cif', '5eof.cif', '5wq4.cif', '7czm.cif']",[],[]
-ERBB4,ERBB4_10structures,/Users/debs/OneDrive - King's College London/Pipeline/Pipeline_Git/MutaPipe/Results/ERBB4_10structures,10,0,0,"['2ahx.cif', '2l2t.cif', '2lcx.cif', '2r4b.cif', '3bbt.cif', '3bbw.cif', '3bce.cif', '3u2p.cif', '3u7u.cif', '3u9u.cif']",[],[]
-DCTN1,DCTN1_9structures,/Users/debs/OneDrive - King's College London/Pipeline/Pipeline_Git/MutaPipe/Results/DCTN1_9structures,9,0,0,"['1txq.cif', '2coy.cif', '2hkn.cif', '2hkq.cif', '2hl3.cif', '2hl5.cif', '2hqh.cif', '3e2u.cif', '3tq7.cif']",[],[]
