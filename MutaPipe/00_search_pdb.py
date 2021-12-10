@@ -20,6 +20,8 @@ with open('genes.txt', 'r') as f:
     if '' in gene_list:
         gene_list.remove('')
 
+# set default values for arguments we want to implement
+# we have to do this here if we want to print the default values in the help message
 # specify other search terms and search operator:
 species_name = "Homo sapiens" # script will search for exact match 
 log_operator = "and"
@@ -32,6 +34,7 @@ create_search_log = False      # will create a file called search_log.txt with c
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 # use argparse to make it so we can pass arguments to script via terminal
+# define a function to convert different inputs to booleans
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -42,6 +45,7 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
+# Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""****   This script takes a list of genes in txt. format as input and performs the following:
 1. searches the pdb for all structures associated with each gene name (in Homo Sapiens)
 2. outputs a csv file called 00_search_overview_PDBids.csv containing all gene names and corresponding PDB structure id's if available
@@ -55,7 +59,8 @@ ap.add_argument("-a", "--all", type=str2bool, required = False, help=f'Retrieve 
 
 args = vars(ap.parse_args())
 
-# set default values of optional arguments
+# Now, in case an argument is used via the terminal, this input has to overwrite the default option we set above
+# So we update our variables whenever there is a user input via the terminal:
 gene_list = gene_list if args["genes"] == None else args["genes"]
 species_name = species_name if args["organism"] == None else args["organism"]
 create_search_log  = create_search_log  if args["log"]   == None else args["log"]
@@ -63,6 +68,29 @@ target_directory  = target_directory if args["target"]   == None else args["targ
 all_hits = all_hits if args["all"] == None else args["all"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
+
+# We want to write all our Output into the Results directory
+
+results_dir = f'{target_directory}/Results' #define path to results directory
+
+# create Results folder if it doesn't already exist
+if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+#  create log file for console output:
+if create_search_log == True:
+    with open(f'{results_dir}/search_log_00.txt', 'w') as search_log:
+        search_log.write(f'Search log for 00_search_pdb.py with genes {gene_list}\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_00.txt', 'a')
+
+# store current date and time in an object and print to console / write to log file
+start_time = datetime.now()
+print(f'start: {start_time}\n')
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
 # set up search request
 base_url = "https://search.rcsb.org/rcsbsearch/v1/query"
 
@@ -90,24 +118,8 @@ def search_pdb(query_url):
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 
-results_dir = f'{target_directory}/Results' #define path to results directory
-
-# create Results folder if it doesn't already exist
-if not os.path.exists(results_dir):
-        os.makedirs(results_dir)
-       
 # change to results directory:
 os.chdir(results_dir)
-    
-#  create log file for console output:
-if create_search_log == True:
-    with open('search_log_00.txt', 'w') as search_log:
-        search_log.write(f'Search log for 00_search_pdb.py with genes {gene_list}\n')
-    sys.stdout = open('search_log_00.txt', 'a')
-
-# store current date and time in an object and print to console / write to log file
-start_time = datetime.now()
-print(f'start: {start_time}')
 
 # Initiate loop over all genes in gene_list to find all PDB id's of available structures
 gene_counter = 1
@@ -117,7 +129,7 @@ genes_data_available = []
 genes_no_data_available = []
 search_overview = pd.DataFrame(columns=['gene_name', 'n_available_structures', 'available_structures'])
 
-print(f'\n======================== Searching PD IDs for {n_genes} inputted genes ========================\n')
+print(f'\n======================== Searching PDB IDs for {n_genes} inputted genes ========================\n')
 
 for gene in gene_list:
     gene_name = gene

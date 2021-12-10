@@ -67,15 +67,24 @@ create_search_log  = create_search_log  if args["log"]   == None else args["log"
 target_directory  = target_directory if args["target"]   == None else args["target"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
+# We want to write all our Output into the Results directory
+
+results_dir = f'{target_directory}/Results' #define path to results directory
+
+# create Results folder if it doesn't already exist
+if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
+# ----------------------------------------------------------------------------------------------------------------------------------
+
 #  create log file for console output:
 if create_search_log == True:
-    with open('search_log_01.txt', 'w') as search_log:
-        search_log.write(f'Search log for 01_download_files.py\n')
-    sys.stdout = open('search_log_01.txt', 'a')
+    with open(f'{results_dir}/search_log_01.txt', 'w') as search_log:
+        search_log.write(f'Search log for 01_download_files.py\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_01.txt', 'a')
 
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
-print(f'start: {start_time}')
+print(f'start: {start_time}\n')
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -114,11 +123,15 @@ for gene, structures in pdb_ids.iterrows():
 
     # create new folder to save all pdb/mmcif/fasta files found for the query gene:
     folder_name = f'{results_dir}/{gene}_{len(found_pdbs)}structures'
-    folder_name_add_on = 1 #number will be added to folder name if folder name already exists
-        
-    while os.path.exists(folder_name):
-        folder_name = f'{results_dir}/{gene}_{len(found_pdbs)}structures_{folder_name_add_on}'
-        folder_name_add_on += 1
+#     folder_name_add_on = 1 #number will be added to folder name if folder name already exists # I commented this because, we actually don't want to make a new folder if the folder already exists, I think that's better
+
+#         commented the while loop because we don't make a new folder, instead I added an if statement here
+#     while os.path.exists(folder_name):
+#         folder_name = f'{results_dir}/{gene}_{len(found_pdbs)}structures_{folder_name_add_on}'
+#         folder_name_add_on += 1
+    if os.path.exists(folder_name):
+        os.chdir(folder_name)
+        created_folders.append(folder_name)
     else:
          os.makedirs(folder_name)
          os.chdir(folder_name)
@@ -127,7 +140,7 @@ for gene, structures in pdb_ids.iterrows():
     # download all mmCIF files to newly created folder
     # if-statement added, so mmCif files are only downloaded if specified (default)
     if 'cif' in download_format:
-        print(f'\n>>> downloading mmCIF, pdb and fasta files for {len(found_pdbs)} structures for gene {gene_counter} of {n_genes}: {gene}...')
+        print(f'\n>>> downloading mmCIF files for {len(found_pdbs)} structures for gene {gene_counter} of {n_genes}: {gene}...')
         # we create a PDBList object to download the files with BioPython
         # for mmCIF files
         cifl = PDBList()
@@ -136,6 +149,7 @@ for gene, structures in pdb_ids.iterrows():
     # for PDB files
     # if-statement added, so pdb files are only downloaded if specified (default)
     if 'pdb' in download_format:
+        print(f'\n>>> downloading pdb files for {len(found_pdbs)} structures for gene {gene_counter} of {n_genes}: {gene}...')
         pdbl = PDBList()
         pdbl.download_pdb_files(found_pdbs, file_format='pdb', pdir=folder_name)
     
@@ -152,6 +166,7 @@ for gene, structures in pdb_ids.iterrows():
     # now we download the fasta file for this structure
     # if-statement added, so fasta files are only downloaded if specified (default)
     if 'fasta' in download_format:
+        print(f'\n>>> downloading fasta files for {len(found_pdbs)} structures for gene {gene_counter} of {n_genes}: {gene}...')
         for pdb_id in found_pdbs:
             fasta_url = f'https://www.rcsb.org/fasta/entry/{pdb_id.upper()}'
             response = requests.get(fasta_url)
@@ -164,7 +179,7 @@ for gene, structures in pdb_ids.iterrows():
                 print(response.status_code, response.text)
                 print(f'No fasta file retrieved for {pdb_id}\n')        
             
-    print(f'Complete!\n    All corresponding files {download_format} for {gene} are stored in: \n    {folder_name}')
+    print(f'Complete!\n    All corresponding files (format: {download_format}) for {gene} are stored in: \n    {folder_name}')
     # remove created folder 'obsolete' (obsolete structure would be stored here if we set obsolete=True for the pdb/cif file download)
     try:
         os.rmdir(folder_name + '/obsolete')
@@ -205,7 +220,7 @@ os.chdir(target_directory)
 
 
 print('\n============================== Summary ================================================\n')
-print(f'Complete! \n    downloaded all mmCIF, pdb and fasta files for a total of {n_structures} PDB IDs associated with {n_genes} genes\n')
+print(f'Complete! \n    downloaded all specified files (format: {download_format}) for a total of {n_structures} PDB IDs associated with {n_genes} genes\n')
 print(f'New folders created in {results_dir}/ :')
 folder_counter = 1
 n_folders = len(created_folders)

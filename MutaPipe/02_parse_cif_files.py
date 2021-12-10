@@ -79,18 +79,25 @@ create_search_log  = create_search_log  if args["log"]   == None else args["log"
 target_directory  = target_directory if args["target"]   == None else args["target"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
+# We want to write all our Output into the Results directory
+
+results_dir = f'{target_directory}/Results' #define path to results directory
+
+# create Results folder if it doesn't already exist
+if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
+# ----------------------------------------------------------------------------------------------------------------------------------
+
 #  create log file for console output:
 if create_search_log == True:
-    with open('search_log_02.txt', 'w') as search_log:
-        search_log.write(f'Search log for 02_parse_cif_files.py\n')
-    sys.stdout = open('search_log_02.txt', 'a')
+    with open(f'{results_dir}/search_log_02.txt', 'w') as search_log:
+        search_log.write(f'Search log for 02_parse_cif_files.py\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_02.txt', 'a')
 
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
-print(f'start: {start_time}')
+print(f'start: {start_time}\n')
 # ----------------------------------------------------------------------------------------------------------------------------------
-
-results_dir = f'{target_directory}/Results'
 
 # Read in data from csv file
 folder_info = pd.read_csv(f'{results_dir}/01_search_overview_folders.csv', usecols=['gene_name', 'folder_name', 'full_path'])

@@ -51,19 +51,31 @@ create_search_log  = create_search_log  if args["log"]   == None else args["log"
 target_directory  = target_directory if args["target"]   == None else args["target"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
+
+# We want to write all our Output into the Results directory
+
+results_dir = f'{target_directory}/Results' #define path to results directory
+
+# create Results folder if it doesn't already exist
+if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
 #  create log file for console output:
 if create_search_log == True:
-    with open('search_log_01.txt', 'w') as search_log:
-        search_log.write(f'Search log for 01_download_files.py\n')
-    sys.stdout = open('search_log_01.txt', 'a')
+    with open(f'{results_dir}/search_log_00.txt', 'w') as search_log:
+        search_log.write(f'Search log for 00_search_pdb.py\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_00.txt', 'a')
 
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
-print(f'start: {start_time}')
+print(f'start: {start_time}\n')
+
+
 # ----------------------------------------------------------------------------------------------------------------------------------
 
-
-
+# Add this at the very end of the script
 
 
 
