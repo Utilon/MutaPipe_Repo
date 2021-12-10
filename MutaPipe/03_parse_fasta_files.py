@@ -12,12 +12,12 @@
 #                - sequence
 #      - merge the dataframes and combine information from both fasta and fasta_ex files
 #      - output the following files:
-#                - a csv file called GENENAME_05_fasta_info.csv per gene/folder containing information extracted from all fasta files for this gene
-#                - a csv file called GENENAME_05_fasta_ex_info.csv per gene/folder containing information extracted from all fasta_ex files for this gene
-#                - a csv file called GENNAME_05_fasta_combined_info.csv per gene/folder containing combined information extracted from all fasta and fasta_ex files for this genes
-#                - a csv file called 05_fasta_info.csv containing information extracted from all fasta files for all genes
-#                - a csv file called 05_fasta_ex_info.csv containing information extracted from all fasta_ex files for all genes
-#                - a csv file called 05_fasta_combined_info.csv containing combined information extracted from all fasta and fasta_ex files for all genes
+#                - a csv file called GENENAME_03_fasta_info.csv per gene/folder containing information extracted from all fasta files for this gene
+#                - a csv file called GENENAME_03_fasta_ex_info.csv per gene/folder containing information extracted from all fasta_ex files for this gene
+#                - a csv file called GENNAME_03_fasta_combined_info.csv per gene/folder containing combined information extracted from all fasta and fasta_ex files for this genes
+#                - a csv file called 03_fasta_info.csv containing information extracted from all fasta files for all genes
+#                - a csv file called 03_fasta_ex_info.csv containing information extracted from all fasta_ex files for all genes
+#                - a csv file called 03_fasta_combined_info.csv containing combined information extracted from all fasta and fasta_ex files for all genes
 
     
 #  ----------------------------------------------------------------------------------------------------------------------------------
@@ -30,10 +30,75 @@ from os.path import isfile, join
 
 from Bio import SeqIO
 from Bio.PDB import *
+import sys
+import argparse
+from datetime import datetime
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-target_directory = os.getcwd()
-results_dir = f'{target_directory}/Results'
+
+# use argparse to make it so we can pass arguments to script via terminal
+
+# define a function to convert different inputs to booleans
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+# set default values for arguments we want to implement
+# we have to do this here if we want to print the default values in the help message
+
+create_search_log = False     # will create a file called search_log.txt with console output if set to True,
+                                            # prints to console if set to False.
+target_directory = os.getcwd()    # set target directory (where Results folder is located)
+                                            
+                                            
+# Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
+ap = argparse.ArgumentParser(description="""****    This script takes a csv file (01_search_overview_folders.csv) containing information on the folders where all fasta files are stored as input and will: 
+1. extract information from each fasta file 
+2. merge information from multiple fasta files whenever available (fasta and fasta_ex files [extracted from mmCif]) 
+3. output the following files: 
+(1) a csv file called GENENAME_03_fasta_info.csv per gene/folder containing information extracted from all fasta files for this gene 
+(2) a csv file called GENENAME_03_fasta_ex_info.csv per gene/folder containing information extracted from all fasta_ex files for this gene 
+(3) a csv file called GENNAME_03_fasta_combined_info.csv per gene/folder containing combined information extracted from all fasta and fasta_ex files for this genes 
+(4) a csv file called 03_fasta_info.csv containing information extracted from all fasta files for all genes 
+(5) a csv file called 03_fasta_ex_info.csv containing information extracted from all fasta_ex files for all genes 
+(6) a csv file called 03_fasta_combined_info.csv containing combined information extracted from all fasta and fasta_ex files for all genes    ***""")
+
+ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
+ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
+
+args = vars(ap.parse_args())
+
+# Now, in case an argument is used via the terminal, this input has to overwrite the default option we set above
+# So we update our variables whenever there is a user input via the terminal:
+create_search_log  = create_search_log  if args["log"]   == None else args["log"]
+target_directory  = target_directory if args["target"]   == None else args["target"]
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+# We want to write all our Output into the Results directory
+
+results_dir = f'{target_directory}/Results' #define path to results directory
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+#  create log file for console output:
+if create_search_log == True:
+    with open(f'{results_dir}/search_log_03.txt', 'w') as search_log:
+        search_log.write(f'Search log for 03_parse_fasta_files.py\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_03.txt', 'a')
+
+# store current date and time in an object and print to console / write to log file
+start_time = datetime.now()
+print(f'start: {start_time}\n')
+
+
+# ----------------------------------------------------------------------------------------------------------------------------------
 
 # Read in data from csv file
 folder_info = pd.read_csv(f'{results_dir}/01_search_overview_folders.csv', usecols=['folder_name', 'full_path'])
@@ -190,11 +255,11 @@ for index, row in folder_info.iterrows():
     
     # before we change to the next folder, we write the gene-specific csv files with info on fasta and fasta ex into the current directory
     print(f'\n    >>> writing csv file containing information extracted from fasta files for gene {gene}...')
-    fasta_df[fasta_df['gene_name'] == gene].to_csv(f'{gene}_05_fasta_info.csv', index = False)
+    fasta_df[fasta_df['gene_name'] == gene].to_csv(f'{gene}_03_fasta_info.csv', index = False)
     print(f'    >>> writing csv file containing information extracted from fasta_ex files for gene {gene}...')
-    fasta_ex_df[fasta_ex_df['gene_name'] == gene].to_csv(f'{gene}_05_fasta_ex_info.csv', index = False)
+    fasta_ex_df[fasta_ex_df['gene_name'] == gene].to_csv(f'{gene}_03_fasta_ex_info.csv', index = False)
     print(f'    >>> writing csv file containing combined information extracted from fasta and fasta_ex files for gene {gene}...')
-    combined_df[combined_df['gene_name'] == gene].to_csv(f'{gene}_05_fasta_combined_info.csv', index = False)
+    combined_df[combined_df['gene_name'] == gene].to_csv(f'{gene}_03_fasta_combined_info.csv', index = False)
 
 print('Complete!\n        All gene-specific csv files have been stored in their respective folders\n')
 
@@ -202,11 +267,11 @@ print('Complete!\n        All gene-specific csv files have been stored in their 
 os.chdir(results_dir)
 print(f'>>> writing csv files with information on all genes to {results_dir}') 
 print('    >>> writing csv file containing information extracted from fasta files for all genes...')
-fasta_df.to_csv('05_fasta_info.csv', index = False)
+fasta_df.to_csv('03_fasta_info.csv', index = False)
 print('    >>> writing csv file containing information extracted from fasta_ex files for all genes...')
-fasta_ex_df.to_csv('05_fasta_ex_info.csv', index = False)
+fasta_ex_df.to_csv('03_fasta_ex_info.csv', index = False)
 print('    >>> writing csv file containing combined information extracted from fasta and fasta_ex files for all genes...')
-combined_df.to_csv('05_fasta_combined_info.csv', index = False)
+combined_df.to_csv('03_fasta_combined_info.csv', index = False)
 print('Complete!\n')
 # change back to target directory
 os.chdir(target_directory)
@@ -216,12 +281,21 @@ print('\n============================== Summary ================================
 print(f'Complete! \n    Parsed a total of {fasta_total} fasta files and {fasta_ex_total} fasta_ex files stored across {n_folders} folders.')
 
 print('\nThe following files have been created for each gene and stored in the respective folder:')
-print('   o      GENENAME_05_fasta_info.csv                (lists information extracted from all fasta files for this gene/folder)')
-print('   o      GENENAME_05_fasta_ex_info.csv           (lists information extracted from all fasta_ex files for this gene/folder)')
-print('   o      GENENAME_05_fasta_combined_info.csv (lists combined information extracted from all fasta and fasta_ex files for this gene/folder)')
+print('   o      GENENAME_03_fasta_info.csv                (lists information extracted from all fasta files for this gene/folder)')
+print('   o      GENENAME_03_fasta_ex_info.csv           (lists information extracted from all fasta_ex files for this gene/folder)')
+print('   o      GENENAME_03_fasta_combined_info.csv (lists combined information extracted from all fasta and fasta_ex files for this gene/folder)')
 
 print('\nThe following files have been created and stored in the Results folder:')
-print('   o      05_fasta_info.csv                (lists information extracted from all fasta files for all genes)')
-print('   o      05_fasta_ex_info.csv           (lists information extracted from all fasta_ex files for all genes)')
-print('   o      05_fasta_combined_info.csv (lists combined information extracted from all fasta and fasta_ex files for all genes)\n\n')
+print('   o      03_fasta_info.csv                (lists information extracted from all fasta files for all genes)')
+print('   o      03_fasta_ex_info.csv           (lists information extracted from all fasta_ex files for all genes)')
+print('   o      03_fasta_combined_info.csv (lists combined information extracted from all fasta and fasta_ex files for all genes)\n\n')
 
+
+# store current date and time in an object and print to console / write to log file
+end_time = datetime.now()
+print(f'start: {start_time}')
+print(f'end: {end_time}\n\n')
+
+# close search log
+if create_search_log == True:
+    sys.stdout.close()

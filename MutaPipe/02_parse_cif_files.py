@@ -50,34 +50,33 @@ def str2bool(v):
 
 create_search_log = False     # will create a file called search_log.txt with console output if set to True,
                                             # prints to console if set to False.
-download_format =  'cif pdb fasta'      # specify which file formats to download from the PDB for the input data
-                                            # use the following abbreviations 
-                                                # for mmCif files (.cif) use 'cif'
-                                                # for pdb files (.pdb) use 'pdb'
-                                                # for fasta files (.fasta) use 'fasta'
-
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
+extract_pp = True                 # specify whether to extract the polypeptide sequences or whther to skip this step
                                             
                                             
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
-ap = argparse.ArgumentParser(description="""****    This script takes a csv file containing gene names and corresponding PDB IDs as input and will:
-1. create a folder for each gene in the results folder
-2. download specified formats (cif, pdb, fasta) into respective folders (atm automatically downloads mmCIF, pdb and FASTA files)
-3. outputs a csv file called 01_search_overview_folders listing all the the newly created folders and their contents 
-4. outputs a csv file called 01_search_overview_n_structures.csv listing the number of structures retrieved per gene    ***""")
+ap = argparse.ArgumentParser(description="""****    This script takes a csv file (01_search_overview_folders.csv) containing information on the folders where the mmCIF files are stored as input and will:
+1. extract information from each mmCIF file, incl.: resolution, experimental method, polypetide sequences, fasta sequence 
+2. outputs the following files: 
+(1) fasta_ex files for all structures (fasta files created from the mmCIF files) 
+(2) a csv file called GENENAME_02_resolutions.csv per gene containing the resolution for each structure associated with this gene 
+(3) a csv file called GENENAME_02_poly_seq.csv per gene containing all the polypeptide sequences in each of the structures associated with this gene 
+(4) a csv file called GENENAME_02_structure_info.csv per gene which lists all available header information for each structure of the respective gene 
+(5) a csv file called 02_all_resolutions.csv containing the resolutions of all parsed structures for all genes 
+(6) a csv file called 02_all_poly_seq.csv containing all polypeptide sequences in all structures of all genes 
+(7) a csv file called 02_structure_info.csv which lists all available header information for each structure for all genes     ***""")
 
-ap.add_argument('-f','--format', nargs='+', required=False, help=f"Specify file format to be downloaded. For mmCif files (.cif) use 'cif' ; for pdb files (.pdb) use 'pdb' ; for fasta files (.fasta) use 'fasta' ; default = {download_format}")
-ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in current directory if set to True, default = {str(create_search_log)}')
+ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
+ap.add_argument("-pp", "--polypeptides", type=str2bool, required = False, help=f'Specify whether to extract polypeptide sequence (True) or not (False), default = {str(extract_pp)}')
 
 args = vars(ap.parse_args())
 
 # Now, in case an argument is used via the terminal, this input has to overwrite the default option we set above
 # So we update our variables whenever there is a user input via the terminal:
-download_format = download_format if args["format"] == None else args["format"]
 create_search_log  = create_search_log  if args["log"]   == None else args["log"]
 target_directory  = target_directory if args["target"]   == None else args["target"]
-
+extract_pp = extract_pp if args["polypeptides"] == None else args["polypeptides"]
 # ----------------------------------------------------------------------------------------------------------------------------------
 # We want to write all our Output into the Results directory
 
@@ -181,28 +180,30 @@ for index, row in folder_info.iterrows():
         # get polypeptide sequences for all polypeptides in current structure
         # ==================================================
         # The polypeptide sequences correspond to the sequence as seen in pyMOL, i.e. with gaps/missing residues
-        print(f'        >>> getting polypeptides sequences from mmCIF file for {structure_id}')
-        PolypeptideBuilder = PPBuilder()
-        polypeptides = PolypeptideBuilder.build_peptides(structure)
-            
-        # Sometimes the polypeptides cannot be extraced properly with the PolypeptideBuilder,
-        # (don't know why, but this happens with all the KIF5A structures, in this case polypeptides is an empty list)
-        if not polypeptides:
-            print(' Could not build polypeptide sequences with PPBuilder.')
-            
-        # create new dictionary entry in all_poly_seqs dictionary in the format {pdb id:[seq1, seq2...]}
-        # create entry (empty list to be populated) for key=structure_id
-        all_poly_seqs[structure_id] = []
-            
-        # add all polypeptides to list in all_poly_seqs[structure_id]
-        # if polypeptides is empty because the PPBuilder did not work properly, this code will not do anything as there are no elements in the list to loop over.
-        counter=0
-        for pp in polypeptides:
-            counter += 1
-            seq = pp.get_sequence()
-            # add sequence to all_poly_seqs dictionary:
-            all_poly_seqs[structure_id].append(seq)
-    
+        # we only want to do this if the argument --polypeptides is set to True, therefore I added an if statement
+        if extract_pp == True:
+            print(f'        >>> getting polypeptides sequences from mmCIF file for {structure_id}')
+            PolypeptideBuilder = PPBuilder()
+            polypeptides = PolypeptideBuilder.build_peptides(structure)
+                
+            # Sometimes the polypeptides cannot be extraced properly with the PolypeptideBuilder,
+            # (don't know why, but this happens with all the KIF5A structures, in this case polypeptides is an empty list)
+            if not polypeptides:
+                print(' Could not build polypeptide sequences with PPBuilder.')
+                
+            # create new dictionary entry in all_poly_seqs dictionary in the format {pdb id:[seq1, seq2...]}
+            # create entry (empty list to be populated) for key=structure_id
+            all_poly_seqs[structure_id] = []
+                
+            # add all polypeptides to list in all_poly_seqs[structure_id]
+            # if polypeptides is empty because the PPBuilder did not work properly, this code will not do anything as there are no elements in the list to loop over.
+            counter=0
+            for pp in polypeptides:
+                counter += 1
+                seq = pp.get_sequence()
+                # add sequence to all_poly_seqs dictionary:
+                all_poly_seqs[structure_id].append(seq)
+        
     print(f'Complete!\n    All mmCIF files for {gene} have been parsed!')
                 
     # create csv files for each gene with resolution and all info of all structures for that gene
@@ -210,37 +211,39 @@ for index, row in folder_info.iterrows():
     df_all_resolutions[df_all_resolutions.gene == gene].to_csv(f'{gene}_02_resolutions.csv', index = False)
     df_all_info[df_all_info.gene == gene].to_csv(f'{gene}_02_structure_info.csv', index = False)
 
+    # now, only if --polypeptides is set to true, we want to
     # create csv file for each gene with sequences of all polypeptides of all structures for that gene
-    # first create a pandas dataframe from dictionary containing all sequences for all structures of the current gene
-    # first we create a list of column names for our dataframe:
-    # create column names for each polypeptide: pp1 - ppn
-    if polypeptides:
-        column_names = []
-        # find longest list in dictionary to create the same amount of columns in pd dataframe:
-        max_num_of_polyseqs_per_structure = 0
-        for value in all_poly_seqs.values():
-            if len(value) > max_num_of_polyseqs_per_structure:
-                max_num_of_polyseqs_per_structure = len(value)
-                
-        counter = 0
-        for i in range(max_num_of_polyseqs_per_structure):
-            counter += 1
-            col_name = 'pp'+str(counter)
-            column_names.append(col_name)
-        # create dataframe
-        df = pd.DataFrame.from_dict(all_poly_seqs, orient='index', columns=column_names).reset_index()
-        df = df.rename(columns={'index':'structure_id'})
-        # sort dataframe by 'id' (alphabetically)
-        df = df.sort_values(by=['structure_id'])
-        # save dataframe to csv file
-        print(f'        >>> saving csv file containing all polypeptide sequences for all {gene} structures')
-        df.to_csv(f'{gene}_02_poly_seq.csv', index = False)
-        
-        # to add it to the overall df df_all_poly_seq, we first add a column with the gene name
-        df['gene'] = gene
-        # now we can merge the two dfs with an outer merge.
-        # we cannot simply append the df because they have different numbers of columns (due to different numbers of polypeptides)
-        df_all_poly_seq = df_all_poly_seq.merge(df, how='outer')
+    if extract_pp == True:
+        # first create a pandas dataframe from dictionary containing all sequences for all structures of the current gene
+        # first we create a list of column names for our dataframe:
+        # create column names for each polypeptide: pp1 - ppn
+        if polypeptides:
+            column_names = []
+            # find longest list in dictionary to create the same amount of columns in pd dataframe:
+            max_num_of_polyseqs_per_structure = 0
+            for value in all_poly_seqs.values():
+                if len(value) > max_num_of_polyseqs_per_structure:
+                    max_num_of_polyseqs_per_structure = len(value)
+                    
+            counter = 0
+            for i in range(max_num_of_polyseqs_per_structure):
+                counter += 1
+                col_name = 'pp'+str(counter)
+                column_names.append(col_name)
+            # create dataframe
+            df = pd.DataFrame.from_dict(all_poly_seqs, orient='index', columns=column_names).reset_index()
+            df = df.rename(columns={'index':'structure_id'})
+            # sort dataframe by 'id' (alphabetically)
+            df = df.sort_values(by=['structure_id'])
+            # save dataframe to csv file
+            print(f'        >>> saving csv file containing all polypeptide sequences for all {gene} structures')
+            df.to_csv(f'{gene}_02_poly_seq.csv', index = False)
+            
+            # to add it to the overall df df_all_poly_seq, we first add a column with the gene name
+            df['gene'] = gene
+            # now we can merge the two dfs with an outer merge.
+            # we cannot simply append the df because they have different numbers of columns (due to different numbers of polypeptides)
+            df_all_poly_seq = df_all_poly_seq.merge(df, how='outer')
 
 # change back to Results directory
 os.chdir(results_dir)
@@ -252,7 +255,8 @@ df_all_resolutions.to_csv('02_all_resolutions.csv', index = False)
 df_all_info.to_csv('02_structure_info.csv', index = False)
 
 # write polypeptide sequences of all structures for all genes to csv file:
-df_all_poly_seq.to_csv('02_all_poly_seq.csv', index = False)
+if extract_pp == True:
+    df_all_poly_seq.to_csv('02_all_poly_seq.csv', index = False)
 
 # change back to target directory
 os.chdir(target_directory)
@@ -262,12 +266,14 @@ print('\n============================== Summary ================================
 print(f'Complete! \n    Succesfully parsed a total of {cif_total} mmCIF files stored across {n_folders} folders.')
 
 print('\nThe following files have been created for each gene and stored in the respective folder:')
-print('   o      GENENAME_02_poly_seq.csv          (lists all polypeptide sequences for each structure of the respective gene)')
+if extract_pp == True:
+    print('   o      GENENAME_02_poly_seq.csv          (lists all polypeptide sequences for each structure of the respective gene)')
 print('   o      GENENAME_02_resolutions.csv        (lists the resolution for each structure of the respective gene; 999 indicates a missing value)')
 print('   o      GENENAME_02_structure_info.csv   (lists all available header information for each structure of the respective gene)')
 
 print('\nThe following files have been created and stored in the Results folder:')
-print('   o      02_all_poly_seq.csv                (lists all polypeptide sequences for each structure of all genes)')
+if extract_pp == True:
+    print('   o      02_all_poly_seq.csv                (lists all polypeptide sequences for each structure of all genes)')
 print('   o      02_all_resolutions.csv            (lists the resolution for each structure of all genes; 999 indicates a missing value)')
 print('   o      02_structure_info.csv            (lists all available header information for each structure for all genes)\n\n')
 
@@ -275,6 +281,7 @@ print('   o      02_structure_info.csv            (lists all available header in
 
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()
+print(f'start: {start_time}')
 print(f'end: {end_time}\n\n')
 
 # close search log

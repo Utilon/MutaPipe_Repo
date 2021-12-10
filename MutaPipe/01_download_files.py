@@ -256,6 +256,7 @@ print('   o      01_search_overview_n_structures.csv          (lists number of s
 
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()
+print(f'start: {start_time}')
 print(f'end: {end_time}\n\n')
 
 # close search log

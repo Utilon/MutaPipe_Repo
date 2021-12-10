@@ -252,6 +252,7 @@ print('   o      00_search_overview_PDBids.csv            (contains information 
 
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()
+print(f'start: {start_time}')
 print(f'end: {end_time}\n\n')
 
 # close search log

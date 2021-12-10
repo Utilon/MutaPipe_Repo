@@ -39,7 +39,7 @@ ap = argparse.ArgumentParser(description="""****    This script takes a csv file
 4. outputs a csv file called 01_search_overview_n_structures.csv listing the number of structures retrieved per gene    ***""")
 
 ap.add_argument('-f','--format', nargs='+', required=False, help=f"Specify file format to be downloaded. For mmCif files (.cif) use 'cif' ; for pdb files (.pdb) use 'pdb' ; for fasta files (.fasta) use 'fasta' ; default = {download_format}")
-ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in current directory if set to True, default = {str(create_search_log)}')
+ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
 
 args = vars(ap.parse_args())
@@ -55,10 +55,6 @@ target_directory  = target_directory if args["target"]   == None else args["targ
 # We want to write all our Output into the Results directory
 
 results_dir = f'{target_directory}/Results' #define path to results directory
-
-# create Results folder if it doesn't already exist
-if not os.path.exists(results_dir):
-        os.makedirs(results_dir)
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -81,6 +77,7 @@ print(f'start: {start_time}\n')
 
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()
+print(f'start: {start_time}\n')
 print(f'end: {end_time}\n\n')
 
 # close search log
