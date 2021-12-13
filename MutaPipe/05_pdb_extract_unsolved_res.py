@@ -1,16 +1,16 @@
 # This script takes two csv files as input, namely:
 #      - 01_search_overview_folders.csv
-#      - 06_blast_fasta.csv OR 07_blast_two_sequences.csv
+#      - 04_blast_two_sequences.csv
 # and will
 #      - search for pdb files in all folders listed in 01_search_overview_folders.csv
 #      - extract info on missing residues / residues which have not been solved in the crystal structure for each pdb structure
-#      - combine this information with 06_blast_fasta.csv df
+#      - combine this information with the data in 04_blast_two_sequences.csv
 #      - output the following files:
-#                - a csv file called 08_unsolved_residues_per_structure.csv listing all unsolved residues in all structures for all genes
+#                - a csv file called 05_unsolved_residues_per_structure.csv listing all unsolved residues in all structures for all genes
 #                  (one row for each structure)
-#                - a csv files called 08_unsolved_residues_per_chain.csv listing all unsolved residues in all chains of all structures for all genes
+#                - a csv files called 05_unsolved_residues_per_chain.csv listing all unsolved residues in all chains of all structures for all genes
 #                  (one row for each chain)
-#                - a csv file called 08_all_info.csv containing all the information from 06_blast_fasta.csv as
+#                - a csv file called 05_all_info.csv containing all the information from 04_blast_two_sequences.csv as
 #                  as well as information on unsolved residues extracted from pdb files
 # 
 #  ----------------------------------------------------------------------------------------------------------------------------------
@@ -21,18 +21,81 @@ import pandas as pd
 import os
 from os import listdir
 from os.path import isfile, join
+import sys
+import argparse
+from datetime import datetime
 
 from Bio.PDB import *
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-target_directory = os.getcwd()
-results_dir = f'{target_directory}/Results'
+
+# use argparse to make it so we can pass arguments to script via terminal
+
+# define a function to convert different inputs to booleans
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+# set default values for arguments we want to implement
+# we have to do this here if we want to print the default values in the help message
+
+create_search_log = False     # will create a file called search_log.txt with console output if set to True,
+                                            # prints to console if set to False.
+target_directory = os.getcwd()    # set target directory (where Results folder is located)
+                                            
+                                            
+# Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
+ap = argparse.ArgumentParser(description="""****    This script takes two csv files as input, namely:
+01_search_overview_folders.csv and 04_blast_two_sequences.csv and will:
+1. search for pdb files in all folders listed in 01_search_overview_folders.csv
+2. extract info on missing residues / residues which have not been solved in the crystal structure for each pdb structure
+3. combine this information with the data in 04_blast_two_sequences.csv
+4. output the following files:
+(1) a csv file called 05_unsolved_residues_per_structure.csv listing all unsolved residues in all structures for all genes (one row for each structure)
+(2) a csv files called 05_unsolved_residues_per_chain.csv listing all unsolved residues in all chains of all structures for all genes (one row for each chain)
+(3) a csv file called 05_all_info.csv containing all the information from 04_blast_two_sequences.csv as well as information on unsolved residues extracted from pdb files    ***""")
+
+ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
+ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
+
+args = vars(ap.parse_args())
+
+# Now, in case an argument is used via the terminal, this input has to overwrite the default option we set above
+# So we update our variables whenever there is a user input via the terminal:
+create_search_log  = create_search_log  if args["log"]   == None else args["log"]
+target_directory  = target_directory if args["target"]   == None else args["target"]
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+# We want to write all our Output into the Results directory
+
+results_dir = f'{target_directory}/Results' #define path to results directory
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+#  create log file for console output:
+if create_search_log == True:
+    with open(f'{results_dir}/search_log_00.txt', 'w') as search_log:
+        search_log.write(f'Search log for 00_search_pdb.py\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_00.txt', 'a')
+
+# store current date and time in an object and print to console / write to log file
+start_time = datetime.now()
+print(f'start: {start_time}\n')
+
+
+# ----------------------------------------------------------------------------------------------------------------------------------
 
 # read in csv files
 folders = pd.read_csv(f'{results_dir}/01_search_overview_folders.csv')
-# either read in 08_blast_two_sequences.csv or 06_blast_fasta.csv
-info = pd.read_csv(f'{results_dir}/07_blast_two_sequences.csv')
-# info = pd.read_csv(f'{results_dir}/06_blast_fasta.csv')
+# read in 04_blast_two_sequences.csv
+info = pd.read_csv(f'{results_dir}/04_blast_two_sequences.csv')
 
 # create an empty df called unsolved to populate with information on unsolved residues extracted from the pdb files in each folder
 unsolved = pd.DataFrame(columns=['gene', 'structure_id', 'unsolved_residues_in_structure'])
@@ -115,8 +178,8 @@ os.chdir(results_dir)
 # write output to csv files
 print('>>> writing csv file containing unsolved residues per structure for all genes...')
 print('>>> writing csv file containing unsolved residues per chain for all structures for all genes...\n')
-unsolved.to_csv('08_unsolved_residues_per_structure.csv', index=False)
-unsolved_per_chain.to_csv('08_unsolved_residues_per_chain.csv', index=False)
+unsolved.to_csv('05_unsolved_residues_per_structure.csv', index=False)
+unsolved_per_chain.to_csv('05_unsolved_residues_per_chain.csv', index=False)
 
         
 # to do: combine unsolved df and info df
@@ -166,8 +229,8 @@ for index, row in info.iterrows():
     info.loc[index, 'unsolved_residues_in_structure'] = str(unsolved_dict)
 
 # finally we write the update info df into a csv file called 07_all_info.csv
-print('>>> writing csv file called 08_all_info.csv containing all information for all genes...')
-info.to_csv('08_all_info.csv', index=False)
+print('>>> writing csv file called 05_all_info.csv containing all information for all genes...')
+info.to_csv('05_all_info.csv', index=False)
 
 # change back to target_directory
 os.chdir(target_directory)
@@ -177,6 +240,18 @@ print('\n============================== Summary ================================
 print(f'Complete! \n    Parsed a total of {pdb_total} pdb files stored across {len(folders)} folders.')
 
 print('\nThe following files have been created and stored in the Results folder:')
-print('   o      08_all_info.csv                                            (lists all information on all structures of all genes (one row = one sequence))')
-print('   o      08_unsolved_residues_per_structure.csv     (lists unsolved residues per structure for all genes (one row = one structure))')
-print('   o      08_unsolved_residues_per_chain.csv           (lists unsolved residues per chain for all genes (one row = one chain))\n\n')
+print('   o      05_all_info.csv                                            (lists all information on all structures of all genes (one row = one sequence))')
+print('   o      05_unsolved_residues_per_structure.csv     (lists unsolved residues per structure for all genes (one row = one structure))')
+print('   o      05_unsolved_residues_per_chain.csv           (lists unsolved residues per chain for all genes (one row = one chain))\n')
+
+
+
+
+# store current date and time in an object and print to console / write to log file
+end_time = datetime.now()
+print(f'start: {start_time}\n')
+print(f'end: {end_time}\n\n')
+
+# close search log
+if create_search_log == True:
+    sys.stdout.close()
