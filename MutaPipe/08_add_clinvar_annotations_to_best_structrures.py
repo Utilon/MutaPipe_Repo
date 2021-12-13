@@ -1,22 +1,94 @@
 # Combine ClinVar annotations with best_structure outputs
 # ************************************************************************************
 # This script takes the following csv files as input
-#      - 09_best_structure_all_unique_combinations.csv
-#      - 09_best_structure_any_mutation.csv
-#      - 09_best_structure_per_point_mutation.csv
-#      - 10_ClinVar_Annotations.csv
+#      - 06_best_structure_all_unique_combinations.csv
+#      - 06_best_structure_any_mutation.csv
+#      - 06_best_structure_per_point_mutation.csv
+#      - 07_b_ClinVar_Annotations.csv
 #  and will:
 #      - add availalable ClinVar annotations to all three best_structure tables
 #      - output the following files:
-#          - 11_best_structure_all_unique_combinations.csv (incl. ClinVar annotations)
-#          - 11_best_structure_any_mutation.csv (incl. ClinVar annotations)
-#          - 11_best_structure_per_point_mutation.csv (incl. ClinVar annotations)
+#          - 08_best_structure_all_unique_combinations.csv (incl. ClinVar annotations)
+#          - 08_best_structure_any_mutation.csv (incl. ClinVar annotations)
+#          - 08_best_structure_per_point_mutation.csv (incl. ClinVar annotations)
 # ===========================================================================================
 
 # Set up
 import pandas as pd
 import os
 import ast
+import sys
+import argparse
+from datetime import datetime
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+# use argparse to make it so we can pass arguments to script via terminal
+
+# define a function to convert different inputs to booleans
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+  
+# set default values for arguments we want to implement
+# we have to do this here if we want to print the default values in the help message
+
+create_search_log = False     # will create a file called search_log.txt with console output if set to True,
+                                            # prints to console if set to False.
+
+target_directory = os.getcwd()    # set target directory (where Results folder is located)
+                                            
+                                            
+# Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
+ap = argparse.ArgumentParser(description="""****    This script takes the following csv files as input: 
+(a) 06_best_structure_all_unique_combinations.csv 
+(b) 06_best_structure_any_mutation.csv 
+(c) 06_best_structure_per_point_mutation.csv 
+(d) 07_b_ClinVar_Annotations.csv 
+and will: 
+1. add availalable ClinVar annotations to all three best_structure tables 
+2. output the following files: 
+(a) 08_best_structure_all_unique_combinations.csv (incl. ClinVar annotations) 
+(b) 08_best_structure_any_mutation.csv (incl. ClinVar annotations) 
+(c) 08_best_structure_per_point_mutation.csv (incl. ClinVar annotations)    ***""")
+
+ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
+ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
+
+args = vars(ap.parse_args())
+
+# Now, in case an argument is used via the terminal, this input has to overwrite the default option we set above
+# So we update our variables whenever there is a user input via the terminal:
+create_search_log  = create_search_log  if args["log"]   == None else args["log"]
+target_directory  = target_directory if args["target"]   == None else args["target"]
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+# We want to write all our Output into the Results directory
+
+results_dir = f'{target_directory}/Results' #define path to results directory
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+#  create log file for console output:
+if create_search_log == True:
+    with open(f'{results_dir}/search_log_00.txt', 'w') as search_log:
+        search_log.write(f'Search log for 00_search_pdb.py\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_00.txt', 'a')
+
+# store current date and time in an object and print to console / write to log file
+start_time = datetime.now()
+print(f'start: {start_time}\n')
+
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
 
 # Define functions
 def add_empty_cols(df):
@@ -83,10 +155,10 @@ target_directory = os.getcwd()
 results_dir = f'{target_directory}/Results'
 
 # read in data
-unique_combi = pd.read_csv(f'{results_dir}/09_best_structure_all_unique_combinations.csv')
-any_mutation = pd.read_csv(f'{results_dir}/09_best_structure_any_mutation.csv')
-point_mutations = pd.read_csv(f'{results_dir}/09_best_structure_per_point_mutation.csv')
-clinvar_annotations = pd.read_csv(f'{results_dir}/10_ClinVar_Annotations.csv')
+unique_combi = pd.read_csv(f'{results_dir}/06_best_structure_all_unique_combinations.csv')
+any_mutation = pd.read_csv(f'{results_dir}/06_best_structure_any_mutation.csv')
+point_mutations = pd.read_csv(f'{results_dir}/06_best_structure_per_point_mutation.csv')
+clinvar_annotations = pd.read_csv(f'{results_dir}/07_b_ClinVar_Annotations.csv')
 
 # first we add empty columns to best structure dfs to populate with clinvar data using the function from above:
 new_unique_combi = add_empty_cols(unique_combi)
@@ -99,17 +171,27 @@ add_clinvar_annotations(new_any_mutation)
 add_clinvar_annotations(new_unique_combi)
 
 # now we can write the new dfs to csv files
-new_unique_combi.to_csv(f'{results_dir}/11_best_structure_all_unique_combinations.csv', index = False)
-new_any_mutation.to_csv(f'{results_dir}/11_best_structure_any_mutation.csv', index = False)
-new_point_mutations.to_csv(f'{results_dir}/11_best_structure_per_point_mutation.csv', index = False)
+new_unique_combi.to_csv(f'{results_dir}/08_best_structure_all_unique_combinations.csv', index = False)
+new_any_mutation.to_csv(f'{results_dir}/08_best_structure_any_mutation.csv', index = False)
+new_point_mutations.to_csv(f'{results_dir}/08_best_structure_per_point_mutation.csv', index = False)
 
 print('\n============================== Summary ================================================\n')
 print('Complete! \n    Added all available ClinVar annotations.\n')
 
 print('The following files have been created and stored in the Results folder:')
-print('   o      11_best_structure_all_unique_combinations.csv')
+print('   o      08_best_structure_all_unique_combinations.csv')
 print('            (lists best structure for all unique mismatch combinations for all genes, incl. ClinVar annotations)')
-print('   o      11_best_structure_any_mutation.csv')
+print('   o      08_best_structure_any_mutation.csv')
 print('            (lists best structure for any mismatch regardless of other mismatches in all genes, incl. ClinVar annotations)')
-print('   o      11_best_structure_per_point_mutation.txt')
-print('            (lists best structure for each point mutation (one mutation per structure) in all genes, incl. ClinVar annotations)\n\n')
+print('   o      08_best_structure_per_point_mutation.txt')
+print('            (lists best structure for each point mutation (one mutation per structure) in all genes, incl. ClinVar annotations)\n')
+
+
+# store current date and time in an object and print to console / write to log file
+end_time = datetime.now()
+print(f'start: {start_time}\n')
+print(f'end: {end_time}\n\n')
+
+# close search log
+if create_search_log == True:
+    sys.stdout.close()
