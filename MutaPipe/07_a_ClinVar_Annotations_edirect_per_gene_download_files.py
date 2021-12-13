@@ -129,7 +129,7 @@ for gene in avail_genes.gene_name:
 
     if response.status_code == 200:
         print(f'    Downloading ClinVar ids for variants in {gene}')
-        with open(f'07_a_ClinVar_{gene}_ids.txt', 'w') as file:
+        with open(f'07_a_ClinVar_{gene}_ids.xml', 'w') as file:
             file.write(response.text)
     else:
         # If there is no data, print status code and response
@@ -141,7 +141,7 @@ for gene in avail_genes.gene_name:
    
     # now we can use this file to download the data for these identifiers 
     # so we parse the file to get the ids
-    tree = ET.parse(f'07_a_ClinVar_{gene}_ids.txt')
+    tree = ET.parse(f'07_a_ClinVar_{gene}_ids.xml')
     root = tree.getroot()
         
     # save relevant information from xml file into variables
