@@ -16,6 +16,18 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+    
+    
+# define a function to make number inputs between 0.1 and 1.0 possible for hsp_coverage and relative_sequence_length
+def restricted_float(x):
+    try:
+        x = float(x)
+    except ValueError:
+        raise argparse.ArgumentTypeError("%r not a floating-point literal" % (x,))
+
+    if x < 0.0 or x > 1.0:
+        raise argparse.ArgumentTypeError("%r not in range [0.0, 1.0]"%(x,))
+    return x
 
 # set default values for arguments we want to implement
 # we have to do this here if we want to print the default values in the help message

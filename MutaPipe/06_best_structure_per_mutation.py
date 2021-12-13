@@ -1,6 +1,6 @@
 # Script to get best structure per mutation
 # This script takes the following csv files as input:
-#       - 08_all_info.csv
+#       - 05_all_info.csv
 #       - 02_structure_info.csv
 # it will perform the following:
 #      - combine the two dfs (according to PDBid)
@@ -12,18 +12,18 @@
 #               - the best structure (best resolution) for any specific mutation, regardless of other mutations in the same structure
 # and outputs the following files:
 #      - In each respective gene folder:
-#               - GENENAME_09_best_structure_per_point_mutation.csv
+#               - GENENAME_06_best_structure_per_point_mutation.csv
 #                 lists best structure for each point mutation (one mutation per structure) in this gene
-#               - GENENAME_09_best_structure_all_unique_combinations.csv
+#               - GENENAME_06_best_structure_all_unique_combinations.csv
 #                 lists best structure for all unique mismatch combinations for this gene
-#               - GENENAME_09_best_structure_any_mutation.csv
+#               - GENENAME_06_best_structure_any_mutation.csv
 #                 lists best structure for any mismatch regardless of other mismatches in this gene
 #      - In the results folder:
-#               - 09_best_structure_per_point_mutation.csv
+#               - 06_best_structure_per_point_mutation.csv
 #                  lists best structure for each point mutation (one mutation per structure) in all genes
-#               - 09_best_structure_all_unique_combinations.csv
+#               - 06_best_structure_all_unique_combinations.csv
 #                  lists best structure for all unique mismatch combinations for all genes
-#               - 09_best_structure_any_mutation.csv
+#               - 06_best_structure_any_mutation.csv
 #                  lists best structure for any mismatch regardless of other mismatches in all genes
 
 # ===========================================================================================
@@ -32,16 +32,111 @@
 import pandas as pd
 import os
 import ast
+import sys
+import argparse
+from datetime import datetime
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+# use argparse to make it so we can pass arguments to script via terminal
+
+# define a function to convert different inputs to booleans
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+# define a function to make number inputs between 0.1 and 1.0 possible for hsp_coverage and relative_sequence_length
+def restricted_float(x):
+    try:
+        x = float(x)
+    except ValueError:
+        raise argparse.ArgumentTypeError("%r not a floating-point literal" % (x,))
+
+    if x < 0.0 or x > 1.0:
+        raise argparse.ArgumentTypeError("%r not in range [0.0, 1.0]"%(x,))
+    return x
+    
+
+# set default values for arguments we want to implement
+# we have to do this here if we want to print the default values in the help message
+
+create_search_log = False     # will create a file called search_log.txt with console output if set to True,
+                                            # prints to console if set to False.
+relative_sequence_length = 0.5               # filter out sequences which are shorter than a given percentage of
+                                                              # the reference sequence (set variable relative_sequence_length)
+                                                              # e.g. 50% (0.5) or 10% (0.1) of the reference sequence
+
+hsp_coverage = 0.1                                # filter out sequences whose best hsp covers less than a given
+                                                              # percentage of the reference sequence
+                                                              #  e.g. 50% (0.5) or 10% (0.1) of the reference sequence
+                                                              
+target_directory = os.getcwd()    # set target directory (where Results folder is located)
+                                            
+                                            
+# Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
+ap = argparse.ArgumentParser(description="""****    Script to get best structure per mutation. This script takes the following csv files as input: 
+05_all_info.csv and 02_structure_info.csv. It will perform the following: 
+1. combine the two dfs (according to PDBid) 
+2. filter out sequences which are shorter than a given percentage of the reference sequence (set variable relative_sequence_length) 
+3. filter out sequences whose best hsp covers less than a given percentage of the reference sequence (set variable hsp_coverage) 
+4. sort and filter the df in order to get: 
+(a) the best structure (best resolution) for all point mutations (structures with only this one mutation and no other mutations) 
+(b) the best structure (best resolution) for all unique combinations of mutations available in the pdb 
+(c) the best structure (best resolution) for any specific mutation, regardless of other mutations in the same structure 
+5. and outputs the following files: 
+In each respective gene folder: 
+(a) GENENAME_06_best_structure_per_point_mutation.csv (lists best structure for each point mutation [one mutation per structure] in this gene) 
+(b) GENENAME_06_best_structure_all_unique_combinations.csv (lists best structure for all unique mismatch combinations for this gene)  
+(c) GENENAME_06_best_structure_any_mutation.csv (lists best structure for any mismatch regardless of other mismatches in this gene) 
+In the results folder: 
+(a) 06_best_structure_per_point_mutation.csv (lists best structure for each point mutation [one mutation per structure] in all genes) 
+(b) 06_best_structure_all_unique_combinations.csv (lists best structure for all unique mismatch combinations for all genes) 
+(c) 06_best_structure_any_mutation.csv (lists best structure for any mismatch regardless of other mismatches in all genes)    ***""") 
+
+ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
+ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
+ap.add_argument("-rsl", "--relative_sequence_length", type=restricted_float, required = False, help=f'filter out sequences shorter than a given percentage of the reference sequence, default = {str(relative_sequence_length)}')
+ap.add_argument("-cov", "--hsp_coverage", type=restricted_float, required = False, help=f'filter out sequences whose best hsp covers less than a given percentage of the reference sequence, default = {str(hsp_coverage)}')
+
+args = vars(ap.parse_args())
+
+# Now, in case an argument is used via the terminal, this input has to overwrite the default option we set above
+# So we update our variables whenever there is a user input via the terminal:
+create_search_log  = create_search_log  if args["log"]   == None else args["log"]
+target_directory  = target_directory if args["target"]   == None else args["target"]
+relative_sequence_length = relative_sequence_length if args["relative_sequence_length"] == None else args["relative_sequence_length"]
+hsp_coverage  = hsp_coverage if args["hsp_coverage"]   == None else args["hsp_coverage"]
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+# We want to write all our Output into the Results directory
+
+results_dir = f'{target_directory}/Results' #define path to results directory
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+#  create log file for console output:
+if create_search_log == True:
+    with open(f'{results_dir}/search_log_00.txt', 'w') as search_log:
+        search_log.write(f'Search log for 00_search_pdb.py\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_00.txt', 'a')
+
+# store current date and time in an object and print to console / write to log file
+start_time = datetime.now()
+print(f'start: {start_time}\n')
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-target_directory = os.getcwd()
-results_dir = f'{target_directory}/Results'
 
 #  read in data
 # df = pd.read_csv(f'{results_dir}/07_blast_two_sequences.csv')        #this csv file OR uncomment next line of code
 # df = pd.read_csv(f'{results_dir}/06_blast_fasta.csv')
-all_info = pd.read_csv(f'{results_dir}/08_all_info.csv')
+all_info = pd.read_csv(f'{results_dir}/05_all_info.csv')
 resolutions = pd.read_csv(f'{results_dir}/02_all_resolutions.csv')
 structure_info = pd.read_csv(f'{results_dir}/02_structure_info.csv')
 
@@ -53,14 +148,12 @@ df = all_info.merge(structure_info, how='left', on=['gene_name', 'structure_id']
 # filter out structures which are shorter a given percentage of the reference sequence
 # --> relative_sequence_length, e.g. 50% (0.5) or 10% (0.1) of the reference sequence
 # ==================================================================================
-relative_sequence_length = 0.5
 print(f'Relative sequence length threshold set to {relative_sequence_length}:')
 print(f'        only strucures with a sequence length of at least {relative_sequence_length*100}%  of the reference sequence will be included in output\n')
 df = df[df.sequence.apply(lambda x: len(x)) > relative_sequence_length]
 
 # filter out structures which cover less than hsp_coverage, e.g. 50% (0.5) or 10% (0.1) of the reference sequence
 # ==================================================================================
-hsp_coverage =  0.1
 print(f'Hsp coverage threshold set to {hsp_coverage}:')
 print(f'        only strucures with an hsp covering at least {hsp_coverage*100}%  of the reference sequence will be included in output\n')
 df = df[df.hsp_length / df.alignment_length > hsp_coverage]
@@ -113,8 +206,8 @@ best_structure_single_mut = best_structure_single_mut.sort_values(by=['gene_name
 output = best_structure_single_mut[['gene_name', 'aa_index', 'mismatch_of_interest', 'structure_id', 'structure_name', 'chain_name', 'resolution', 'mismatch_substitutions', 'close_mismatch_substitutions', 'unsolved_residues_in_structure', 'structure_method', 'deposition_date', 'classification']]
 
 # write final df to file
-print('>>> writing csv file called 09_best_structure_per_point_mutation.csv containing the best structure for each point mutation for all genes\n')
-output.to_csv(f'{results_dir}/09_best_structure_per_point_mutation.csv', index=False)
+print('>>> writing csv file called 06_best_structure_per_point_mutation.csv containing the best structure for each point mutation for all genes\n')
+output.to_csv(f'{results_dir}/06_best_structure_per_point_mutation.csv', index=False)
 
 
 # get the best structure for any unique combination of mutations per gene
@@ -186,19 +279,19 @@ for gene in unique_genes:
     gene_folder = [name for name in os.listdir(results_dir) if name.startswith(f'{gene}_')][0]
     
     # extrac the relevant columns and write to csv file
-    print('    >>> writing csv file called {gene}_09_best_structure_per_unique_combination.csv')
+    print('    >>> writing csv file called {gene}_06_best_structure_per_unique_combination.csv')
     print(f'            (contains the best structure for each unique mismatch combination for {gene}')
     combis_per_gene_output = combis_per_gene[['gene_name', 'mismatch_substitutions', 'close_mismatch_substitutions', 'structure_id', 'structure_name', 'chain_name', 'resolution', 'unsolved_residues_in_structure', 'structure_method', 'deposition_date', 'classification']]
-    combis_per_gene_output.to_csv(f'{results_dir}/{gene_folder}/{gene}_09_best_structure_per_unique_combination.csv', index = False)
+    combis_per_gene_output.to_csv(f'{results_dir}/{gene_folder}/{gene}_06_best_structure_per_unique_combination.csv', index = False)
     
     # we also want to store a csv file containing only best structure per the point mutation for this gene:
     # we previously stored the df containing only the relevant columns for ALL genes in a df called 'output' (see above)
     # we get a slice of the output df for this particular gene and then write it to a csv file in the respective folder
     # the correct folder is results_dir/gene_folder
-    print('    >>> writing csv file called {gene}_09_best_structure_per_unique_combination.csv')
+    print('    >>> writing csv file called {gene}_06_best_structure_per_unique_combination.csv')
     print(f'            (contains the best structure for each point mutation for {gene}')
     output_gene = output[output.gene_name == gene]
-    output_gene.to_csv(f'{results_dir}/{gene_folder}/{gene}_09_best_structure_per_point_mutation.csv', index=False)
+    output_gene.to_csv(f'{results_dir}/{gene_folder}/{gene}_06_best_structure_per_point_mutation.csv', index=False)
     
 
     # get the best structure for any mutation regardless of whether there are other mutations (also per gene, still in the loop)
@@ -249,10 +342,10 @@ for gene in unique_genes:
         mutations_per_gene = mutations_per_gene.append(best_structure_this_mismatch)
         
     # now that we looped over all the unique mismatches, we extrac the relevant columns from the df and write to csv file for this gene
-    print('    >>> writing csv file called {gene}_09_best_structure_any_mutation.csv')
+    print('    >>> writing csv file called {gene}_06_best_structure_any_mutation.csv')
     print(f'            (contains the best structure for any mutation regardless of other mutations for {gene}\n')
     mutations_per_gene_output = mutations_per_gene[['gene_name', 'mismatch_of_interest', 'structure_id', 'structure_name', 'chain_name', 'resolution', 'mismatch_substitutions', 'close_mismatch_substitutions', 'unsolved_residues_in_structure', 'structure_method', 'deposition_date', 'classification']]
-    mutations_per_gene_output.to_csv(f'{results_dir}/{gene_folder}/{gene}_09_best_structure_any_mutation.csv', index = False)
+    mutations_per_gene_output.to_csv(f'{results_dir}/{gene_folder}/{gene}_06_best_structure_any_mutation.csv', index = False)
     
     # we also append the mutations_per_gene df to the best_structure_any_mutation df
     best_structure_any_mutation = best_structure_any_mutation.append(mutations_per_gene)
@@ -273,12 +366,12 @@ output1 = best_structure_unique_combis[['gene_name', 'mismatch_substitutions', '
 output2 = best_structure_any_mutation[['gene_name', 'aa_index', 'mismatch_of_interest', 'structure_id', 'structure_name', 'chain_name', 'resolution', 'mismatch_substitutions', 'close_mismatch_substitutions', 'unsolved_residues_in_structure', 'structure_method', 'deposition_date', 'classification']]
 # write final dfs to file
 print('Writing final output for all genes')
-print('    >>> writing csv file called 09_best_structure_all_unique_combinations.csv')
+print('    >>> writing csv file called 06_best_structure_all_unique_combinations.csv')
 print(f'            (contains the best structure for each unique mismatch combination for all genes')
-output1.to_csv(f'{results_dir}/09_best_structure_all_unique_combinations.csv', index=False)
-print('    >>> writing csv file called 09_best_structure_all_unique_combinations.csv')
+output1.to_csv(f'{results_dir}/06_best_structure_all_unique_combinations.csv', index=False)
+print('    >>> writing csv file called 06_best_structure_all_unique_combinations.csv')
 print(f'            (contains the best structure for any mutation regardless of other mutations for all genes')
-output2.to_csv(f'{results_dir}/09_best_structure_any_mutation.csv', index=False)    
+output2.to_csv(f'{results_dir}/06_best_structure_any_mutation.csv', index=False)    
 
 
 print('\n============================== Summary ================================================\n')
@@ -287,19 +380,29 @@ print(f'    hsp coverage threshold: {hsp_coverage}')
 print(f'    relative sequence length: {relative_sequence_length}')
 
 print('\nThe following files have been created for each gene and stored in the respective gene folder:')
-print('   o      GENENAME_09_best_structure_per_point_mutation.csv')
+print('   o      GENENAME_06_best_structure_per_point_mutation.csv')
 print('            (lists best structure for each point mutation (one mutation per structure) in this gene)')    
-print('   o      GENENAME_09_best_structure_all_unique_combinations.csv')
+print('   o      GENENAME_06_best_structure_all_unique_combinations.csv')
 print('            (lists best structure for all unique mismatch combinations for this gene)')
-print('   o      GENENAME_09_best_structure_any_mutation.csv')
+print('   o      GENENAME_06_best_structure_any_mutation.csv')
 print('            (lists best structure for any mismatch regardless of other mismatches in this gene)')    
 
 print('\nThe following files have been created and stored in the Results folder:')
-print('   o      09_best_structure_per_point_mutation.csv')
+print('   o      06_best_structure_per_point_mutation.csv')
 print('            (lists best structure for each point mutation (one mutation per structure) in all genes)')    
-print('   o      09_best_structure_all_unique_combinations.csv')
+print('   o      06_best_structure_all_unique_combinations.csv')
 print('            (lists best structure for all unique mismatch combinations for all genes)')
-print('   o      09_best_structure_any_mutation.csv')
-print('            (lists best structure for any mismatch regardless of other mismatches in all genes)\n\n')    
+print('   o      06_best_structure_any_mutation.csv')
+print('            (lists best structure for any mismatch regardless of other mismatches in all genes)\n')
+
+
+# store current date and time in an object and print to console / write to log file
+end_time = datetime.now()
+print(f'start: {start_time}\n')
+print(f'end: {end_time}\n\n')
+
+# close search log
+if create_search_log == True:
+    sys.stdout.close()
 
 
