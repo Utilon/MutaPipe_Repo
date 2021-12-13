@@ -148,7 +148,7 @@ python3 scripts/DNAscan.py -format fastq -in data/test_data.1.fq.gz -in2 data/te
 IMPORTANT: All paths in DNAscan end with "/"
 
 
-### Output
+### Output (incomplete)
 
 DNAscan output tree:
 
