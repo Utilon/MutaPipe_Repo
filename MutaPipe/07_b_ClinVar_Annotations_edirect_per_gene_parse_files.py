@@ -1,5 +1,5 @@
-# Download clinvar data per gene (instead of sending a request for every gene-mismatch)
-# ************************************************************************************
+# Parsing clinvar data per gene 
+# ****************************
 # This script takes a csv file (00_search_overview_availability.csv) containing the gene names of all available genes
 #  and unavailable genes (ClinVar genes with/without PDB data) as input and will:
 #      - download xml files with ids for all variants in ClinVar for each gene
@@ -7,8 +7,12 @@
 #      - parse xml files and create a df with ClinVar information for all variants for all input genes
 #      - outputs the following files:
 #                - all xml files downloaded from ClinVar are stored in the newly created ClinVar_Annotations folder
-#                - a csv file calles 10_ClinVar_Annotations.csv containing ClinVar Annotations for all variants in all genes
+#                - a csv file calles 07_b_ClinVar_Annotations.csv containing ClinVar Annotations for all variants in all genes
 
+# Note: Initially, I would also parse the xml files in the same script, however - this took too long on rosalind when
+# I wanted to do it with >2500 genes (from ClinVar), therefore I had to split the script.
+# Now it's 07a to download information from ClinVar and 07b to parse the downloaded files.
+# The code not used in this part of the script has been commented out below
 # ===========================================================================================
 
 # Set up
@@ -18,11 +22,71 @@ import math
 import os
 from os import listdir
 from os.path import isfile, join
+import sys
+import argparse
+from datetime import datetime
 import xml.etree.ElementTree as ET
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-target_directory = os.getcwd()
-results_dir = f'{target_directory}/Results'
+# use argparse to make it so we can pass arguments to script via terminal
+
+# define a function to convert different inputs to booleans
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+    
+    
+# set default values for arguments we want to implement
+# we have to do this here if we want to print the default values in the help message
+
+create_search_log = False     # will create a file called search_log.txt with console output if set to True,
+                                            # prints to console if set to False.
+target_directory = os.getcwd()    # set target directory (where Results folder is located)
+                                            
+                                            
+# Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
+ap = argparse.ArgumentParser(description="""****      This script takes a csv file (00_search_overview_availability.csv) containing the gene names of all available genes and unavailable genes (with/without PDB data) as input and will:
+1. loop over all the xml files containing variant information from ClinVar which have been downloaded in script 07a
+2. parse the previously downloaded xml files and create a df with ClinVar information for all variants for all input genes
+3. output a csv file called 07_b_ClinVar_Annotations.csv which lists all ClinVar annotations for all variants in all genes       ***""")
+
+ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
+ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
+
+args = vars(ap.parse_args())
+
+# Now, in case an argument is used via the terminal, this input has to overwrite the default option we set above
+# So we update our variables whenever there is a user input via the terminal:
+create_search_log  = create_search_log  if args["log"]   == None else args["log"]
+target_directory  = target_directory if args["target"]   == None else args["target"]
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+# We want to write all our Output into the Results directory
+
+results_dir = f'{target_directory}/Results' #define path to results directory
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+#  create log file for console output:
+if create_search_log == True:
+    with open(f'{results_dir}/search_log_00.txt', 'w') as search_log:
+        search_log.write(f'Search log for 00_search_pdb.py\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_00.txt', 'a')
+
+# store current date and time in an object and print to console / write to log file
+start_time = datetime.now()
+print(f'start: {start_time}\n')
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+
+
 
 # read in data
 genes_df = pd.read_csv(f'{results_dir}/00_search_overview_availability.csv')
@@ -66,7 +130,7 @@ clinvar_data = pd.DataFrame(columns=['input_gene', 'gene', 'accession', 'title',
 # 
 #     if response.status_code == 200:
 #         print(f'    Downloading ClinVar ids for variants in {gene}')
-#         with open(f'10_ClinVar_{gene}_ids.txt', 'w') as file:
+#         with open(f'07_a_ClinVar_{gene}_ids.txt', 'w') as file:
 #             file.write(response.text)
 #     else:
 #         # If there is no data, print status code and response
@@ -78,7 +142,7 @@ clinvar_data = pd.DataFrame(columns=['input_gene', 'gene', 'accession', 'title',
 #    
 #     # now we can use this file to download the data for these identifiers 
 #     # so we parse the file to get the ids
-#     tree = ET.parse(f'10_ClinVar_{gene}_ids.txt')
+#     tree = ET.parse(f'07_a_ClinVar_{gene}_ids.txt')
 #     root = tree.getroot()
 #         
 #     # save relevant information from xml file into variables
@@ -124,10 +188,10 @@ clinvar_data = pd.DataFrame(columns=['input_gene', 'gene', 'accession', 'title',
 #             # a try and except statement to try write the data normally ('w') (previous code) except there is an error,
 #             # in which case we write bytes ('wb')
 #             try:
-#                 with open(f'10_ClinVar_{gene}_data_batch_{batch_counter}_of_{math.ceil(len(identifiers)/250)}.xml', 'w') as file:
+#                 with open(f'07_a_ClinVar_{gene}_data_batch_{batch_counter}_of_{math.ceil(len(identifiers)/250)}.xml', 'w') as file:
 #                     file.write(response.text)
 #             except:
-#                 with open(f'10_ClinVar_{gene}_data_batch_{batch_counter}_of_{math.ceil(len(identifiers)/250)}.xml', 'wb') as file:
+#                 with open(f'07_a_ClinVar_{gene}_data_batch_{batch_counter}_of_{math.ceil(len(identifiers)/250)}.xml', 'wb') as file:
 #                     file.write(response.text.encode('utf-8', 'ignore'))
 #         else:
 #             # If there is no data, print status code and response
@@ -153,9 +217,9 @@ genes_batches = pd.DataFrame(columns=['gene', 'n_data_batches'])
 
 # we can loop over the list with the id files to parse all corresponding xml batches
 for id_file in id_files:
-    # the id file is a string in the fomat '10_ClinVar_SOD1_ids.txt'
+    # the id file is a string in the fomat '07_a_ClinVar_SOD1_ids.txt'
     # we get the gene name by replacing the beginning and the end of the string
-    this_gene = id_file.replace('10_ClinVar_', '')
+    this_gene = id_file.replace('07_a_ClinVar_', '')
     this_gene = this_gene.replace('_ids.txt', '')
     
     # now we get a list of all the corresponding batch xml files for this gene:
@@ -229,11 +293,11 @@ for id_file in id_files:
                 
                 # whenever, we create a new row in the clinvar_data df, we write the current version to a csv file.
                 # this file will be overwritten everytime a new row is added.
-                clinvar_data.to_csv(f'{results_dir}/10_ClinVar_Annotations.csv', index = False)
+                clinvar_data.to_csv(f'{results_dir}/07_b_ClinVar_Annotations.csv', index = False)
                     
 
 # write df to csv
-clinvar_data.to_csv(f'{results_dir}/10_ClinVar_Annotations.csv', index = False)
+clinvar_data.to_csv(f'{results_dir}/07_b_ClinVar_Annotations.csv', index = False)
 # 
 # # now we can use the columns protein_change and aliases to see if the mismatches from the pdb are in clinvar!!!!!
 # # then we can directly get the information we need for each mismatch from the clinvar_data df without having to
@@ -248,4 +312,15 @@ print('\n============================== Summary ================================
 print(f'Complete! \n    Parsed all ClinVar data for a total of {n_genes_clinvar_data} genes.')
 
 print('The following files have been created and stored in the Results folder:')
-print('   o      10_ClinVar_Annotations.csv       (lists all ClinVar annotations for all variants in all genes)\n\n')
+print('   o      07_b_ClinVar_Annotations.csv       (lists all ClinVar annotations for all variants in all genes)\n')
+
+
+
+# store current date and time in an object and print to console / write to log file
+end_time = datetime.now()
+print(f'start: {start_time}\n')
+print(f'end: {end_time}\n\n')
+
+# close search log
+if create_search_log == True:
+    sys.stdout.close()
