@@ -7,7 +7,7 @@
 #      - parse xml files and create a df with ClinVar information for all variants for all input genes
 #      - outputs the following files:
 #                - all xml files downloaded from ClinVar are stored in the newly created ClinVar_Annotations folder
-#                - a csv file calles 07_b_ClinVar_Annotations.csv containing ClinVar Annotations for all variants in all genes
+#                - a csv file called 07_b_ClinVar_Annotations.csv containing ClinVar Annotations for all variants in all genes
 
 # Note: Initially, I would also parse the xml files in the same script, however - this took too long on rosalind when
 # I wanted to do it with >2500 genes (from ClinVar), therefore I had to split the script.
