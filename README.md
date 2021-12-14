@@ -8,14 +8,14 @@
 2. [Citation](#citation)
 3. [Documentation](#documentation)
   	* [Workflow](#workflow)
-  	* [Incorporated scripts](#incorporated-scripts)
+  	* [Incorporated Scripts](#incorporated-scripts)
 	* [Minimum Requirements](#minimum-requirements)
 	* [Local Deployment](#local-deployment)
 	* [Usage](#usage)
 	  * [Using the bash script](#using-the-bash-script)
-	  	* [Usage Example bash](#usage-example-bash)
+	  	* [Usage example bash](#usage-example-bash)
 	  * [Using the python scripts](#using-the-python-scripts)
-	  	* [Usage Example python](#usage-example-python)
+	  	* [Usage example python](#usage-example-python)
 	* [Output](#output)
 	* [How to Download the Reference Proteome](#how-to-download-the-reference-proteome)
 
@@ -67,7 +67,7 @@ To ensure sequences not associated with the gene of interest which are present i
 Figure 2. *Detailled description of the steps performed by MutaPipe to identify variant and wildtype PDB structures associated with the input genes and identify the highest quality structure for each available sequence. (Note: The final step which adds available variant annotations from ClinVar is not displayed).*
 
 
-### Incorporated scripts
+### Incorporated Scripts
 
 There are currently 9 different python scripts which are incorporated in MutaPipe:
 
@@ -139,7 +139,7 @@ Its basic use requires the following options:
   -iobio                if this flag is set iobio services will be started at the end of the analysis (Default = "False")
 ```
 
-##### Usage Example bash
+##### Usage example bash
 
 ```diff
 +NOTE: This section is incomplete / not yet adequate for MutaPipe.
@@ -168,7 +168,7 @@ Finally, a set of optional arguments can be used to customise the analysis:
 -paired PAIRED        options are 1 for paired end reads and 0 for single end reads (Default = "1")
 ```
 
-##### Usage Example python
+##### Usage example python
 
 ```diff
 +NOTE: This section is incomplete / not yet adequate for MutaPipe.
