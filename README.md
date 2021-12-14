@@ -82,10 +82,10 @@ There are currently 9 different python scripts which are incorporated in MutaPip
 | [08](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/08_add_clinvar_annotations_to_best_structures.py)             | `06_best_structure_all_unique_combinations.csv`<br><br>`06_best_structure_any_mutation.csv`<br><br><br>`06_best_structure_per_point_mutation.csv`<br><br>`07_b_ClinVar_Annotations.csv` | - adds availalable ClinVar annotations to all three best_structure tables (csv-files)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | - `08_best_structure_all_unique_combinations.csv`<br>*lists best structure for all unique mismatch combinations for all genes (incl. ClinVar annotations)*<br>- `08_best_structure_any_mutation.csv)`<br>*lists best structure for any mismatch for all genes regardless of other mismatches in this structure(incl. ClinVar annotations*<br>- `08_best_structure_per_point_mutation.csv`<br>*lists best structure for each point mutation (one mutation per structure) in all genes (incl. ClinVar annotations)*                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
 
-### Minimum Requirements (incomplete)
+### Minimum Requirements
 
-- python > 3.6.8 
-- RAM: ??
+- python > 3.6.8 (?)
+- RAM: ?? (works fine with 16GB)
 - Space required by the installation: 36 MB
 - Scratch space for usage: depends the number and and size of PDB structures associated with the input genes. To check how many structures are available for your genes of interest, run `python3 00_search_pdb.py -g GENES_OF_INTEREST`. This will generate console output as well as csv files both of which provide an overview of how many structures have been identified for your input genes.
 
@@ -104,6 +104,14 @@ The latest version of this fasta file can be accessed via the [Uniprot ftp clien
 
 
 ### Usage (incomplete)
+
+MutaPipe can be run in two main ways (from within the `MutaPipe`directory):
+
+1. Using the bash script `MutaPipe.sh`
+
+2. Manually running the 9 incorporated python scripts one after another (script [00](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00_search_pdb.py), [01](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/01_download_files.py), [02](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/02_parse_cif_files.py), [03](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/03_parse_fasta_files.py), [04](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/04_blast_against_reference.py), [05](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/05_pdb_extract_unsolved_res.py), [06](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06_best_structure_per_mutation.py), [07_a](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_a_ClinVar_Annotations_edirect_per_gene_download_files.py), [07_b](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py), [08](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/08_add_clinvar_annotations_to_best_structures.py)) 
+
+
 
 Its basic use requires the following options:
 
