@@ -12,7 +12,7 @@
 	* [Minimum Requirements](#minimum-requirements)
 	* [Local Deployment](#local-deployment)
 	* [Usage](#usage)
-	  * [Using the bash script `MutaPipe.sh`](#using-the-bash-script-`mutapipe`)
+	  * [Using the bash script](#using-the-bash-script)
 	  	* [Usage Example bash](#usage-example-bash)
 	  * [Using the python scripts](#using-the-python-scripts)
 	  	* [Usage Example python](#usage-example-python)
@@ -116,7 +116,9 @@ MutaPipe can be run in two main ways (from within the `MutaPipe`directory):
 1. Using the bash script `MutaPipe.sh`
 2. Using the python scripts
 
-#### Using the bash script `MutaPipe.sh`
+#### Using the bash script
+
+MutaPipe can be run using the bash script `MutaPipe.sh`.
 
 ```diff
 +NOTE: This section is incomplete / not yet adequate for MutaPipe.
