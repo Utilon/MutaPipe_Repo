@@ -109,10 +109,6 @@ MutaPipe can be run in two main ways (from within the `MutaPipe`directory):
 
 1. Using the bash script `MutaPipe.sh`
 
-2. Manually running the 9 incorporated python scripts one after another (script [00](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00_search_pdb.py), [01](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/01_download_files.py), [02](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/02_parse_cif_files.py), [03](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/03_parse_fasta_files.py), [04](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/04_blast_against_reference.py), [05](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/05_pdb_extract_unsolved_res.py), [06](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06_best_structure_per_mutation.py), [07_a](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_a_ClinVar_Annotations_edirect_per_gene_download_files.py), [07_b](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py), [08](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/08_add_clinvar_annotations_to_best_structures.py)) 
-
-
-
 Its basic use requires the following options:
 
 ```bash
@@ -127,6 +123,11 @@ Its basic use requires the following options:
   -filter_string FILTER_STRING  bcftools filter string, eg GQ>20 & DP>10 (Default = "")
   -iobio                if this flag is set iobio services will be started at the end of the analysis (Default = "False")
 ```
+
+
+2. Manually running the 9 incorporated python scripts one after another (script [00](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00_search_pdb.py), [01](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/01_download_files.py), [02](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/02_parse_cif_files.py), [03](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/03_parse_fasta_files.py), [04](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/04_blast_against_reference.py), [05](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/05_pdb_extract_unsolved_res.py), [06](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06_best_structure_per_mutation.py), [07_a](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_a_ClinVar_Annotations_edirect_per_gene_download_files.py), [07_b](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py), [08](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/08_add_clinvar_annotations_to_best_structures.py)) 
+
+
 
 Finally, a set of optional arguments can be used to customise the analysis:
 
