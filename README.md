@@ -12,9 +12,9 @@
 	* [Minimum Requirements](#minimum-requirements)
 	* [Local Deployment](#local-deployment)
 	* [Usage](#usage)
-	  * [1. Using the bash script `MutaPipe.sh`](#using-the-bash-script)
+	  * [Using the bash script `MutaPipe.sh`](#using-the-bash-script)
 	  	* [Usage Example bash](#usage-example-bash)
-	  * [2. Using the 9 incorporated python scripts](#using-the-9-incorporated-python-scripts)
+	  * [Using the python scripts](#using-the-python-scripts)
 	  	* [Usage Example python](#usage-example-python)
 	* [Output](#output)
 	* [How to Download the Reference Proteome](#how-to-download-the-reference-proteome)
@@ -113,8 +113,10 @@ The latest version of this fasta file can be accessed via the [Uniprot ftp clien
 ```
 
 MutaPipe can be run in two main ways (from within the `MutaPipe`directory):
+1. Using the bash script `MutaPipe.sh`
+2. Using the python scripts
 
-#### 1. Using the bash script `MutaPipe.sh`
+#### Using the bash script `MutaPipe.sh`
 
 ```diff
 +NOTE: This section is incomplete / not yet adequate for MutaPipe.
@@ -147,7 +149,7 @@ Let's assume we have human paired end whole exome sequening data in two fastq fi
 python3 /path/to/DNAscan/scripts/DNAscan.py -format fastq -in data1.fq.gz -in2 data2.fq.gz -reference hg19 -alignment -variantcalling -annotation -iobio -out /path/to/outdir/ -mode fast
 ```
 
-#### 2. Using the 9 incorporated python scripts 
+#### Using the python scripts 
 
 ```diff
 +NOTE: This section is incomplete / not yet adequate for MutaPipe.
