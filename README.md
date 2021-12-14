@@ -82,8 +82,6 @@ There are currently 9 different python scripts which are incorporated in MutaPip
 | [08](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/08_add_clinvar_annotations_to_best_structures.py)             | `06_best_structure_all_unique_combinations.csv`<br><br>`06_best_structure_any_mutation.csv`<br><br><br>`06_best_structure_per_point_mutation.csv`<br><br>`07_b_ClinVar_Annotations.csv` | - adds availalable ClinVar annotations to all three best_structure tables (csv-files)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | - `08_best_structure_all_unique_combinations.csv`<br>*lists best structure for all unique mismatch combinations for all genes (incl. ClinVar annotations)*<br>- `08_best_structure_any_mutation.csv)`<br>*lists best structure for any mismatch for all genes regardless of other mismatches in this structure(incl. ClinVar annotations*<br>- `08_best_structure_per_point_mutation.csv`<br>*lists best structure for each point mutation (one mutation per structure) in all genes (incl. ClinVar annotations)*                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
 
-
-
 ### Minimum Requirements (incomplete)
 
 - python > 3.6.8 
@@ -98,16 +96,14 @@ To obtain MutaPipe please use git to download the most recent development tree:
 ```bash
 git clone https://github.com/Utilon/Pipeline_Git.git
 ```
-
-### Usage (incomplete)
-
-#### Fasta file with reference proteome required
-In order to run MutaPipe, a fasta file containing the reference proteome / canonical protein sequences for the organism in question (=Homo sapiens) will have to be downloaded from UNIPROT and stored in a folder called Uniprot_reference_seqs which should be in the MutaPipe directory (where the python scripts are stored). The filename should be UP000005640_9606.fasta for the script to work properly.
+#### NOTE: Reference Proteome Required
+In order to run MutaPipe a fasta file containing the reference proteome / canonical protein sequences for the organism in question (= Homo sapiens) will have to be downloaded from Uniprot and stored in a folder called Uniprot_reference_seqs in the MutaPipe directory (where the python scripts are stored). The filename should be UP000005640_9606.fasta for the script to work properly.
 The latest version of this fasta file can be accessed via the [Uniprot ftp client](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/Eukaryota/UP000005640/).
 
-**NOTE**: When installing MutaPipe (see [Local Deployment](#local-deployment)) a fasta file of the reference proteome for Homo sapiens will be included (version from December 2021). Please feel free to update to a newer version if one is available (we will also regularly update the reference proteome file on here, but this is currently not done automatically).
+**NOTE**: When installing MutaPipe a fasta file of the reference proteome for Homo sapiens will be included (version from December 2021). Please feel free to update to a newer version if one is available (we will also regularly update the reference proteome file on here, but this is currently not done automatically).
 
 
+### Usage (incomplete)
 
 Its basic use requires the following options:
 
