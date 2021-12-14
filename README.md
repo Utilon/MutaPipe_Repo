@@ -91,7 +91,7 @@ There are currently 9 different python scripts which are incorporated in MutaPip
 - Space required by the installation: ??
 - Scratch space for usage: depends the number and and size of PDB structures associated with the input genes. To check how many structures are available for your genes of interest, run `python3 00_search_pdb.py -g GENES_OF_INTEREST`. This will generate console output as well as csv files both of which provide an overview of how many structures have been identified for your input genes.
 
-#### Local Deployment
+### Local Deployment
 
 To obtain MutaPipe please use git to download the most recent development tree:
 
