@@ -12,7 +12,7 @@
 	* [Minimum Requirements](#minimum-requirements)
 	* [Local Deployment](#local-deployment)
 	* [Usage](#usage)
-	  * [Using the bash script `MutaPipe.sh`](#using-the-bash-script)
+	  * [Using the bash script `MutaPipe.sh`](#using-the-bash-script-mutapipe)
 	  	* [Usage Example bash](#usage-example-bash)
 	  * [Using the python scripts](#using-the-python-scripts)
 	  	* [Usage Example python](#usage-example-python)
