@@ -12,6 +12,8 @@
 	* [Minimum Requirements](#minimum-requirements)
 	* [Local Deployment](#local-deployment)
 	* [Usage](#usage)
+	  * [Using the bash script `MutaPipe.sh`](#using-the-bash-script)
+	  * [Usage Example](#usage-example)
 	* [Usage Example](#usage-example)
 	* [Output](#output)
 	* [How to Download the Reference Proteome](#how-to-download-the-reference-proteome)
