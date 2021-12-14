@@ -1,7 +1,7 @@
 # :dna::dna::dna:    **M    u    t    a    P    i    p    e**     :dna::dna::dna:   
 ## A bioinformatics pipeline to identify high quality mutant and WT PDB structures for genes of interest
 ```diff
-+TO BE NOTED: We are always working to improve MutaPipe, so any bug reports or suggestions are highly welcome.
++NOTE: We are always working to improve MutaPipe, so any bug reports or suggestions are highly welcome.
 ```
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -12,9 +12,10 @@
 	* [Minimum Requirements](#minimum-requirements)
 	* [Local Deployment](#local-deployment)
 	* [Usage](#usage)
-	  * [Using the bash script `MutaPipe.sh`](#using-the-bash-script)
-	  * [Usage Example](#usage-example)
-	* [Usage Example](#usage-example)
+	  * [Using the bash script `MutaPipe.sh`](#1.-using-the-bash-script)
+	  	* [Usage Example bash](#usage-example-bash)
+	  * [Using the 9 incorporated python scripts](#2.-using-the-9-incorporated-python-scripts)
+	  	* [Usage Example python](#usage-example-python)
 	* [Output](#output)
 	* [How to Download the Reference Proteome](#how-to-download-the-reference-proteome)
 
@@ -105,11 +106,19 @@ The latest version of this fasta file can be accessed via the [Uniprot ftp clien
 **NOTE**: When installing MutaPipe a fasta file of the reference proteome for Homo sapiens will be included (version from December 2021). Please feel free to update to a newer version if one is available (we will also regularly update the reference proteome file on here, but this is currently not done automatically).
 
 
-### Usage (incomplete)
+### Usage
+
+```diff
++NOTE: This section is incomplete / not yet adequate for MutaPipe.
+```
 
 MutaPipe can be run in two main ways (from within the `MutaPipe`directory):
 
 #### 1. Using the bash script `MutaPipe.sh`
+
+```diff
++NOTE: This section is incomplete / not yet adequate for MutaPipe.
+```
 
 Its basic use requires the following options:
 
@@ -126,7 +135,11 @@ Its basic use requires the following options:
   -iobio                if this flag is set iobio services will be started at the end of the analysis (Default = "False")
 ```
 
-##### Usage Example (incomplete)
+##### Usage Example bash
+
+```diff
++NOTE: This section is incomplete / not yet adequate for MutaPipe.
+```
 
 Let's assume we have human paired end whole exome sequening data in two fastq files and want to perform snvs/indels calling vs hg19, annotation and explore the results using the iobio services. The DNAscan command line would be:
 
@@ -135,6 +148,10 @@ python3 /path/to/DNAscan/scripts/DNAscan.py -format fastq -in data1.fq.gz -in2 d
 ```
 
 #### 2. Using the 9 incorporated python scripts 
+
+```diff
++NOTE: This section is incomplete / not yet adequate for MutaPipe.
+```
 
 MutaPipe can be run manually, by running the 9 python scripts one after another (script [00](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00_search_pdb.py), [01](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/01_download_files.py), [02](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/02_parse_cif_files.py), [03](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/03_parse_fasta_files.py), [04](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/04_blast_against_reference.py), [05](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/05_pdb_extract_unsolved_res.py), [06](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06_best_structure_per_mutation.py), [07_a](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_a_ClinVar_Annotations_edirect_per_gene_download_files.py), [07_b](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py), [08](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/08_add_clinvar_annotations_to_best_structures.py)). 
 
@@ -147,7 +164,11 @@ Finally, a set of optional arguments can be used to customise the analysis:
 -paired PAIRED        options are 1 for paired end reads and 0 for single end reads (Default = "1")
 ```
 
-##### Usage Example (incomplete)
+##### Usage Example python
+
+```diff
++NOTE: This section is incomplete / not yet adequate for MutaPipe.
+```
 
 Let's assume we have human paired end whole exome sequening data in two fastq files and want to perform snvs/indels calling vs hg19, annotation and explore the results using the iobio services. The DNAscan command line would be:
 
@@ -156,7 +177,11 @@ python3 /path/to/DNAscan/scripts/DNAscan.py -format fastq -in data1.fq.gz -in2 d
 ```
 
 
-### Output (incomplete)
+### Output
+
+```diff
++NOTE: This section is incomplete / not yet adequate for MutaPipe.
+```
 
 DNAscan output tree:
 
