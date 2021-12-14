@@ -118,11 +118,11 @@ MutaPipe can be run in two main ways (from within the `MutaPipe`directory):
 
 #### Using the bash script
 
-MutaPipe can be run using the bash script `MutaPipe.sh`.
-
 ```diff
 +NOTE: This section is incomplete / not yet adequate for MutaPipe.
 ```
+
+MutaPipe can be run using the bash script `MutaPipe.sh`.
 
 Its basic use requires the following options:
 
