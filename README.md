@@ -131,9 +131,9 @@ Its basic use requires the following options:
 
 ```bash
 
-  -g, --genes								specify input genes, to pass a file use \"-g \$(cat filename)\" 
-  -rsl, --relative_sequence_length			filter out sequences shorter than a given percentage of the reference sequence, e.g. = 0.5
-  -cov, --hsp_coverage						filter out sequences whose best hsp covers less than a given percentage of the reference sequence, e.g. = 0.1
+  -g, --genes					specify input genes, to pass a file use \"-g \$(cat filename)\" 
+  -rsl, --relative_sequence_length		filter out sequences shorter than a given percentage of the reference sequence, e.g. = 0.5
+  -cov, --hsp_coverage				filter out sequences whose best hsp covers less than a given percentage of the reference sequence, e.g. = 0.1
 
  ```
  
