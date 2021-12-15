@@ -118,7 +118,7 @@ MutaPipe can be run using the bash script `MutaPipe.sh`. MutaPipe.sh runs all sc
 
 Its basic use requires the following options:
 ```diff
-+IMPORTANT: all three arguments are required in this specific order AND have to be written in double quotes!!! See [example below](#Usage-example-bash)
++IMPORTANT: all three arguments are required in this specific order AND have to be written in double quotes!!!
 ```
 
 ```bash
@@ -129,7 +129,7 @@ Its basic use requires the following options:
 
  ```
 
-**Note: More options are available when running the MutaPipe scripts manually. Use command 'python3 script_name -h' for instructions.**
+*Note: More options are available when running the MutaPipe scripts manually. Use command 'python3 script_name -h' for instructions.*
  
 ##### Usage example bash
 
