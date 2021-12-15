@@ -129,7 +129,7 @@ Its basic use requires the following options:
 
  ```
 
-*Note:* More options are available when running the MutaPipe scripts manually. Use command 'python3 script_name -h' for instructions.
+*Note:* More options are available when running the MutaPipe scripts manually. Use command `python3 script_name -h` for instructions.
  
 ##### Usage example bash
 
