@@ -81,6 +81,15 @@ if create_search_log == True:
         search_log.write(f'Search log for 00_search_pdb.py\n\n')
     sys.stdout = open(f'{results_dir}/search_log_00.txt', 'a')
 
+# print nice title
+print('=====================================================================')
+print('*****    Downloading ClinVar Annotations for Input Genes    *****')
+print('=====================================================================\n')
+
+# print script name to console/log file
+print(f'script name: {os.path.basename(__file__)}')
+
+
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
 print(f'start: {start_time}\n')
@@ -292,10 +301,14 @@ print('The following files have been created and stored in the Results folder:')
 print('   o      07_a_ClinVar_Annotations_genes_no_data_retrieved.txt       (lists all genes for which no ClinVar annotations could be retrieved)\n\n')
 
 
+# print script name to console/log file
+print(f'end of script {os.path.basename(__file__)}')
+
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()
-print(f'start: {start_time}\n')
+print(f'start: {start_time}')
 print(f'end: {end_time}\n\n')
+print('........................................................................................................................................................\n\n\n')
 
 # close search log
 if create_search_log == True:

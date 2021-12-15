@@ -93,6 +93,15 @@ if create_search_log == True:
     with open(f'{results_dir}/search_log_04.txt', 'w') as search_log:
         search_log.write(f'Search log for 04_blast_against_reference.py\n\n')
     sys.stdout = open(f'{results_dir}/search_log_04.txt', 'a')
+    
+# print nice title
+print('=====================================================================')
+print('*****    BLASTp against Reference Sequence for all Identified PDB Sequences   *****')
+print('=====================================================================\n')
+
+# print script name to console/log file
+print(f'script name: {os.path.basename(__file__)}')
+
 
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
@@ -455,12 +464,15 @@ print('   o      04_blast_two_sequences.csv                (lists all info conta
 print('   o      04_refeseq_warnings.csv                (lists genes with no or more than one identified reference sequence (only first one is used for further analyses))')
 print('   o      04_blastp_warnings.csv                (lists warnings regarding blastp, including if blastp failed and if there are more than one alignment (should only be one as only one reference is used)\n\n')
 
+# print script name to console/log file
+print(f'end of script {os.path.basename(__file__)}')
+
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()
-print(f'start: {start_time}\n')
+print(f'start: {start_time}')
 print(f'end: {end_time}\n\n')
+print('........................................................................................................................................................\n\n\n')
 
 # close search log
 if create_search_log == True:
-    sys.stdout.close()
-        
+    sys.stdout.close()        

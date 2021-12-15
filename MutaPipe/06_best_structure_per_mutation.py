@@ -125,6 +125,15 @@ if create_search_log == True:
     with open(f'{results_dir}/search_log_00.txt', 'w') as search_log:
         search_log.write(f'Search log for 00_search_pdb.py\n\n')
     sys.stdout = open(f'{results_dir}/search_log_00.txt', 'a')
+    
+# print nice title
+print('=====================================================================')
+print('*****    Get the Best Structure for Each Unique Sequence in the PDB for Input Genes    *****')
+print('=====================================================================\n')
+
+# print script name to console/log file
+print(f'script name: {os.path.basename(__file__)}')
+
 
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
@@ -396,13 +405,15 @@ print('   o      06_best_structure_any_mutation.csv')
 print('            (lists best structure for any mismatch regardless of other mismatches in all genes)\n')
 
 
+# print script name to console/log file
+print(f'end of script {os.path.basename(__file__)}')
+
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()
-print(f'start: {start_time}\n')
+print(f'start: {start_time}')
 print(f'end: {end_time}\n\n')
+print('........................................................................................................................................................\n\n\n')
 
 # close search log
 if create_search_log == True:
     sys.stdout.close()
-
-

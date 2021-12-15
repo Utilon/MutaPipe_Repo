@@ -93,6 +93,15 @@ if create_search_log == True:
         search_log.write(f'Search log for 03_parse_fasta_files.py\n\n')
     sys.stdout = open(f'{results_dir}/search_log_03.txt', 'a')
 
+# print nice title
+print('=====================================================================')
+print('*****    Parsing Fasta Files from the Protein Data Bank for Input Genes    *****')
+print('=====================================================================\n')
+
+# print script name to console/log file
+print(f'script name: {os.path.basename(__file__)}')
+
+
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
 print(f'start: {start_time}\n')
@@ -291,10 +300,14 @@ print('   o      03_fasta_ex_info.csv           (lists information extracted fro
 print('   o      03_fasta_combined_info.csv (lists combined information extracted from all fasta and fasta_ex files for all genes)\n\n')
 
 
+# print script name to console/log file
+print(f'end of script {os.path.basename(__file__)}')
+
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()
 print(f'start: {start_time}')
 print(f'end: {end_time}\n\n')
+print('........................................................................................................................................................\n\n\n')
 
 # close search log
 if create_search_log == True:

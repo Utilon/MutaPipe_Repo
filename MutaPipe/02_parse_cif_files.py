@@ -90,6 +90,15 @@ if create_search_log == True:
         search_log.write(f'Search log for 02_parse_cif_files.py\n\n')
     sys.stdout = open(f'{results_dir}/search_log_02.txt', 'a')
 
+# print nice title
+print('=====================================================================')
+print('*****    Parsing mmCif Files from the Protein Data Bank for Input Genes    *****')
+print('=====================================================================\n')
+
+# print script name to console/log file
+print(f'script name: {os.path.basename(__file__)}')
+
+
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
 print(f'start: {start_time}\n')
@@ -279,10 +288,14 @@ print('   o      02_structure_info.csv            (lists all available header in
 
 
 
+# print script name to console/log file
+print(f'end of script {os.path.basename(__file__)}')
+
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()
 print(f'start: {start_time}')
 print(f'end: {end_time}\n\n')
+print('........................................................................................................................................................\n\n\n')
 
 # close search log
 if create_search_log == True:

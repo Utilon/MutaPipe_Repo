@@ -85,6 +85,14 @@ if create_search_log == True:
         search_log.write(f'Search log for 00_search_pdb.py with genes {gene_list}\n\n')
     sys.stdout = open(f'{results_dir}/search_log_00.txt', 'a')
 
+# print nice title
+print('=====================================================================')
+print('*****    Searching the Protein Data Bank for Structures Associated with Input Genes    *****')
+print('=====================================================================\n')
+
+# print script name to console/log file
+print(f'script name: {os.path.basename(__file__)}')
+
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
 print(f'start: {start_time}\n')
@@ -250,10 +258,15 @@ print('   o      00_search_overview_availability.csv      (contains information 
 print('   o      00_search_overview_PDBids.csv            (contains information on which PDB IDs are available per structures)\n\n')
 
 
+
+# print script name to console/log file
+print(f'end of script {os.path.basename(__file__)}')
+
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()
 print(f'start: {start_time}')
 print(f'end: {end_time}\n\n')
+print('........................................................................................................................................................\n\n\n')
 
 # close search log
 if create_search_log == True:
