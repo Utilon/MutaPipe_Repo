@@ -130,7 +130,7 @@ clinvar_data = pd.DataFrame(columns=['input_gene', 'gene', 'accession', 'title',
 # 
 #     if response.status_code == 200:
 #         print(f'    Downloading ClinVar ids for variants in {gene}')
-#         with open(f'07_a_ClinVar_{gene}_ids.txt', 'w') as file:
+#         with open(f'07_a_ClinVar_{gene}_ids.xml', 'w') as file:
 #             file.write(response.text)
 #     else:
 #         # If there is no data, print status code and response
@@ -142,7 +142,7 @@ clinvar_data = pd.DataFrame(columns=['input_gene', 'gene', 'accession', 'title',
 #    
 #     # now we can use this file to download the data for these identifiers 
 #     # so we parse the file to get the ids
-#     tree = ET.parse(f'07_a_ClinVar_{gene}_ids.txt')
+#     tree = ET.parse(f'07_a_ClinVar_{gene}_ids.xml')
 #     root = tree.getroot()
 #         
 #     # save relevant information from xml file into variables
@@ -207,7 +207,7 @@ clinvar_data = pd.DataFrame(columns=['input_gene', 'gene', 'accession', 'title',
 all_ClinVar_files = [f for f in listdir(clinvar_dir) if isfile(join(clinvar_dir, f))]
 # now we have a list of all files. these include a txt file for each gene with the ids for all variants in that gene and xml files batched for 250 variants per file
 
-id_files = [f for f in all_ClinVar_files if 'ids.txt' in f]
+id_files = [f for f in all_ClinVar_files if 'ids.xml' in f]
 
 # we have data for this number of genes:
 n_genes_clinvar_data = len(id_files)
@@ -220,7 +220,7 @@ for id_file in id_files:
     # the id file is a string in the fomat '07_a_ClinVar_SOD1_ids.txt'
     # we get the gene name by replacing the beginning and the end of the string
     this_gene = id_file.replace('07_a_ClinVar_', '')
-    this_gene = this_gene.replace('_ids.txt', '')
+    this_gene = this_gene.replace('_ids.xml', '')
     
     # now we get a list of all the corresponding batch xml files for this gene:
     batch_files = [f for f in all_ClinVar_files if f'{this_gene}_data_batch' in f]
