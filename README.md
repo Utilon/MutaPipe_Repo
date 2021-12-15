@@ -122,33 +122,35 @@ MutaPipe can be run in two main ways (from within the `MutaPipe`directory):
 +NOTE: This section is incomplete / not yet adequate for MutaPipe.
 ```
 
-MutaPipe can be run using the bash script `MutaPipe.sh`.
+MutaPipe can be run using the bash script `MutaPipe.sh`. MutaPipe.sh runs all scripts incorporated in the pipeline one after another. If you wish to run any of the pipeline stages separately, please follow the instructions [below](#Using-the-python-scripts).
 
 Its basic use requires the following options:
+```diff
++IMPORTANT: all three arguments are required and have to be written in double quotes!!!
+```
 
 ```bash
 
-  -format FORMAT        options are bam, sam, fastq, vcf [string] 
-  -out OUT              path to the output folder. It has to end in /" e.g. /home/user/local/test_folder/
+  -g, --genes						specify input genes, to pass a file use \"-g \$(cat filename)\" 
+  -rsl, --relative_sequence_length	filter out sequences shorter than a given percentage of the reference sequence, e.g. = 0.5
+  -cov, --hsp_coverage				filter out sequences whose best hsp covers less than a given percentage of the reference sequence, e.g. = 0.1
 
  ```
- The desired pipeline stages are performed according to the optional arguments selected:
  
- ```bash
-  -filter_string FILTER_STRING  bcftools filter string, eg GQ>20 & DP>10 (Default = "")
-  -iobio                if this flag is set iobio services will be started at the end of the analysis (Default = "False")
-```
-
+ 
 ##### Usage example bash
 
 ```diff
 +NOTE: This section is incomplete / not yet adequate for MutaPipe.
 ```
 
-Let's assume we have human paired end whole exome sequening data in two fastq files and want to perform snvs/indels calling vs hg19, annotation and explore the results using the iobio services. The DNAscan command line would be:
+To run MutaPipe for gene NEK1, filtering out
+1. sequences covering less than 50% of the reference sequence as well as 
+2. sequences whose best hsp covers less than 10% of the reference sequence, 
+use the command:
 
  ```bash
-python3 /path/to/DNAscan/scripts/DNAscan.py -format fastq -in data1.fq.gz -in2 data2.fq.gz -reference hg19 -alignment -variantcalling -annotation -iobio -out /path/to/outdir/ -mode fast
+./MutaPipe.sh "-g NEK1" "-rsl 0.5" "-cov 0.1"
 ```
 
 #### Using the python scripts 
