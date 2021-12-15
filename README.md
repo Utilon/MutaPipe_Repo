@@ -97,7 +97,7 @@ There are currently 9 different python scripts which are incorporated in MutaPip
 To obtain MutaPipe please use git to download the most recent development tree:
 
 ```bash
-git clone https://github.com/Utilon/Pipeline_Git.git
+git clone https://github.com/Utilon/MutaPipe_Repo.git
 ```
 #### NOTE: Reference Proteome Required
 In order to run MutaPipe a fasta file containing the reference proteome / canonical protein sequences for the organism in question (= Homo sapiens) will have to be downloaded from Uniprot and stored in a folder called `Uniprot_reference_seqs` in the `MutaPipe` directory (where the python scripts are stored). The filename should be `UP000005640_9606.fasta` for the script to work properly.
