@@ -456,13 +456,13 @@ print('\n============================== Summary ================================
 print(f'Complete! \n    Performed BLASTp on a total of {len(fasta_df)} sequences listed in the file 03_fasta_combined_info.csv.\n')
 
 print('     All reference sequences (one per gene) used for blastp have been stored in .fasta format in the Results/RefSeqs folder.')
-print('     All all unique sequences per structure used for blastp have been stored in .fasta format in the Results/RefSeqs folder.')
-print('     All BLASTp outputs are stored in .xml format in the Results/RefSeqs folder.')
+print('     All all unique sequences per structure used for blastp have been stored in .fasta format in the Results/RefSeqs/PDB_seqs_and_blastp_outputs folder.')
+print('     All BLASTp outputs are stored in .xml format in the Results/RefSeqs/PDB_seqs_and_blastp_outputs folder.')
 
 print('\nThe following files have been created and stored in the Results folder:')
 print('   o      04_blast_two_sequences.csv                (lists all info contained in the input file as well as their blastp results)')
 print('   o      04_refeseq_warnings.csv                (lists genes with no or more than one identified reference sequence (only first one is used for further analyses))')
-print('   o      04_blastp_warnings.csv                (lists warnings regarding blastp, including if blastp failed and if there are more than one alignment (should only be one as only one reference is used)\n\n')
+print('   o      04_blastp_warnings.csv                (lists warnings regarding blastp, including if blastp failed or if there is more than one alignment (should only be one as only one reference is used)\n\n')
 
 # print script name to console/log file
 print(f'end of script {os.path.basename(__file__)}')
