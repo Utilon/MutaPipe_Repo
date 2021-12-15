@@ -110,13 +110,13 @@ The latest version of this fasta file can be accessed via the [Uniprot ftp clien
 
 MutaPipe can be run in two main ways (from within the `MutaPipe`directory):
 1. Using the bash script `MutaPipe.sh`
-2. Using the python scripts
+2. Using the MutaPipe python scripts
 
 #### Using the bash script
 
 MutaPipe can be run using the bash script `MutaPipe.sh`. MutaPipe.sh runs all scripts incorporated in the pipeline one after another. If you wish to run any of the pipeline stages separately, please follow the instructions [below](#Using-the-python-scripts). 
 
-Its basic use requires the following options:
+Its basic use requires the following three options:
 ```diff
 +IMPORTANT: all three arguments are required in this specific order AND have to be written in double quotes!!!
 ```
@@ -127,20 +127,31 @@ Its basic use requires the following options:
   -rsl, --relative_sequence_length	filter out sequences shorter than a given percentage of the reference sequence (0.1-1.0)
   -cov, --hsp_coverage			filter out sequences whose best hsp covers less than a given percentage of the reference sequence (0.1-1.0)
 
- ```
+```
 
-*Note:* More options are available when running the MutaPipe scripts manually. For further instructions, use the command `python3 script_name -h` on any of the MutaPipe python scripts or refer to section below on [python usage](#using-the-python-scripts).
+*Note:* More options are available when running the MutaPipe scripts manually. For further instructions, use the command `python3 script_name -h` on any of the MutaPipe python scripts or refer to the section on using the python scripts [below](#using-the-python-scripts).
  
 ##### Usage example bash
 
-To run MutaPipe for gene NEK1, filtering out
-1. sequences covering less than 50% of the reference sequence as well as 
+To run MutaPipe for gene NEK1, and setting the paramaters to filter out
+1. sequences covering less than 50% of the reference sequence and 
 2. sequences whose best hsp covers less than 10% of the reference sequence, 
 use the command:
 
- ```bash
+```bash
 ./MutaPipe.sh "-g NEK1" "-rsl 0.5" "-cov 0.1"
 ```
+
+To run MutaPipe with **more than one input gene**, e.g. for NEK1 and SOD1, and the same parameters as before, use the command:
+```bash
+./MutaPipe.sh "-g NEK1 SOD1" "-rsl 0.5" "-cov 0.1"
+```
+
+To run MutaPipe passing a file containing the genes of interest, e.g. this example file called [genes.txt](https://github.com/Utilon/MutaPipe_Repo/blob/main/MutaPipe/genes.txt), and the same parameters as before, use the command:
+```bash
+./MutaPipe.sh "-g $(cat genes.txt)" "-rsl 0.5" "-cov 0.1"
+```
+
 
 #### Using the python scripts 
 
@@ -193,10 +204,23 @@ Moreover, additional arguments can be set during different stages of MutaPipe:
 +NOTE: This section is incomplete / not yet adequate for MutaPipe.
 ```
 
-Let's assume we have human paired end whole exome sequening data in two fastq files and want to perform snvs/indels calling vs hg19, annotation and explore the results using the iobio services. The DNAscan command line would be:
+To run MutaPipe for gene NEK1, and setting the paramaters to filter out
+1. sequences covering less than 50% of the reference sequence and 
+2. sequences whose best hsp covers less than 10% of the reference sequence, 
+use the command:
 
- ```bash
-python3 /path/to/DNAscan/scripts/DNAscan.py -format fastq -in data1.fq.gz -in2 data2.fq.gz -reference hg19 -alignment -variantcalling -annotation -iobio -out /path/to/outdir/ -mode fast
+```bash
+./MutaPipe.sh "-g NEK1" "-rsl 0.5" "-cov 0.1"
+```
+
+To run MutaPipe with **more than one input gene**, e.g. for NEK1 and SOD1, and the same parameters as before, use the command:
+```bash
+./MutaPipe.sh "-g NEK1 SOD1" "-rsl 0.5" "-cov 0.1"
+```
+
+To run MutaPipe passing a file containing the genes of interest, e.g. this example file called [genes.txt](https://github.com/Utilon/MutaPipe_Repo/blob/main/MutaPipe/genes.txt), and the same parameters as before, use the command:
+```bash
+./MutaPipe.sh "-g $(cat genes.txt)" "-rsl 0.5" "-cov 0.1"
 ```
 
 
