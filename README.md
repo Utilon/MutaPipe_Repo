@@ -168,9 +168,9 @@ They have preset default values, i.e. they can be run *without* setting any of t
 The following options are available for all the MutaPipe python scripts:
 
 ```bash
--h, --help            show \help message and \exit
--l, --log 		write console output to log file in current directory if set to True, default = False
--t, --target   	specify target directory, default = current_working_directory
+-h, --help		show help message and exit
+-l, --log		write console output to log file in current directory if set to True, default = False
+-t, --target	specify target directory, default = current_working_directory
 ```
 
 Moreover, additional arguments can be set during different stages of MutaPipe:
