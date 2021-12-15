@@ -129,7 +129,7 @@ Its basic use requires the following options:
 
  ```
 
-*Note:* More options are available when running the MutaPipe scripts manually. For instructions, use command: `python3 script_name -h`
+*Note:* More options are available when running the MutaPipe scripts manually. For further instructions, use the command: `python3 script_name -h`
  
 ##### Usage example bash
 
@@ -150,6 +150,21 @@ use the command:
 
 MutaPipe can be run manually, by running the 9 python scripts one after another (script [00](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00_search_pdb.py), [01](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/01_download_files.py), [02](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/02_parse_cif_files.py), [03](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/03_parse_fasta_files.py), [04](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/04_blast_against_reference.py), [05](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/05_pdb_extract_unsolved_res.py), [06](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06_best_structure_per_mutation.py), [07_a](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_a_ClinVar_Annotations_edirect_per_gene_download_files.py), [07_b](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py), [08](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/08_add_clinvar_annotations_to_best_structures.py)). 
 
+More options are available when running the MutaPipe scripts manually compared to when using the bash script `MutaPipe.sh`. Use the `-h` flag on any MutaPipe python script to see instructions and available arguments (e.g. use the command: `python3 script_name -h`).
+
+**All arguments for the MutaPipe python scripts are OPTIONAL**
+They have preset default values, i.e. they can be run *without* setting any of the available flags. To view the default values set in each MutaPipe python script, use the command `python3 script_name -h`.
+
+
+Say something about script dependencies...
+
+
+The following options are 
+
+```bash
+-RG RG                if this flag is set the alignment stage will add the provided in paths_and_configs.py read group (Default = "False")
+-paired PAIRED        options are 1 for paired end reads and 0 for single end reads (Default = "1")
+```
 
 
 Finally, a set of optional arguments can be used to customise the analysis:
