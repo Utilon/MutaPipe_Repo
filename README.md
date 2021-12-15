@@ -108,21 +108,13 @@ The latest version of this fasta file can be accessed via the [Uniprot ftp clien
 
 ### Usage
 
-```diff
-+NOTE: This section is incomplete / not yet adequate for MutaPipe.
-```
-
 MutaPipe can be run in two main ways (from within the `MutaPipe`directory):
 1. Using the bash script `MutaPipe.sh`
 2. Using the python scripts
 
 #### Using the bash script
 
-```diff
-+NOTE: This section is incomplete / not yet adequate for MutaPipe.
-```
-
-MutaPipe can be run using the bash script `MutaPipe.sh`. MutaPipe.sh runs all scripts incorporated in the pipeline one after another. If you wish to run any of the pipeline stages separately, please follow the instructions [below](#Using-the-python-scripts).
+MutaPipe can be run using the bash script `MutaPipe.sh`. MutaPipe.sh runs all scripts incorporated in the pipeline one after another. If you wish to run any of the pipeline stages separately, please follow the instructions [below](#Using-the-python-scripts). 
 
 Its basic use requires the following options:
 ```diff
@@ -131,18 +123,15 @@ Its basic use requires the following options:
 
 ```bash
 
-  -g, --genes				specify input genes, to pass a file use \"-g \$(cat filename)\" 
-  -rsl, --relative_sequence_length	filter out sequences shorter than a given percentage of the reference sequence, e.g. = 0.5
-  -cov, --hsp_coverage			filter out sequences whose best hsp covers less than a given percentage of the reference sequence, e.g. = 0.1
+  -g, --genes				specify input genes, to pass a file use \"-g \$(cat filename)\"
+  -rsl, --relative_sequence_length	filter out sequences shorter than a given percentage of the reference sequence (0.1-1.0)
+  -cov, --hsp_coverage			filter out sequences whose best hsp covers less than a given percentage of the reference sequence (0.1-1.0)
 
  ```
- 
+
+**Note: More options are available when running the MutaPipe scripts manually. Use command 'python3 script_name -h' for instructions.**
  
 ##### Usage example bash
-
-```diff
-+NOTE: This section is incomplete / not yet adequate for MutaPipe.
-```
 
 To run MutaPipe for gene NEK1, filtering out
 1. sequences covering less than 50% of the reference sequence as well as 
