@@ -118,7 +118,7 @@ MutaPipe can be run using the bash script `MutaPipe.sh`. MutaPipe.sh runs all sc
 
 Its basic use requires the following options:
 ```diff
-+IMPORTANT: all three arguments are required in this specific order AND have to be written in double quotes!!!
++IMPORTANT: all three arguments are required in this specific order AND have to be written in double quotes!!! See [example below](#Usage-example-bash)
 ```
 
 ```bash
