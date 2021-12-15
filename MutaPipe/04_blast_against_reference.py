@@ -95,9 +95,9 @@ if create_search_log == True:
     sys.stdout = open(f'{results_dir}/search_log_04.txt', 'a')
     
 # print nice title
-print('=====================================================================')
+print('===============================================================================')
 print('*****    BLASTp against Reference Sequence for all Identified PDB Sequences   *****')
-print('=====================================================================\n')
+print('===============================================================================\n')
 
 # print script name to console/log file
 print(f'script name: {os.path.basename(__file__)}')

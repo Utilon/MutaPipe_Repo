@@ -36,6 +36,10 @@ import sys
 import argparse
 from datetime import datetime
 
+
+# suppress pandas SettingWithCopyWarning
+pd.options.mode.chained_assignment = None  # default='warn'
+
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 # use argparse to make it so we can pass arguments to script via terminal
@@ -127,9 +131,9 @@ if create_search_log == True:
     sys.stdout = open(f'{results_dir}/search_log_00.txt', 'a')
     
 # print nice title
-print('=====================================================================')
+print('===============================================================================')
 print('*****    Get the Best Structure for Each Unique Sequence in the PDB for Input Genes    *****')
-print('=====================================================================\n')
+print('===============================================================================\n')
 
 # print script name to console/log file
 print(f'script name: {os.path.basename(__file__)}')

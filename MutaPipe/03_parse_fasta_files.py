@@ -94,9 +94,9 @@ if create_search_log == True:
     sys.stdout = open(f'{results_dir}/search_log_03.txt', 'a')
 
 # print nice title
-print('=====================================================================')
+print('===============================================================================')
 print('*****    Parsing Fasta Files from the Protein Data Bank for Input Genes    *****')
-print('=====================================================================\n')
+print('===============================================================================\n')
 
 # print script name to console/log file
 print(f'script name: {os.path.basename(__file__)}')
