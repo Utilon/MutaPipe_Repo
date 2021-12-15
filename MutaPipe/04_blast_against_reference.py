@@ -15,6 +15,8 @@
 import pandas as pd
 import numpy as np
 import os
+from os import listdir
+from os.path import isfile, join
 import re
 import sys
 import argparse
@@ -410,6 +412,22 @@ for fasta_df_index, row in fasta_df.iterrows():
     xml_df.loc[fasta_df_index, 'sbjct_sequence'] = hsp.sbjct
     xml_df.loc[fasta_df_index, 'match_sequence'] = hsp.match
 
+
+# Before we change back to the results folder, we clean up the RefSeqs folder a bit
+# we want to make a subdirectory in this folder called PDB_seqs_and_blastp_outputs
+# we will move all the fasta files from the PDB structures and the blastp outputs there and
+# only keep the reference fasta directly in the RefSeqs directory
+# first we get a list of all files in the current folder (RefSeqs)
+all_fasta_files_for_blastp = [f for f in listdir(refseqs_dir) if isfile(join(refseqs_dir, f))]
+
+# now we get a list of all the files that are not reference fasta files and move them to a new subfolder
+PDB_fasta_files_for_blastp = [f for f in all_fasta_files_for_blastp if not 'reference.fasta' in f]
+# make the folder
+os.mkdir('PDB_seqs_and_blastp_outputs')
+# and move the files
+for PDB_fasta in PDB_fasta_files_for_blastp:
+    os.rename(f'{PDB_fasta}', f'PDB_seqs_and_blastp_outputs/{PDB_fasta}')
+              
 # we change back to the results directory
 os.chdir(results_dir)
 
