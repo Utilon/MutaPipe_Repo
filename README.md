@@ -153,6 +153,7 @@ MutaPipe can be run manually, by running the 9 python scripts one after another 
 More options are available when running the MutaPipe scripts manually compared to when using the bash script `MutaPipe.sh`. Use the `-h` flag on any MutaPipe python script to see instructions and available arguments (e.g. use the command: `python3 script_name -h`).
 
 **All arguments for the MutaPipe python scripts are OPTIONAL**
+
 They have preset default values, i.e. they can be run *without* setting any of the available flags. To view the default values set in each MutaPipe python script, use the command `python3 script_name -h`.
 
 
