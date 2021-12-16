@@ -291,24 +291,24 @@ After a complete MutaPipe run with the default settings, the following main outp
 - 00_search_overview_availability.csv 			* lists all input genes with a boolean value indicating whether corresponding PDB data exists
 - 00_search_overview_PDBids.csv 			* lists all input genes with available PDB data and their corresponding PDB IDs
 - 01_search_overview_folders.csv 			* lists all newly created directories (on for each input gene with available PDB data) and their content
-* 01_search_overview_n_structures.csv 			* lists number of structures retrieved per gene (simple overview)
-* 02_all_resolutions.csv 				* lists resolutions for all PDB structures associated with the input genes
-* 02_all_poly_seq.csv 					* lists polypeptide sequences for all PDB structures associated with the input genes
-* 03_fasta_info.csv 					* lists information extracted from all fasta files (downloaded from PDB) for all available sequences in the PDB associated with the input genes
-* 03_fasta_ex_info.csv 					* lists information extracted from all fasta_ex files (extracted from mmCif files) for all available sequences in the PDB associated with the input genes
-* 03_fasta_combined_info.csv 				* lists combined information extracted from all fasta and fasta_ex files for all available sequences in the PDB associated with the input genes
-* 04_blast_two_sequences.csv 				* lists all the information in 03_fasta_combined_info.csv and the corresponding blastp results for every sequence
-* 05_unsolved_residues_per_structure.csv 		* lists all unsolved residues in all PDB structures for all genes (one row for each structure)
-* 05_unsolved_residues_per_chain.csv 			* lists all unsolved residues in all chains of all PDB structures for all genes (one row for each chain)
-* 05_all_info.csv 					* lists all the information in 04_blast_two_sequences.csv and information on unsolved residues (extracted from PDB files)
-* 06_best_structure_per_point_mutation.csv 		* lists the best structures for all sequences with only a single amino acid change (compared to canonical sequence)
-* 06_best_structure_all_unique_combinations.csv 	* lists the best structures for all unique sequences in the PDB associated with the input genes (incl. WT/canonical sequence if corresponding structure is available)
-* 06_best_structure_any_mutation.csv 			* lists the best structures for any available variant, i.e. amino acid change, in the PDB regardless of other variants in the same structure
-* 07_a_ClinVar_Annotations_genes_no_data_retrieved.txt	* lists all genes for which no ClinVar annotations could be retrieved
-* 07_b_ClinVar_Annotations.csv 				* lists all variants availalbe in ClinVar for the input genes
-* 08_best_structure_all_unique_combinations.csv 	* lists the best structures for all unique sequences in the PDB associated with the input genes (incl. WT/canonical sequence if corresponding structure is available),  incl. relevant ClinVar annotations
-* 08_best_structure_any_mutation.csv 			* lists the best structures for any available variant, i.e. amino acid change, in the PDB regardless of other variants in the same structure,  incl. relevant ClinVar annotations
-* 08_best_structure_per_point_mutation.csv 		* lists the best structures for all sequences with only a single amino acid change (compared to canonical sequence),  incl. relevant ClinVar annotations
+- 01_search_overview_n_structures.csv 			* lists number of structures retrieved per gene (simple overview)
+- 02_all_resolutions.csv 				* lists resolutions for all PDB structures associated with the input genes
+- 02_all_poly_seq.csv 					* lists polypeptide sequences for all PDB structures associated with the input genes
+- 03_fasta_info.csv 					* lists information extracted from all fasta files (downloaded from PDB) for all available sequences in the PDB associated with the input genes
+- 03_fasta_ex_info.csv 					* lists information extracted from all fasta_ex files (extracted from mmCif files) for all available sequences in the PDB associated with the input genes
+- 03_fasta_combined_info.csv 				* lists combined information extracted from all fasta and fasta_ex files for all available sequences in the PDB associated with the input genes
+- 04_blast_two_sequences.csv 				* lists all the information in 03_fasta_combined_info.csv and the corresponding blastp results for every sequence
+- 05_unsolved_residues_per_structure.csv 		* lists all unsolved residues in all PDB structures for all genes (one row for each structure)
+- 05_unsolved_residues_per_chain.csv 			* lists all unsolved residues in all chains of all PDB structures for all genes (one row for each chain)
+- 05_all_info.csv 					* lists all the information in 04_blast_two_sequences.csv and information on unsolved residues (extracted from PDB files)
+- 06_best_structure_per_point_mutation.csv 		* lists the best structures for all sequences with only a single amino acid change (compared to canonical sequence)
+- 06_best_structure_all_unique_combinations.csv 	* lists the best structures for all unique sequences in the PDB associated with the input genes (incl. WT/canonical sequence if corresponding structure is available)
+- 06_best_structure_any_mutation.csv 			* lists the best structures for any available variant, i.e. amino acid change, in the PDB regardless of other variants in the same structure
+- 07_a_ClinVar_Annotations_genes_no_data_retrieved.txt	* lists all genes for which no ClinVar annotations could be retrieved
+- 07_b_ClinVar_Annotations.csv 				* lists all variants availalbe in ClinVar for the input genes
+- 08_best_structure_all_unique_combinations.csv 	* lists the best structures for all unique sequences in the PDB associated with the input genes (incl. WT/canonical sequence if corresponding structure is available),  incl. relevant ClinVar annotations
+- 08_best_structure_any_mutation.csv 			* lists the best structures for any available variant, i.e. amino acid change, in the PDB regardless of other variants in the same structure,  incl. relevant ClinVar annotations
+- 08_best_structure_per_point_mutation.csv 		* lists the best structures for all sequences with only a single amino acid change (compared to canonical sequence),  incl. relevant ClinVar annotations
 ```
 
 
