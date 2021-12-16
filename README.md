@@ -288,9 +288,9 @@ Each of the nine python scripts incorporated in MutaPipe produces at least one m
 After a complete MutaPipe run with the default settings, the following main output files will have been written to the `Results` directory.
 
 ```bash
-* 00_search_overview_availability.csv 			* lists all input genes with a boolean value indicating whether corresponding PDB data exists
-* 00_search_overview_PDBids.csv 			* lists all input genes with available PDB data and their corresponding PDB IDs
-* 01_search_overview_folders.csv 			* lists all newly created directories (on for each input gene with available PDB data) and their content
+- 00_search_overview_availability.csv 			* lists all input genes with a boolean value indicating whether corresponding PDB data exists
+- 00_search_overview_PDBids.csv 			* lists all input genes with available PDB data and their corresponding PDB IDs
+- 01_search_overview_folders.csv 			* lists all newly created directories (on for each input gene with available PDB data) and their content
 * 01_search_overview_n_structures.csv 			* lists number of structures retrieved per gene (simple overview)
 * 02_all_resolutions.csv 				* lists resolutions for all PDB structures associated with the input genes
 * 02_all_poly_seq.csv 					* lists polypeptide sequences for all PDB structures associated with the input genes
