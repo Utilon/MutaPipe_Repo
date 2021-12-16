@@ -300,7 +300,7 @@ After a complete MutaPipe run with the default settings, the following main outp
 * 06_best_structure_per_point_mutation.csv 		* lists x und so
 * 06_best_structure_all_unique_combinations.csv 	* lists x und so
 * 06_best_structure_any_mutation.csv 			* lists x und so
-* 07_a_ClinVar_Annotations_genes_no_data_retrieved.txt * lists x und so
+* 07_a_ClinVar_Annotations_genes_no_data_retrieved.txt	* lists x und so
 * 07_b_ClinVar_Annotations.csv 				* lists x und so
 * 08_best_structure_all_unique_combinations.csv 	* lists x und so
 * 08_best_structure_any_mutation.csv 			* lists x und so
