@@ -282,6 +282,31 @@ MutaPipe creates a directory called `Results` where all intermediary and final m
 Each of the nine python scripts incorporated in MutaPipe produces at least one main output file which will be stored directly in the `Results` directory. *NOTE:* All MutaPipe output filenames start with the numerical identifier of the corresponding MutaPipe script, making it easy to understand which outputs have been generated at which stage of the pipeline.
 
 After a complete MutaPipe run with the default settings, the following main output files will have been written to the `Results` directory.
+
+```bash
+* 00_search_overview_availability.csv
+* 00_search_overview_PDBids.csv
+* 01_search_overview_folders.csv
+* 01_search_overview_n_structures.csv
+* 02_all_resolutions.csv
+* 02_all_poly_seq.csv
+* 03_fasta_info.csv
+* 03_fasta_ex_info.csv
+* 03_fasta_combined_info.csv
+* 04_blast_two_sequences.csv
+* 05_unsolved_residues_per_structure.csv
+* 05_unsolved_residues_per_chain.csv
+* 05_all_info.csv
+* 06_best_structure_per_point_mutation.csv
+* 06_best_structure_all_unique_combinations.csv
+* 06_best_structure_any_mutation.csv
+* 07_a_ClinVar_Annotations_genes_no_data_retrieved.txt
+* 07_b_ClinVar_Annotations.csv
+* 08_best_structure_all_unique_combinations.csv
+* 08_best_structure_any_mutation.csv
+* 08_best_structure_per_point_mutation.csv
+```
+
 * 00_search_overview_availability.csv
 * 00_search_overview_PDBids.csv
 * 01_search_overview_folders.csv
