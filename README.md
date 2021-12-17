@@ -319,7 +319,7 @@ MutaPipe creates the following subdirectories in `Results`:
 ```
 
 ```diff
-+NOTE: Will have to add section explaining all columns in main output files!
++NOTE: A section explaining all columns in main output files will be added shortly!
 ```
 
 #### Ouput example
