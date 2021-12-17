@@ -41,10 +41,9 @@ echo ""
 echo "	HSP coverage threshold: $3"
 echo ""
 
-# get the path to this script (MutaPipe.sh) where all the python scripts are stored
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # change to directory where this script and the python scripts are stored
-cd $SCRIPT_DIR
+cd "$(dirname "$0")"
+
 
 # run all MutaPipe python scripts one after another
 python3 00_search_pdb.py $1
