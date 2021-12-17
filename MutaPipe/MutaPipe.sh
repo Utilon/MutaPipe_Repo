@@ -35,10 +35,18 @@ echo "Initiating MutaPipe"
 echo "==================="
 
 echo "	Input genes: $1"
+echo ""
 echo "	Sequence length threshold: $2"
+echo ""
 echo "	HSP coverage threshold: $3"
 echo ""
 
+# get the path to this script (MutaPipe.sh) where all the python scripts are stored
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+# change to directory where this script and the python scripts are stored
+cd $SCRIPT_DIR
+
+# run all MutaPipe python scripts one after another
 python3 00_search_pdb.py $1
 python3 01_download_files.py
 python3 02_parse_cif_files.py
@@ -51,8 +59,6 @@ python3 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py
 python3 08_add_clinvar_annotations_to_best_structures.py
 
 
-
-
 #implemented arguments in bash script
 # $1 = -g, --genes
 # $2 = -rsl, --relative_sequence_length
@@ -60,7 +66,7 @@ python3 08_add_clinvar_annotations_to_best_structures.py
 
 
 
-# Overview arguments for all python scripts
+# Overview arguments for all python scripts (can't be used with this bash script!)
 #==========================================
 # options for all scripts
 #   -h, --help            show help message and exit
