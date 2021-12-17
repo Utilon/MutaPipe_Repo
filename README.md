@@ -17,7 +17,7 @@
 	  * [Using the python scripts](#using-the-python-scripts)
 	  	* [Usage example python](#usage-example-python)
 	* [Output](#output)
-		* [Output example](#output-example)
+		* [Output example](#ouput-example)
 	* [How to Download the Reference Proteome](#how-to-download-the-reference-proteome)
 
 ## Introduction
@@ -276,7 +276,7 @@ Script `07_a_ClinVar_Annotations_genes_no_data_retrieved.txt` produces a file ca
 
 ### Output
 
-MutaPipe creates a directory called `Results` where all intermediary and final main output files are stored (*Note:* when [running MutaPipe using python](#using-the-python-scripts), the `-t` flag lets you specify where you'd like this folder to be created, default = current working directory). All relevant files and data retrieved or extracted from the reference proteome fasta file, the ClinVar database, and the PDB are stored in additional subdirectories in the `Results` directory called `ClinVar_Annotations`, `RefSeqs`, and `[GENENAME]_[n]structures` (see [Figure 3](#output-\example) below for an example).
+MutaPipe creates a directory called `Results` where all intermediary and final main output files are stored (*Note:* when [running MutaPipe using python](#using-the-python-scripts), the `-t` flag lets you specify where you'd like this folder to be created, default = current working directory). All relevant files and data retrieved or extracted from the reference proteome fasta file, the ClinVar database, and the PDB are stored in additional subdirectories in the `Results` directory called `ClinVar_Annotations`, `RefSeqs`, and `[GENENAME]_[n]structures` (see [Figure 3](#ouput-example) below for an example).
 
 Each of the nine python scripts incorporated in MutaPipe produces at least one main output file which will be stored directly in the `Results` directory. *NOTE:* All MutaPipe output filenames start with the numerical identifier of the corresponding MutaPipe script, making it easy to understand which outputs have been generated at which stage of the pipeline.
 
