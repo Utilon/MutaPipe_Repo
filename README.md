@@ -22,7 +22,7 @@
 
 ## Introduction
 
-MutaPipe is a fast and efficient bioinformatics pipeline to screen the [Protein Data Bank (PDB)](#https://www.rcsb.org/) for genes of interest and retrieve the highest quality protein structure (best resolution) for each unique sequence associated with a gene. Additionally, whenever corresponding data is available, variants will be annotated using information on variant pathogenicity from [ClinVar](#https://www.ncbi.nlm.nih.gov/clinvar/intro/).
+MutaPipe is a fast and efficient bioinformatics pipeline to screen the [Protein Data Bank (PDB)](https://www.rcsb.org/) for genes of interest and retrieve the highest quality protein structure (best resolution) for each unique sequence associated with a gene. Additionally, whenever corresponding data is available, variants will be annotated using information on variant pathogenicity from [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/intro/).
 
 This allows researchers to efficiently screen the PDB for the most suitable template structures for a specific WT or mutant gene/protein which can be used for further in silico analysis such as homology modeling, mutagenesis experiments or molecular dynmamics simulations.
 
@@ -34,7 +34,7 @@ This allows researchers to efficiently screen the PDB for the most suitable temp
 
 ## Citation
 
-MutaPipe has been developed by Deborah Ness, an NIHR Maudsley Biomedical Research Centre PhD Student, in collaboration with and supervised by [Dr Alfredo Iacoangeli](#https://www.kcl.ac.uk/people/alfredo-iacoangeli), for her PhD project at the [Department of Basic and Clinical Neuroscience at King's College London](#https://www.kcl.ac.uk/neuroscience/about/departments/basic-clinical-neuroscience).
+MutaPipe has been developed by Deborah Ness, an NIHR Maudsley Biomedical Research Centre PhD Student, in collaboration with and supervised by [Dr Alfredo Iacoangeli](https://www.kcl.ac.uk/people/alfredo-iacoangeli), for her PhD project at the [Department of Basic and Clinical Neuroscience at King's College London](https://www.kcl.ac.uk/neuroscience/about/departments/basic-clinical-neuroscience).
 
 This work has not yet been published (Dec 2021). 
 
