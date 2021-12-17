@@ -28,7 +28,7 @@ This allows researchers to efficiently screen the PDB for the most suitable temp
 
 ![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/files_for_README/Figure1_pipeline_simple_flowchart.jpeg)
 
-**Figure 1.** Pipeline overview. MutaPipe requires a list of gene names as input. The pipeline firstly performs a search of the entire Protein Data Bank (PDB) to retrieve information on all protein structures available in the PDB which are associated with the input genes (and the species: Homo sapiens). In a second step, a BLASTp against the canonical reference sequence for a given input gene (obtained from [UniProt](#https://www.uniprot.org/)) is performed for each sequence of every identified protein structure associated with said gene of interest. The BLASTp alignment is used to identify mismatches in the amino acid sequence of the PDB structures relative to the canonical sequence. In a subsequent step, the data is filtered and rearranged to output a table listing the highest quality structure for all available sequences in the PDB which are associated with the input genes. Additionally, if a given amino acid change in an input gene is listed in ClinVar, this information will be added to the output table.
+**Figure 1.** Pipeline overview. MutaPipe requires a list of gene names as input. The pipeline firstly performs a search of the entire Protein Data Bank (PDB) to retrieve information on all protein structures available in the PDB which are associated with the input genes (and the species: Homo sapiens). In a second step, a BLASTp against the canonical reference sequence for a given input gene (obtained from [UniProt](https://www.uniprot.org/)) is performed for each sequence of every identified protein structure associated with said gene of interest. The BLASTp alignment is used to identify mismatches in the amino acid sequence of the PDB structures relative to the canonical sequence. In a subsequent step, the data is filtered and rearranged to output a table listing the highest quality structure for all available sequences in the PDB which are associated with the input genes. Additionally, if a given amino acid change in an input gene is listed in ClinVar, this information will be added to the output table.
 
 
 
@@ -340,7 +340,7 @@ Consequently, we see that a new folder called `Results` has been created in our 
 
 MutaPipe will need a fasta file with all canonical protein sequences of the species of interest.
 
-In order to run MutaPipe a fasta file containing the reference proteome / canonical protein sequences for the organism in question (= Homo sapiens) will have to be downloaded from [UniProt](#https://www.uniprot.org/) and stored in a folder called `Uniprot_reference_seqs` in the `MutaPipe` directory (where the python scripts are stored). The filename should be `UP000005640_9606.fasta` for the script to work properly.
+In order to run MutaPipe a fasta file containing the reference proteome / canonical protein sequences for the organism in question (= Homo sapiens) will have to be downloaded from [UniProt](https://www.uniprot.org/) and stored in a folder called `Uniprot_reference_seqs` in the `MutaPipe` directory (where the python scripts are stored). The filename should be `UP000005640_9606.fasta` for the script to work properly.
 The latest version of this fasta file can be accessed via the [UniProt ftp client](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/Eukaryota/UP000005640/).
 
 
