@@ -65,8 +65,6 @@ Help()
 # Process the input options. Add options as needed.        #
 ############################################################
 
-# OPTIND=1 # tbh I don't know what this line does, but I think I don't need it!?
-
 # Get the options
 while getopts ":hl:t:g:o:a:f:p:b:u:r:c:" option; do
    case "${option}" in
@@ -74,36 +72,33 @@ while getopts ":hl:t:g:o:a:f:p:b:u:r:c:" option; do
          Help
          exit;;
       l) # Specify whether to write output to log file
-		 LOG=${OPTARG};;
-	  t) # Specify target directory 
-		 TARGET_DIRECTORY=${OPTARG};;
+		   LOG=${OPTARG};;
+	   t) # Specify target directory 
+		   TARGET_DIRECTORY=${OPTARG};;
       g) # Specify input genes
          GENES=${OPTARG};;
-	  o) # Set organism of interest 
-		 ORGANISM=${OPTARG};;
-	  a) # Specify whether to download all or max. 10 PDB IDs per gene
-		 ALL_PDB_IDS=${OPTARG};;
-	  f) # Specify format of file to be downloaded from the PDB
-		 FORMAT=${OPTARG};;
-	  p) # Specify whether to extract polypeptide sequences or not
-		 POLYPEPTIDES=${OPTARG};;
-	  b) # Set PATH to blastp on your system
-		 BLASTp_PATH=${OPTARG};;
-	  u) # Set PATH to UniProt reference proteome fasta file
-		 UNIPROT_REFSEQS=${OPTARG};;
+	   o) # Set organism of interest 
+		   ORGANISM=${OPTARG};;
+	   a) # Specify whether to download all or max. 10 PDB IDs per gene
+		   ALL_PDB_IDS=${OPTARG};;
+	   f) # Specify format of file to be downloaded from the PDB
+		   FORMAT=${OPTARG};;
+	   p) # Specify whether to extract polypeptide sequences or not
+		   POLYPEPTIDES=${OPTARG};;
+	   b) # Set PATH to blastp on your system
+		   BLASTp_PATH=${OPTARG};;
+	   u) # Set PATH to UniProt reference proteome fasta file
+		   UNIPROT_REFSEQS=${OPTARG};;
       r) # Set relative sequence lenght
          RELATIVE_SEQUENCE_LENGTH=${OPTARG};;
-         # ((RELATIVE_SEQUENCE_LENGTH >= 0 && RELATIVE_SEQUENCE_LENGTH <= 1)) || Help;;			# doesn't work
       c) # Set HSP coverage
          HSP_COVERAGE=${OPTARG};;
-         # ((HSP_COVERAGE >= 0 && HSP_COVERAGE <= 1)) || Help;;		# doesn't work
      \?) # Invalid option
          echo "Error: Invalid option."
          echo "Use -h to display help message."
          exit;;
    esac
 done
-
 
 ############################################################
 ############################################################
@@ -114,7 +109,6 @@ done
 echo
 echo "Initiating MutaPipe"
 echo "==================="
-
 echo
 echo "Input parameters:	GENES 				$GENES"
 echo "			LOG 				$LOG"
@@ -129,45 +123,21 @@ echo "			RELATIVE_SEQUENCE_LENGTH	$RELATIVE_SEQUENCE_LENGTH"
 echo "			HSP_COVERAGE: 			$HSP_COVERAGE"
 
 # change to directory where this script and the python scripts are stored
-cd $MUTAPIPE_DIRECTORY
-
-echo
-echo
-echo
-echo
-echo "python3 00_search_pdb.py -g $GENES -o "$ORGANISM" -a $ALL_PDB_IDS -t "$TARGET_DIRECTORY" -l $LOG"
-echo "python3 01_download_files.py -f $FORMAT -t "$TARGET_DIRECTORY"-l $LOG"
-echo "python3 02_parse_cif_files.py -pp $POLYPEPTIDES -t "$TARGET_DIRECTORY" -l $LOG"
-echo "python3 03_parse_fasta_files.py -t "$TARGET_DIRECTORY" -l $LOG"
-echo "python3 04_blast_against_reference.py -bp $BLASTp_PATH -refseq $UNIPROT_REFSEQS -t "$TARGET_DIRECTORY" -l $LOG"
-echo "python3 05_pdb_extract_unsolved_res.py -t $TARGET_DIRECTORY -l $LOG"
-echo "python3 06_best_structure_per_mutation.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG"
-echo "python3 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py -t "$TARGET_DIRECTORY" -l $LOG"
-echo "python3 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py -t "$TARGET_DIRECTORY" -l $LOG"
-echo "python3 08_add_clinvar_annotations_to_best_structures.py -t "$TARGET_DIRECTORY" -l $LOG"
-echo
-echo
-echo
-echo
+cd "$MUTAPIPE_DIRECTORY"
 
 # run all MutaPipe python scripts one after another
 python3 00_search_pdb.py -g $GENES -o "$ORGANISM" -a $ALL_PDB_IDS -t "$TARGET_DIRECTORY" -l $LOG 
-# python3 01_download_files.py -f $FORMAT -t "$TARGET_DIRECTORY"-l $LOG
-# python3 02_parse_cif_files.py -pp $POLYPEPTIDES -t "$TARGET_DIRECTORY" -l $LOG
-# python3 03_parse_fasta_files.py -t "$TARGET_DIRECTORY" -l $LOG
-# python3 04_blast_against_reference.py -bp $BLASTp_PATH -refseq $UNIPROT_REFSEQS -t "$TARGET_DIRECTORY" -l $LOG
-# python3 05_pdb_extract_unsolved_res.py -t $TARGET_DIRECTORY -l $LOG
-# python3 06_best_structure_per_mutation.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG
-# python3 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py -t "$TARGET_DIRECTORY" -l $LOG
-# python3 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py -t "$TARGET_DIRECTORY" -l $LOG
-# python3 08_add_clinvar_annotations_to_best_structures.py -t "$TARGET_DIRECTORY" -l $LOG
+python3 01_download_files.py -f $FORMAT -t "$TARGET_DIRECTORY" -l $LOG
+python3 02_parse_cif_files.py -pp $POLYPEPTIDES -t "$TARGET_DIRECTORY" -l $LOG
+python3 03_parse_fasta_files.py -t "$TARGET_DIRECTORY" -l $LOG
+python3 04_blast_against_reference.py -bp "$BLASTp_PATH" -refseq "$TARGET_DIRECTORY"/"$UNIPROT_REFSEQS" -t "$TARGET_DIRECTORY" -l $LOG
+python3 05_pdb_extract_unsolved_res.py -t "$TARGET_DIRECTORY" -l $LOG
+python3 06_best_structure_per_mutation.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG
+python3 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py -t "$TARGET_DIRECTORY" -l $LOG
+python3 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py -t "$TARGET_DIRECTORY" -l $LOG
+python3 08_add_clinvar_annotations_to_best_structures.py -t "$TARGET_DIRECTORY" -l $LOG
 
-
-
-# change to target directory
-# cd $TARGET_DIRECTORY				# doesn't work if there are special characters in string... maybe find way to fix?
-echo
-echo "cd "$TARGET_DIRECTORY""
+# change back to target directory
 cd "$TARGET_DIRECTORY"
 
 ############################################################

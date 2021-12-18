@@ -160,8 +160,6 @@ def add_clinvar_annotations(df):
                                                                                 str(corresponding_clinvar_annotations.dbs_and_accessions.values)]
     return df
 # ----------------------------------------------------------------------------------------------------------------------------------
-target_directory = os.getcwd()
-results_dir = f'{target_directory}/Results'
 
 # read in data
 unique_combi = pd.read_csv(f'{results_dir}/06_best_structure_all_unique_combinations.csv')
