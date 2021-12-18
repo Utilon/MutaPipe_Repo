@@ -1,72 +1,179 @@
 #!/bin/bash
 
-display_usage() { 
-	echo -e "\n****   Use this bash script to run MutaPipe   ****\n" 
-	echo "IMPORTANT: all three arguments are required and have to be written in double quotes."
-	echo -e "\nUsage: $0 [-g GENES, -rsl RELATIVE_SEQUENCE_LENGTH, -cov HSP_COVERAGE] \n-g, --genes 				  Specify genes of interest \n-rsl --relative_sequence_length   	  Set to filter out sequences shorter than a given percentage of the reference sequence (0.1-1.0) \n-cov, --hsp_coverage   			  Set to filter out sequences whose best hsp covers less than a given percentage of the reference sequence (0.1-1.0)\n" 
-	echo -e "Usage example: To run MutaPipe for gene NEK1, filtering out sequences covering less than 50% of the reference sequence as well as sequences whose best hsp covers less than 10% of the reference sequence, use: \n$0 \"-g NEK1\" \"-rsl 0.5\" \"-cov 0.1\"\n"
-	echo -e "Notes: \n1. To to pass a file containing all gene names use \"-g \$(cat filename)\" as the first argument.\n2. More options are available when running the MutaPipe scripts manually. Use command 'python3 script_name -h' for instructions.\n"
-	} 
+############################################################
+# Set up                                                   #
+############################################################
+
+# Set variables
+# Get path to the directory where all the python scripts are stored:
+MUTAPIPE_DIRECTORY="$(dirname "$0")"
+
+# Default behaviour
+GENES="$(cat $MUTAPIPE_DIRECTORY/genes.txt)"
+LOG="False"
+TARGET_DIRECTORY=$(pwd)
+ORGANISM="Homo sapiens"
+ALL_PDB_IDS="True"
+FORMAT="cif pdb fasta"
+POLYPEPTIDES="True"
+BLASTp_PATH="blastp"
+UNIPROT_REFSEQS="$MUTAPIPE_DIRECTORY/Uniprot_reference_seqs/UP000005640_9606.fasta"
+RELATIVE_SEQUENCE_LENGTH="0.5"
+HSP_COVERAGE="0.1"
+
+############################################################
+# Help                                                     #
+############################################################
+
+Help()
+{
+   # Display Help
+   echo
+   echo "****   Use this bash script to run MutaPipe   ****"
+   echo
+   echo "Usage: $0 [-h|l|t|g|o|a|f|p|b|u|r|c]"
+   echo
+   echo "General options:"
+   echo "	-h	HELP				Print this help message and exit"
+   echo "	-l	LOG				Write console output to log file in target directory if set to True. Default = $LOG"
+   echo "	-t	TARGET_DIRECTORY  		Specify target directory where output will be stored. Default = $TARGET_DIRECTORY"
+   echo
+   echo "MutaPipe options:"
+   echo "	-g	GENES				Specify genes of interest. To to pass a file containing all gene names use -g \$(cat filename). Default = $GENES"
+   echo "	-o	ORGANISM			Set species for which to search pdb structures. Default = $ORGANISM"
+   echo "	-a	ALL_PDB_IDS		    	Specify whether to retrieve all (True) or max. 10 PDB IDs (False) per gene. Default = $ALL_PDB_IDS"
+   echo "	-f	FORMAT			  	Specify file formats to download. Default = $FORMAT. Options = [cif pdb fasta]"
+   echo "	-p	POLYPEPTIDES			Specify whether to extract polypeptide sequence (True) or not (False). Default = $POLYPEPTIDES"
+   echo "	-b	BLASTp_PATH			Set path to blastp on your system. Default = $BLASTp_PATH"
+   echo "	-u	UNIPROT_REFSEQS			Set path to reference proteome fasta file. Default = $UNIPROT_REFSEQS"
+   echo "	-r	RELATIVE_SEQUENCE_LENGTH	Set to filter out sequences shorter than a given percentage of the reference sequence (0.1-1.0). Default = $RELATIVE_SEQUENCE_LENGTH"
+   echo "	-c	HSP_COVERAGE			Set to filter out sequences whose best hsp covers less than a given percentage of the reference sequence (0.1-1.0). Default = $HSP_COVERAGE"
+   
+   echo
+   echo "Usage examples:"
+   echo "(1)"
+   echo "To run MutaPipe for gene NEK1, filtering out sequences covering less than 50% of the reference sequence as well as sequences whose best hsp covers less than 10% of the reference sequence, use:"
+   echo "$0 -g NEK1 -r 0.5 -c 0.1"	
+   echo 
+   echo "(2)"
+   echo "To run MutaPipe for multiple genes at ones pass a textfile using -g \$(cat filename) or use double quotes when listing the genes, e.g.:"
+   echo "$0 -g \"NEK1 SOD1 FUS\" -r 0.5 -c 0.1"	
+   echo
+}
+
+############################################################
+# Process the input options. Add options as needed.        #
+############################################################
+
+# OPTIND=1 # tbh I don't know what this line does, but I think I don't need it!?
+
+# Get the options
+while getopts ":hl:t:g:o:a:f:p:b:u:r:c:" option; do
+   case "${option}" in
+      h) # display Help
+         Help
+         exit;;
+      l) # Specify whether to write output to log file
+		 LOG=${OPTARG};;
+	  t) # Specify target directory 
+		 TARGET_DIRECTORY=${OPTARG};;
+      g) # Specify input genes
+         GENES=${OPTARG};;
+	  o) # Set organism of interest 
+		 ORGANISM=${OPTARG};;
+	  a) # Specify whether to download all or max. 10 PDB IDs per gene
+		 ALL_PDB_IDS=${OPTARG};;
+	  f) # Specify format of file to be downloaded from the PDB
+		 FORMAT=${OPTARG};;
+	  p) # Specify whether to extract polypeptide sequences or not
+		 POLYPEPTIDES=${OPTARG};;
+	  b) # Set PATH to blastp on your system
+		 BLASTp_PATH=${OPTARG};;
+	  u) # Set PATH to UniProt reference proteome fasta file
+		 UNIPROT_REFSEQS=${OPTARG};;
+      r) # Set relative sequence lenght
+         RELATIVE_SEQUENCE_LENGTH=${OPTARG};;
+         # ((RELATIVE_SEQUENCE_LENGTH >= 0 && RELATIVE_SEQUENCE_LENGTH <= 1)) || Help;;			# doesn't work
+      c) # Set HSP coverage
+         HSP_COVERAGE=${OPTARG};;
+         # ((HSP_COVERAGE >= 0 && HSP_COVERAGE <= 1)) || Help;;		# doesn't work
+     \?) # Invalid option
+         echo "Error: Invalid option."
+         echo "Use -h to display help message."
+         exit;;
+   esac
+done
 
 
-	# if less than two arguments supplied, display usage 
-	if [  $# -le 2 ] 
-	then 
-		display_usage
-		exit 1
-	fi 
- 
-	# check whether user had supplied -h or --help . If yes display usage 
-	if [[ ( $# == "--help") ||  $# == "-h" ]] 
-	then 
-		display_usage
-		exit 0
-	fi 
+############################################################
+############################################################
+# MutaPipe 		                                           #
+############################################################
+############################################################
 
-	# # this doesn't work for some reason I do not understand...?
-	# # check whether user had supplied -g
-	# if [[ ( $# == "--genes") ||  $# == "-g" ]]
-	# then
-	# 	echo "genes are present"
-	# 	exit 0
-	# fi
-
+echo
 echo "Initiating MutaPipe"
 echo "==================="
 
-echo "	Input genes: $1"
-echo ""
-echo "	Sequence length threshold: $2"
-echo ""
-echo "	HSP coverage threshold: $3"
-echo ""
+echo
+echo "Input parameters:	GENES 				$GENES"
+echo "			LOG 				$LOG"
+echo "			TARGET_DIRECTORY 		$TARGET_DIRECTORY"
+echo "			ORGANISM 			$ORGANISM"
+echo "			ALL_PDB_IDS			$ALL_PDB_IDS"
+echo "			FORMAT				$FORMAT"
+echo "			POLYPEPTIDES			$POLYPEPTIDES"
+echo "			BLASTp_PATH			$BLASTp_PATH"
+echo "			UNIPROT_REFSEQS 		$UNIPROT_REFSEQS"
+echo "			RELATIVE_SEQUENCE_LENGTH	$RELATIVE_SEQUENCE_LENGTH"
+echo "			HSP_COVERAGE: 			$HSP_COVERAGE"
 
 # change to directory where this script and the python scripts are stored
-cd "$(dirname "$0")"
+cd $MUTAPIPE_DIRECTORY
 
+echo
+echo
+echo
+echo
+echo "python3 00_search_pdb.py -g $GENES -o "$ORGANISM" -a $ALL_PDB_IDS -t "$TARGET_DIRECTORY" -l $LOG"
+echo "python3 01_download_files.py -f $FORMAT -t "$TARGET_DIRECTORY"-l $LOG"
+echo "python3 02_parse_cif_files.py -pp $POLYPEPTIDES -t "$TARGET_DIRECTORY" -l $LOG"
+echo "python3 03_parse_fasta_files.py -t "$TARGET_DIRECTORY" -l $LOG"
+echo "python3 04_blast_against_reference.py -bp $BLASTp_PATH -refseq $UNIPROT_REFSEQS -t "$TARGET_DIRECTORY" -l $LOG"
+echo "python3 05_pdb_extract_unsolved_res.py -t $TARGET_DIRECTORY -l $LOG"
+echo "python3 06_best_structure_per_mutation.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG"
+echo "python3 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py -t "$TARGET_DIRECTORY" -l $LOG"
+echo "python3 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py -t "$TARGET_DIRECTORY" -l $LOG"
+echo "python3 08_add_clinvar_annotations_to_best_structures.py -t "$TARGET_DIRECTORY" -l $LOG"
+echo
+echo
+echo
+echo
 
 # run all MutaPipe python scripts one after another
-python3 00_search_pdb.py $1
-python3 01_download_files.py
-python3 02_parse_cif_files.py
-python3 03_parse_fasta_files.py
-python3 04_blast_against_reference.py
-python3 05_pdb_extract_unsolved_res.py  
-python3 06_best_structure_per_mutation.py $2 $3
-python3 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py  
-python3 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py 
-python3 08_add_clinvar_annotations_to_best_structures.py
-
-
-#implemented arguments in bash script
-# $1 = -g, --genes
-# $2 = -rsl, --relative_sequence_length
-# $3 = -cov, --hsp_coverage
+python3 00_search_pdb.py -g $GENES -o "$ORGANISM" -a $ALL_PDB_IDS -t "$TARGET_DIRECTORY" -l $LOG 
+# python3 01_download_files.py -f $FORMAT -t "$TARGET_DIRECTORY"-l $LOG
+# python3 02_parse_cif_files.py -pp $POLYPEPTIDES -t "$TARGET_DIRECTORY" -l $LOG
+# python3 03_parse_fasta_files.py -t "$TARGET_DIRECTORY" -l $LOG
+# python3 04_blast_against_reference.py -bp $BLASTp_PATH -refseq $UNIPROT_REFSEQS -t "$TARGET_DIRECTORY" -l $LOG
+# python3 05_pdb_extract_unsolved_res.py -t $TARGET_DIRECTORY -l $LOG
+# python3 06_best_structure_per_mutation.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG
+# python3 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py -t "$TARGET_DIRECTORY" -l $LOG
+# python3 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py -t "$TARGET_DIRECTORY" -l $LOG
+# python3 08_add_clinvar_annotations_to_best_structures.py -t "$TARGET_DIRECTORY" -l $LOG
 
 
 
-# Overview arguments for all python scripts (can't be used with this bash script!)
-#==========================================
+# change to target directory
+# cd $TARGET_DIRECTORY				# doesn't work if there are special characters in string... maybe find way to fix?
+echo
+echo "cd "$TARGET_DIRECTORY""
+cd "$TARGET_DIRECTORY"
+
+############################################################
+# Overview arguments for all python scripts			       #
+############################################################
+
 # options for all scripts
 #   -h, --help            show help message and exit
 #   -l, --log 			  Write console output to log file in current directory if set to True, default = False
