@@ -119,45 +119,53 @@ MutaPipe can be run in two main ways (from within the `MutaPipe`directory):
 MutaPipe can be run using the bash script `MutaPipe.sh`. MutaPipe.sh runs all scripts incorporated in the pipeline one after another. (If instead you wish to run any of the pipeline stages separately, please follow the instructions further [below](#Using-the-python-scripts)). 
 
 Its basic use requires the following three options:
-```diff
-+IMPORTANT: all three arguments are required in this specific order AND have to be written in double quotes!!!
-```
 
 ```bash
 
-  -g, --genes				specify input genes, to pass a file use \"-g \$(cat filename)\"
-  -rsl, --relative_sequence_length	filter out sequences shorter than a given percentage of the reference sequence (0.1-1.0)
-  -cov, --hsp_coverage			filter out sequences whose best HSP covers less than a given percentage of the reference sequence (0.1-1.0)
+  Usage: [-h|l|t|g|o|a|f|p|b|u|r|c]
+   
+  General options:
+  -h	HELP				Print this help message and exit
+  -l	LOG				Write console output to log file in target directory if set to True. Default = False
+  -t	TARGET_DIRECTORY  		Specify target directory where output will be stored. Default = current_working_directory
+  
+  MutaPipe options:
+  -g	GENES				Specify genes of interest. To to pass a file containing all gene names use -g \$(cat filename). Default = default = ['OPTN', 'ERBB4', 'DCTN1']
+  -o	ORGANISM			Set species for which to search pdb structures. Default = Homo sapiens
+  -a	ALL_PDB_IDS		    	Specify whether to retrieve all (True) or max. 10 PDB IDs (False) per gene. Default = True
+  -f	FORMAT			  	Specify file formats to download. Default = [cif pdb fasta]. Options = [cif pdb fasta]
+  -p	POLYPEPTIDES			Specify whether to extract polypeptide sequence (True) or not (False). Default = True
+  -b	BLASTp_PATH			Set path to blastp on your system. Default = blastp
+  -u	UNIPROT_REFSEQS			Set path to reference proteome fasta file. Default = MutaPipe_Repo/MutaPipe/Uniprot_reference_seqs/
+  -r	RELATIVE_SEQUENCE_LENGTH	Set to filter out sequences shorter than a given percentage of the reference sequence (0.1-1.0). Default = 0.5
+  -c	HSP_COVERAGE			Set to filter out sequences whose best hsp covers less than a given percentage of the reference sequence (0.1-1.0). Default = 0.1   
 
 ```
 
-*Note:* More options are available when running the MutaPipe scripts manually. For further instructions, use the command `python3 script_name -h` on any of the MutaPipe python scripts or refer to the section on using the python scripts [below](#using-the-python-scripts).
- 
 ##### Usage example bash
 
 To run MutaPipe for gene NEK1 and set the paramaters to filter out
-1. sequences covering less than 50% of the reference sequence and 
-2. sequences whose best HSP covers less than 10% of the reference sequence, 
+1. sequences covering less than 70% of the reference sequence and 
+2. sequences whose best HSP covers less than 30% of the reference sequence, 
 use the command:
 
 ```bash
-./MutaPipe.sh "-g NEK1" "-rsl 0.5" "-cov 0.1"
+./MutaPipe.sh -g NEK1 -r 0.7 -c 0.3
 ```
 
 To run MutaPipe with **more than one input gene**, e.g. for NEK1 and SOD1, and the same parameters as before, use the command:
 ```bash
-./MutaPipe.sh "-g NEK1 SOD1" "-rsl 0.5" "-cov 0.1"
+./MutaPipe.sh -g "NEK1 SOD1" -r 0.7 -c 0.3
 ```
 
 To run MutaPipe passing a file containing the genes of interest, e.g. this example file called [genes.txt](https://github.com/Utilon/MutaPipe_Repo/blob/main/MutaPipe/genes.txt), and the same parameters as before, use the command:
 ```bash
-./MutaPipe.sh "-g $(cat genes.txt)" "-rsl 0.5" "-cov 0.1"
+./MutaPipe.sh -g $(cat genes.txt) -r 0.7 -c 0.3
 ```
-
 
 #### Using the python scripts 
 
-MutaPipe can be run manually, by running the 9 python scripts one after another (script [`00`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00_search_pdb.py), [`01`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/01_download_files.py), [`02`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/02_parse_cif_files.py), [`03`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/03_parse_fasta_files.py), [`04`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/04_blast_against_reference.py), [`05`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/05_pdb_extract_unsolved_res.py), [`06`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06_best_structure_per_mutation.py), [`07_a`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_a_ClinVar_Annotations_edirect_per_gene_download_files.py), [`07_b`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py), [`08`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/08_add_clinvar_annotations_to_best_structures.py)). More options are available when running the MutaPipe python scripts manually compared to when [using the bash script `MutaPipe.sh`](#using-the-bash-script). Use the `-h` flag on any MutaPipe python script to see instructions and available arguments (e.g. use the command: `python3 script_name -h`).
+MutaPipe can be run manually, by running the 9 python scripts one after another (script [`00`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00_search_pdb.py), [`01`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/01_download_files.py), [`02`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/02_parse_cif_files.py), [`03`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/03_parse_fasta_files.py), [`04`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/04_blast_against_reference.py), [`05`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/05_pdb_extract_unsolved_res.py), [`06`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06_best_structure_per_mutation.py), [`07_a`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_a_ClinVar_Annotations_edirect_per_gene_download_files.py), [`07_b`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py), [`08`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/08_add_clinvar_annotations_to_best_structures.py)). Use the `-h` flag on any MutaPipe python script to see instructions and available arguments (e.g. use the command: `python3 script_name -h`).
 
 **All arguments for the MutaPipe python scripts are OPTIONAL.** The scripts have preset default values, i.e. they can be run *without* setting any of the available flags. To view the default values set in each MutaPipe python script, use the command `python3 script_name -h`.
 
