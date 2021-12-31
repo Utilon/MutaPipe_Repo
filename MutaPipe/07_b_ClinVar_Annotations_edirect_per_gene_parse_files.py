@@ -76,9 +76,9 @@ results_dir = f'{target_directory}/Results' #define path to results directory
 
 #  create log file for console output:
 if create_search_log == True:
-    with open(f'{results_dir}/search_log_00.txt', 'w') as search_log:
-        search_log.write(f'Search log for 00_search_pdb.py\n\n')
-    sys.stdout = open(f'{results_dir}/search_log_00.txt', 'a')
+    with open(f'{results_dir}/search_log_07_b.txt', 'w') as search_log:
+        search_log.write(f'Search log for 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_07_b.txt', 'a')
 
 # print nice title
 print('===============================================================================')

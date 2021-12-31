@@ -78,9 +78,9 @@ results_dir = f'{target_directory}/Results' #define path to results directory
 
 #  create log file for console output:
 if create_search_log == True:
-    with open(f'{results_dir}/search_log_00.txt', 'w') as search_log:
-        search_log.write(f'Search log for 00_search_pdb.py\n\n')
-    sys.stdout = open(f'{results_dir}/search_log_00.txt', 'a')
+    with open(f'{results_dir}/search_log_08.txt', 'w') as search_log:
+        search_log.write(f'Search log for 08_add_clinvar_annotations_to_best_structures.py\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_08.txt', 'a')
 
 # print nice title
 print('===============================================================================')
