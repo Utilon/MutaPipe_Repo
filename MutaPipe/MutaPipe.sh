@@ -39,7 +39,7 @@ Help()
    echo "	-t	TARGET_DIRECTORY  		Specify target directory where output will be stored. Default = $TARGET_DIRECTORY"
    echo
    echo "MutaPipe options:"
-   echo "	-g	GENES				Specify genes of interest. To to pass a file containing all gene names use -g \$(cat filename). Default = $GENES"
+   echo "	-g	GENES				Specify genes of interest. To to pass a file containing all gene names use -g \"\$(cat filename)\". Default = $GENES"
    echo "	-o	ORGANISM			Set species for which to search pdb structures. Default = $ORGANISM"
    echo "	-a	ALL_PDB_IDS		    	Specify whether to retrieve all (True) or max. 10 PDB IDs (False) per gene. Default = $ALL_PDB_IDS"
    echo "	-f	FORMAT			  	Specify file formats to download. Default = $FORMAT. Options = [cif pdb fasta]"
@@ -56,7 +56,7 @@ Help()
    echo "$0 -g NEK1 -r 0.5 -c 0.1"	
    echo 
    echo "(2)"
-   echo "To run MutaPipe for multiple genes at ones pass a textfile using -g \$(cat filename) or use double quotes when listing the genes, e.g.:"
+   echo "To run MutaPipe for multiple genes at ones pass a textfile using -g \"\$(cat filename)\" or use double quotes when listing the genes, e.g.:"
    echo "$0 -g \"NEK1 SOD1 FUS\" -r 0.5 -c 0.1"	
    echo
 }
