@@ -55,8 +55,7 @@ MutaPipe achieves this by sorting the data to get:
 
 Finally, whenever corresponding data is available, MutaPipe will annotate variants using variant information from ClinVar, incl. information on variant pathogenicity.
 
-**Filtering** 
-<br />
+**Filteringfff** 
 To ensure sequences not associated with the gene of interest which are present in a PDB structure (e.g. if a protein of interest is co-crystallised with another peptide) do not get included in the final output, MutaPipe also has an additional step to filter out sequences:
 1. which are shorter than a given percentage of the reference sequence (set variable relative_sequence_length; default value = 0.5)
 2. whose best High Scoring Segment Pair (HSP) covers less than a given percentage of the reference sequence (set variable hsp_coverage; default value = 0.1) *(Note: A high-scoring segment pair, or HSP, is a subsegment of a pair of sequences, either nucleotide or amino acid, that share high level of similarity. The level of similarity between the sequences depends on the settings of the local or global alignment algorithm which generated them)*
