@@ -24,7 +24,7 @@
 
 MutaPipe is a fast and efficient bioinformatics pipeline to screen the [Protein Data Bank (PDB)](https://www.rcsb.org/) for genes of interest and retrieve the highest quality protein structure (best resolution) for each unique sequence associated with a gene. Additionally, whenever corresponding data is available, variants will be annotated using information on variant pathogenicity from [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/intro/).
 
-This allows researchers to efficiently screen the PDB for the most suitable template structures for a specific WT or mutant gene/protein which can be used for further in silico analysis such as homology modeling, mutagenesis experiments or molecular dynmamics simulations.
+This allows researchers to efficiently screen the PDB for the most suitable template structures for a specific WT or mutant gene/protein which can be used for further in silico analysis such as homology modeling, mutagenesis experiments or molecular dynamics simulations.
 
 ![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/files_for_README/Figure1_pipeline_simple_flowchart.jpeg)
 
