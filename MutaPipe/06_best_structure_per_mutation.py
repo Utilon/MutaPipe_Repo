@@ -109,7 +109,7 @@ ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write out
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
 ap.add_argument("-rsl", "--relative_sequence_length", type=restricted_float, required = False, help=f'filter out sequences shorter than a given percentage of the reference sequence, default = {str(relative_sequence_length)}')
 ap.add_argument("-cov", "--hsp_coverage", type=restricted_float, required = False, help=f'filter out sequences whose best hsp covers less than a given percentage of the reference sequence, default = {str(hsp_coverage)}')
-ap.add_argument("-n_best", "--n_best_structures", type=restricted_float, required = False, help=f'number of best structures to be listed in output for each sequence/variant, default = {str(n_best_structures)}')
+ap.add_argument("-n_best", "--n_best_structures", required = False, help=f'number of best structures to be listed in output for each sequence/variant, default = {str(n_best_structures)}')
 
 args = vars(ap.parse_args())
 
@@ -280,16 +280,28 @@ for gene in unique_genes:
         # sort by resolution
         df_this_combi_sorted = df_this_combi.sort_values(by='resolution')
         
-        # drop all but the best resolution (keep first row)
-        best_structure_this_combi = df_this_combi_sorted.drop_duplicates(subset='all_mismatches', keep="first")
+        
+#       NEW FILTER ADDED HERE (n_best_structures)
+#      before, I just dropped all duplicates and only kept the first (highest resolution.
+#      I have commentented out this code as we don't use it anmore:
+
+#         # drop all but the best resolution (keep first row)
+#         best_structure_this_combi = df_this_combi_sorted.drop_duplicates(subset='all_mismatches', keep="first")
+
+        # instead, we want to get the first n rows for each df_this_combi_sorted
+        best_n_structures_this_combi = df_this_combi_sorted[:n_best_structures]
         
         # we now append the best_structure_this_combi to the best_structure_unique_combis df
-        best_structure_unique_combis = best_structure_unique_combis.append(best_structure_this_combi)
+#         best_structure_unique_combis = best_structure_unique_combis.append(best_structure_this_combi)
+#  instead we do this with best_n_structures_this_combi
+        best_structure_unique_combis = best_structure_unique_combis.append(best_n_structures_this_combi)
         
         # we also append it to the gene-specific df combis_per_gene
-        combis_per_gene = combis_per_gene.append(best_structure_this_combi)
-        
-    # now that we have the best strucutre for all unique mismatch combinations for this gene,
+#         combis_per_gene = combis_per_gene.append(best_structure_this_combi)
+#  instead we do this with best_n_structures_this_combi
+        combis_per_gene = combis_per_gene.append(best_n_structures_this_combi)
+
+    # now that we have the n best structures for all unique mismatch combinations for this gene,
     # we want to write the gene-specific df to a csv file in the respective gene folder.
     # first we need to identify the right gene folder.
     # it's in the results folder and starts with the string '{gene}_'
@@ -306,7 +318,7 @@ for gene in unique_genes:
     # we get a slice of the output df for this particular gene and then write it to a csv file in the respective folder
     # the correct folder is results_dir/gene_folder
     print('    >>> writing csv file called {gene}_06_best_structure_per_unique_combination.csv')
-    print(f'            (contains the best structure for each point mutation for {gene}')
+    print(f'            (contains the best {str(n_best_structures)} structures for each point mutation for {gene}')
     output_gene = output[output.gene_name == gene]
     output_gene.to_csv(f'{results_dir}/{gene_folder}/{gene}_06_best_structure_per_point_mutation.csv', index=False)
     
@@ -346,21 +358,28 @@ for gene in unique_genes:
         # now we sort the this_mismatch df to get only the best structure (highest resolution)
         # sort by  resolution only
         this_mismatch_sorted = this_mismatch.sort_values(by=['resolution'])
+
+#       NEW FILTER ADDED HERE (n_best_structures)
+#      before, I just dropped all duplicates and only kept the first (highest resolution.
+#      I have commentented out this code as we don't use it anmore:
+# 
+#         # drop all but the best resolution (keep first row)
+#         # this df is only for one mismatch, so it only has one row after we drop all but the best structure!
+#         best_structure_this_mismatch = this_mismatch_sorted.drop_duplicates(subset=['gene_name', ], keep="first").copy()
         
-        # drop all but the best resolution (keep first row)
-        # this df is only for one mismatch, so it only has one row after we drop all but the best structure!
-        best_structure_this_mismatch = this_mismatch_sorted.drop_duplicates(subset=['gene_name', ], keep="first").copy()
+        # instead, we want to get the first n rows for each df_this_combi_sorted
+        best_n_structures_this_mismatch = this_mismatch_sorted[:n_best_structures]        
         
-        # we add information on this mismatch to the new column we create earlier
-        best_structure_this_mismatch['mismatch_of_interest'] = mismatch
+        # we add information on this mismatch to the new column we created earlier
+        best_n_structures_this_mismatch['mismatch_of_interest'] = mismatch
         
-        # we append this df (best_structure_this_mismatch) to the df mutations_per_gene which
+        # we append this df (best_n_structures_this_mismatch) to the df mutations_per_gene which
         # contains all the best structures per mismatch (regardless of other mutations in the structure)
-        mutations_per_gene = mutations_per_gene.append(best_structure_this_mismatch)
+        mutations_per_gene = mutations_per_gene.append(best_n_structures_this_mismatch)
         
     # now that we looped over all the unique mismatches, we extrac the relevant columns from the df and write to csv file for this gene
     print('    >>> writing csv file called {gene}_06_best_structure_any_mutation.csv')
-    print(f'            (contains the best structure for any mutation regardless of other mutations for {gene}\n')
+    print(f'            (contains the best {str(n_best_structures)} structures for any mutation regardless of other mutations for {gene}\n')
     mutations_per_gene_output = mutations_per_gene[['gene_name', 'mismatch_of_interest', 'structure_id', 'structure_name', 'chain_name', 'resolution', 'mismatch_substitutions', 'close_mismatch_substitutions', 'unsolved_residues_in_structure', 'structure_method', 'deposition_date', 'classification']]
     mutations_per_gene_output.to_csv(f'{results_dir}/{gene_folder}/{gene}_06_best_structure_any_mutation.csv', index = False)
     
