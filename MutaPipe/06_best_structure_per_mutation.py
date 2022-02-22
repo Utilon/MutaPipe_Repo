@@ -81,6 +81,8 @@ hsp_coverage = 0.1                                # filter out sequences whose b
                                                               #  e.g. 50% (0.5) or 10% (0.1) of the reference sequence
                                                               
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
+
+n_best_structures = 1 # number of top structures you want to include in the output table (1 for the best, 2 for the two best available one) per sequence/mismatch
                                             
                                             
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
@@ -107,6 +109,7 @@ ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write out
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
 ap.add_argument("-rsl", "--relative_sequence_length", type=restricted_float, required = False, help=f'filter out sequences shorter than a given percentage of the reference sequence, default = {str(relative_sequence_length)}')
 ap.add_argument("-cov", "--hsp_coverage", type=restricted_float, required = False, help=f'filter out sequences whose best hsp covers less than a given percentage of the reference sequence, default = {str(hsp_coverage)}')
+ap.add_argument("-n_best", "--n_best_structures", type=restricted_float, required = False, help=f'number of best structures to be listed in output for each sequence/variant, default = {str(n_best_structures)}')
 
 args = vars(ap.parse_args())
 
@@ -116,6 +119,7 @@ create_search_log  = create_search_log  if args["log"]   == None else args["log"
 target_directory  = target_directory if args["target"]   == None else args["target"]
 relative_sequence_length = relative_sequence_length if args["relative_sequence_length"] == None else args["relative_sequence_length"]
 hsp_coverage  = hsp_coverage if args["hsp_coverage"]   == None else args["hsp_coverage"]
+n_best_structures = n_best_structures if args["n_best_structures"] == None else args["n_best_structures"]
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 # We want to write all our Output into the Results directory
