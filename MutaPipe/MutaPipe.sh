@@ -20,6 +20,7 @@ BLASTp_PATH="blastp"
 UNIPROT_REFSEQS="$MUTAPIPE_DIRECTORY/Uniprot_reference_seqs/UP000005640_9606.fasta"
 RELATIVE_SEQUENCE_LENGTH="0.5"
 HSP_COVERAGE="0.1"
+N_BEST_STRUCTURES="1"
 
 ############################################################
 # Help                                                     #
@@ -31,7 +32,7 @@ Help()
    echo
    echo "****   Use this bash script to run MutaPipe   ****"
    echo
-   echo "Usage: $0 [-h|l|t|g|o|a|f|p|b|u|r|c]"
+   echo "Usage: $0 [-h|l|t|g|o|a|f|p|b|u|r|c|n]"
    echo
    echo "General options:"
    echo "	-h	HELP				Print this help message and exit"
@@ -46,9 +47,9 @@ Help()
    echo "	-p	POLYPEPTIDES			Specify whether to extract polypeptide sequence (True) or not (False). Default = $POLYPEPTIDES"
    echo "	-b	BLASTp_PATH			Set path to blastp on your system. Default = $BLASTp_PATH"
    echo "	-u	UNIPROT_REFSEQS			Set path to reference proteome fasta file. Default = $UNIPROT_REFSEQS"
-   echo "	-r	RELATIVE_SEQUENCE_LENGTH	Set to filter out sequences shorter than a given percentage of the reference sequence (0.1-1.0). Default = $RELATIVE_SEQUENCE_LENGTH"
-   echo "	-c	HSP_COVERAGE			Set to filter out sequences whose best hsp covers less than a given percentage of the reference sequence (0.1-1.0). Default = $HSP_COVERAGE"
-   
+   echo "	-r	RELATIVE_SEQUENCE_LENGTH	Set to filter out sequences shorter than a given % of the reference sequence (0.1-1.0). Default = $RELATIVE_SEQUENCE_LENGTH"
+   echo "	-c	HSP_COVERAGE			Set to filter out sequences whose best hsp is shorter than a given % of the reference sequence (0.1-1.0). Default = $HSP_COVERAGE"
+   echo "        -n      N_BEST_STRUCTURES               Set number of best structures to be listed in output for each sequence/variant. Default = $N_BEST_STRUCTURES"   
    echo
    echo "Usage examples:"
    echo "(1)"
@@ -66,7 +67,7 @@ Help()
 ############################################################
 
 # Get the options
-while getopts ":hl:t:g:o:a:f:p:b:u:r:c:" option; do
+while getopts ":hl:t:g:o:a:f:p:b:u:r:c:n:" option; do
    case "${option}" in
       h) # display Help
          Help
@@ -93,6 +94,8 @@ while getopts ":hl:t:g:o:a:f:p:b:u:r:c:" option; do
          RELATIVE_SEQUENCE_LENGTH=${OPTARG};;
       c) # Set HSP coverage
          HSP_COVERAGE=${OPTARG};;
+      n) # Set number of best structures per gene/sequence to be returned in the final output table
+         N_BEST_STRUCTURES=${OPTARG};;
      \?) # Invalid option
          echo "Error: Invalid option."
          echo "Use -h to display help message."
@@ -121,6 +124,7 @@ echo "			BLASTp_PATH			$BLASTp_PATH"
 echo "			UNIPROT_REFSEQS 		$UNIPROT_REFSEQS"
 echo "			RELATIVE_SEQUENCE_LENGTH	$RELATIVE_SEQUENCE_LENGTH"
 echo "			HSP_COVERAGE: 			$HSP_COVERAGE"
+echo "         N_BEST_STRUCTURES:        $N_BEST_STRUCTURES"
 
 # change to directory where this script and the python scripts are stored
 cd "$MUTAPIPE_DIRECTORY"
@@ -132,7 +136,7 @@ python3 02_parse_cif_files.py -pp $POLYPEPTIDES -t "$TARGET_DIRECTORY" -l $LOG
 python3 03_parse_fasta_files.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 04_blast_against_reference.py -bp "$BLASTp_PATH" -refseq "$TARGET_DIRECTORY"/"$UNIPROT_REFSEQS" -t "$TARGET_DIRECTORY" -l $LOG
 python3 05_pdb_extract_unsolved_res.py -t "$TARGET_DIRECTORY" -l $LOG
-python3 06_best_structure_per_mutation.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG
+python3 06_best_structure_per_mutation.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG -n $N_BEST_STRUCTURES
 python3 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 08_add_clinvar_annotations_to_best_structures.py -t "$TARGET_DIRECTORY" -l $LOG
@@ -170,8 +174,9 @@ cd "$TARGET_DIRECTORY"
 #   				      Specify path to uniprot reference fasta, default = /Users/debs/OneDrive - King's College London/Pipeline/Pipeline_Git/MutaPipe/Uniprot_reference_seqs/UP000005640_9606.fasta    
 
 # new in 06
-# -rsl, --relative_sequence_length
-#                         filter out sequences shorter than a given percentage of the reference sequence, default = 0.5
-# -cov, --hsp_coverage    filter out sequences whose best hsp covers less than a given percentage of the reference sequence, default = 0.1
+# -rsl, --relative_sequence_length     filter out sequences shorter than a given percentage of the reference sequence, default = 0.5
+# -cov, --hsp_coverage                 filter out sequences whose best hsp covers less than a given percentage of the reference sequence, default = 0.1
+# -n_best, --n_best_structures         number of best structures to be listed in output for each sequence/variant, default = 1
+
 
 
