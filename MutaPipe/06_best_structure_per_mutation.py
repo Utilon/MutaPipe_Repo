@@ -82,7 +82,7 @@ hsp_coverage = 0.1                                # filter out sequences whose b
                                                               
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
 
-n_best_structures = 1 # number of top structures you want to include in the output table (1 for the best, 2 for the two best available one) per sequence/mismatch
+n_best_structures = 6 # number of top structures you want to include in the output table (1 for the best, 2 for the two best available one) per sequence/mismatch
                                             
                                             
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
@@ -109,7 +109,7 @@ ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write out
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
 ap.add_argument("-rsl", "--relative_sequence_length", type=restricted_float, required = False, help=f'filter out sequences shorter than a given percentage of the reference sequence, default = {str(relative_sequence_length)}')
 ap.add_argument("-cov", "--hsp_coverage", type=restricted_float, required = False, help=f'filter out sequences whose best hsp covers less than a given percentage of the reference sequence, default = {str(hsp_coverage)}')
-ap.add_argument("-n_best", "--n_best_structures", required = False, help=f'number of best structures to be listed in output for each sequence/variant, default = {str(n_best_structures)}')
+ap.add_argument("-n_best", "--n_best_structures", type=int , required = False, help=f'')
 
 args = vars(ap.parse_args())
 

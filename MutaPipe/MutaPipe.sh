@@ -124,7 +124,7 @@ echo "			BLASTp_PATH			$BLASTp_PATH"
 echo "			UNIPROT_REFSEQS 		$UNIPROT_REFSEQS"
 echo "			RELATIVE_SEQUENCE_LENGTH	$RELATIVE_SEQUENCE_LENGTH"
 echo "			HSP_COVERAGE: 			$HSP_COVERAGE"
-echo "         N_BEST_STRUCTURES:        $N_BEST_STRUCTURES"
+echo "         N_BEST_STRUCTURES:      $N_BEST_STRUCTURES"
 
 # change to directory where this script and the python scripts are stored
 cd "$MUTAPIPE_DIRECTORY"
@@ -136,7 +136,7 @@ python3 02_parse_cif_files.py -pp $POLYPEPTIDES -t "$TARGET_DIRECTORY" -l $LOG
 python3 03_parse_fasta_files.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 04_blast_against_reference.py -bp "$BLASTp_PATH" -refseq "$TARGET_DIRECTORY"/"$UNIPROT_REFSEQS" -t "$TARGET_DIRECTORY" -l $LOG
 python3 05_pdb_extract_unsolved_res.py -t "$TARGET_DIRECTORY" -l $LOG
-python3 06_best_structure_per_mutation.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG -n $N_BEST_STRUCTURES
+python3 06_best_structure_per_mutation.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG -n_best $N_BEST_STRUCTURES
 python3 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 08_add_clinvar_annotations_to_best_structures.py -t "$TARGET_DIRECTORY" -l $LOG
