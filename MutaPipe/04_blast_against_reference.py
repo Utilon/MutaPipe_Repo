@@ -52,9 +52,20 @@ blastp_path =  '/usr/local/ncbi/blast/bin/blastp' # First run 'which blastp' on 
                                                                          #  to blastp and give that as argument to NcbiblastpCommandline.
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
 
-uniprot_fasta = f'{target_directory}/Uniprot_reference_seqs/UP000005640_9606.fasta' # specify path to uniprot reference fasta
-                                            
-                                            
+
+# this doesn't work if we use a different target_directory than the default, so I needed to first figure out the correct path
+# see added code below
+# this old code here has been commented out:
+#uniprot_fasta = f'{target_directory}/Uniprot_reference_seqs/UP000005640_9606.fasta' # specify path to uniprot reference fasta
+
+# figure out path to uniprot fasta
+path_to_current_script = os.path.realpath(__file__).
+script_name = path_to_current_script.split('/')[-1]
+MutaPipe_dir = path_to_current_script[:-len(script_name)]
+
+uniprot_fasta = f'{MutaPipe_dir}/Uniprot_reference_seqs/UP000005640_9606.fasta' # specify path to uniprot reference fasta                                            
+        
+        
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""****    This script takes a csv file (03_fasta_combined_info.csv) containing information for all input genes extracted from their
 #  respective fasta files and fasta_ex files as input and will: 

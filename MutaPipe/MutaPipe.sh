@@ -124,7 +124,7 @@ echo "			BLASTp_PATH			$BLASTp_PATH"
 echo "			UNIPROT_REFSEQS 		$UNIPROT_REFSEQS"
 echo "			RELATIVE_SEQUENCE_LENGTH	$RELATIVE_SEQUENCE_LENGTH"
 echo "			HSP_COVERAGE: 			$HSP_COVERAGE"
-echo "         N_BEST_STRUCTURES:      $N_BEST_STRUCTURES"
+echo "                        N_BEST_STRUCTURES:              $N_BEST_STRUCTURES"
 
 # change to directory where this script and the python scripts are stored
 cd "$MUTAPIPE_DIRECTORY"
