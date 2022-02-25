@@ -52,20 +52,11 @@ blastp_path =  '/usr/local/ncbi/blast/bin/blastp' # First run 'which blastp' on 
                                                                          #  to blastp and give that as argument to NcbiblastpCommandline.
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
 
-
-# this doesn't work if we use a different target_directory than the default, so I needed to first figure out the correct path
-# see added code below
-# this old code here has been commented out:
-#uniprot_fasta = f'{target_directory}/Uniprot_reference_seqs/UP000005640_9606.fasta' # specify path to uniprot reference fasta
-
-# figure out path to uniprot fasta
-path_to_current_script = os.path.realpath(__file__).
-script_name = path_to_current_script.split('/')[-1]
-MutaPipe_dir = path_to_current_script[:-len(script_name)]
-
-uniprot_fasta = f'{MutaPipe_dir}/Uniprot_reference_seqs/UP000005640_9606.fasta' # specify path to uniprot reference fasta                                            
+# figure out path to uniprot fasta (no argument) to set the default value for uniprot_fasta (see one line further down)
+MutaPipe_dir = os.path.dirname(os.path.realpath(__file__))
+uniprot_fasta = f'{MutaPipe_dir}/Uniprot_reference_seqs/UP000005640_9606.fasta' # specify default path to uniprot reference fasta                                            
         
-        
+
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""****    This script takes a csv file (03_fasta_combined_info.csv) containing information for all input genes extracted from their
 #  respective fasta files and fasta_ex files as input and will: 
@@ -113,14 +104,11 @@ print('=========================================================================
 # print script name to console/log file
 print(f'script name: {os.path.basename(__file__)}')
 
-
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
 print(f'start: {start_time}\n')
 
-
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 
 # we make a new folder in the Results folder to store all reference sequences (permanently) and individual fasta files (temporarily)
 # which we need during our for loop when doing the blastp
@@ -133,7 +121,6 @@ os.chdir(refseqs_dir)
 
 # Read in data from csv files
 fasta_df = pd.read_csv(f'{results_dir}/03_fasta_combined_info.csv')
-
 
 # create a df based on the fasta_df with additional columns to populate with results from blast p
 xml_df = pd.concat([fasta_df, pd.DataFrame(columns=['alignment_length', 'hsp_number',
@@ -171,7 +158,6 @@ for fasta_df_index, row in fasta_df.iterrows():
     # in order to store this sequence properly, we need to create a sequence record, see: http://biopython.org/DIST/docs/tutorial/Tutorial.html#sec35
     # Including an identifier is very important if we want to output the SeqRecord to a file.
     seq_rec = SeqRecord(sequence, id=f'{gene}_{row.structure_id}_{row.chain_name.replace(" ", "")}')
-    
     
     # in order to perform a blastp with this sequence against the reference sequence,
     # we need both sequences as fasta files, so we make a fasta file of the current sequence record

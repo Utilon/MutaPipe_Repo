@@ -8,6 +8,12 @@
 # Get path to the directory where all the python scripts are stored:
 MUTAPIPE_DIRECTORY="$(dirname "$0")"
 
+# for some reason it seems we need to store the full path of the MutaPipe directory too
+# otherwise we cannot access the uniprot reference sequences later on.
+# however, we still need the first variable to read in the default genes (this doesn't work with the full path/second variable)
+MUTAPIPE_DIRECTORY_FULL_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+
 # Default behaviour
 GENES="$(cat $MUTAPIPE_DIRECTORY/genes.txt)"
 LOG="False"
@@ -17,7 +23,7 @@ ALL_PDB_IDS="True"
 FORMAT="cif pdb fasta"
 POLYPEPTIDES="True"
 BLASTp_PATH="blastp"
-UNIPROT_REFSEQS="$MUTAPIPE_DIRECTORY/Uniprot_reference_seqs/UP000005640_9606.fasta"
+UNIPROT_REFSEQS="$MUTAPIPE_DIRECTORY_FULL_PATH"/Uniprot_reference_seqs/UP000005640_9606.fasta
 RELATIVE_SEQUENCE_LENGTH="0.5"
 HSP_COVERAGE="0.1"
 N_BEST_STRUCTURES="1"
@@ -126,6 +132,7 @@ echo "			RELATIVE_SEQUENCE_LENGTH	$RELATIVE_SEQUENCE_LENGTH"
 echo "			HSP_COVERAGE: 			$HSP_COVERAGE"
 echo "                        N_BEST_STRUCTURES:              $N_BEST_STRUCTURES"
 
+
 # change to directory where this script and the python scripts are stored
 cd "$MUTAPIPE_DIRECTORY"
 
@@ -134,15 +141,16 @@ python3 00_search_pdb.py -g $GENES -o "$ORGANISM" -a $ALL_PDB_IDS -t "$TARGET_DI
 python3 01_download_files.py -f $FORMAT -t "$TARGET_DIRECTORY" -l $LOG
 python3 02_parse_cif_files.py -pp $POLYPEPTIDES -t "$TARGET_DIRECTORY" -l $LOG
 python3 03_parse_fasta_files.py -t "$TARGET_DIRECTORY" -l $LOG
-python3 04_blast_against_reference.py -bp "$BLASTp_PATH" -refseq "$TARGET_DIRECTORY"/"$UNIPROT_REFSEQS" -t "$TARGET_DIRECTORY" -l $LOG
+python3 04_blast_against_reference.py -bp "$BLASTp_PATH" -refseq "$UNIPROT_REFSEQS" -t "$TARGET_DIRECTORY" -l $LOG
 python3 05_pdb_extract_unsolved_res.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 06_best_structure_per_mutation.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG -n_best $N_BEST_STRUCTURES
 python3 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 08_add_clinvar_annotations_to_best_structures.py -t "$TARGET_DIRECTORY" -l $LOG
 
-# change back to target directory
+# change (back) to target directory
 cd "$TARGET_DIRECTORY"
+
 
 ############################################################
 # Overview arguments for all python scripts			       #
