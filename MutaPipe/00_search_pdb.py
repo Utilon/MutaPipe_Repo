@@ -3,6 +3,7 @@
 #       - outputs a csv file called 00_search_overview_PDBids.csv containing all gene names and corresponding PDB structure id's if available
 #       - outputs a csv file called 00_search_overview_availability.csv containing a boolean value for each gene to indicate whether there are any structures available or not
 
+
 # ----------------------------------------------------------------------------------------------------------------------------------
 # Set up workspace
 import os
