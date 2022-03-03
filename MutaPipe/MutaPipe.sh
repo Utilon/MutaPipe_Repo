@@ -138,15 +138,15 @@ cd "$MUTAPIPE_DIRECTORY"
 
 # run all MutaPipe python scripts one after another
 python3 00_search_pdb.py -g $GENES -o "$ORGANISM" -a $ALL_PDB_IDS -t "$TARGET_DIRECTORY" -l $LOG 
-# python3 01_download_files.py -f $FORMAT -t "$TARGET_DIRECTORY" -l $LOG
-# python3 02_parse_cif_files.py -pp $POLYPEPTIDES -t "$TARGET_DIRECTORY" -l $LOG
-# python3 03_parse_fasta_files.py -t "$TARGET_DIRECTORY" -l $LOG
-# python3 04_blast_against_reference.py -bp "$BLASTp_PATH" -refseq "$UNIPROT_REFSEQS" -t "$TARGET_DIRECTORY" -l $LOG
-# python3 05_pdb_extract_unsolved_res.py -t "$TARGET_DIRECTORY" -l $LOG
-# python3 06_best_structure_per_mutation.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG -n_best $N_BEST_STRUCTURES
-# python3 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py -t "$TARGET_DIRECTORY" -l $LOG
-# python3 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py -t "$TARGET_DIRECTORY" -l $LOG
-# python3 08_add_clinvar_annotations_to_best_structures.py -t "$TARGET_DIRECTORY" -l $LOG
+python3 01_download_files.py -f $FORMAT -t "$TARGET_DIRECTORY" -l $LOG
+python3 02_parse_cif_files.py -pp $POLYPEPTIDES -t "$TARGET_DIRECTORY" -l $LOG
+python3 03_parse_fasta_files.py -t "$TARGET_DIRECTORY" -l $LOG
+python3 04_blast_against_reference.py -bp "$BLASTp_PATH" -refseq "$UNIPROT_REFSEQS" -t "$TARGET_DIRECTORY" -l $LOG
+python3 05_pdb_extract_unsolved_res.py -t "$TARGET_DIRECTORY" -l $LOG
+python3 06_best_structure_per_mutation.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG -n_best $N_BEST_STRUCTURES
+python3 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py -t "$TARGET_DIRECTORY" -l $LOG
+python3 07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py -t "$TARGET_DIRECTORY" -l $LOG
+python3 08_add_clinvar_annotations_to_best_structures.py -t "$TARGET_DIRECTORY" -l $LOG
 
 # change (back) to target directory
 cd "$TARGET_DIRECTORY"
