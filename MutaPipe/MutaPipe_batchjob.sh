@@ -22,7 +22,7 @@ MUTAPIPE_DIRECTORY_FULL_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /
 
 
 # Default behaviour
-GENES="$(cat $MUTAPIPE_DIRECTORY/genes.txt)"
+GENES="$(cat $ROSALIND_MUTAPIPE/genes.txt)"
 LOG="False"
 TARGET_DIRECTORY=$(pwd)
 ORGANISM="Homo sapiens"
@@ -30,7 +30,7 @@ ALL_PDB_IDS="True"
 FORMAT="cif pdb fasta"
 POLYPEPTIDES="True"
 BLASTp_PATH="blastp"
-UNIPROT_REFSEQS="$MUTAPIPE_DIRECTORY_FULL_PATH"/Uniprot_reference_seqs/UP000005640_9606.fasta
+UNIPROT_REFSEQS="$ROSALIND_MUTAPIPE"/Uniprot_reference_seqs/UP000005640_9606.fasta
 RELATIVE_SEQUENCE_LENGTH="0.5"
 HSP_COVERAGE="0.1"
 N_BEST_STRUCTURES="1"
