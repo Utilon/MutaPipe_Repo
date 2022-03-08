@@ -141,10 +141,11 @@ echo "                        N_BEST_STRUCTURES:              $N_BEST_STRUCTURES
 
 
 # change to directory where this script and the python scripts are stored
-cd "$MUTAPIPE_DIRECTORY"
+# cd "$MUTAPIPE_DIRECTORY"
+cd "$ROSALIND_MUTAPIPE"
 
 # run all MutaPipe python scripts one after another
-python3 "$ROSALIND_MUTAPIPE"/00_search_pdb.py -g $GENES -o "$ORGANISM" -a $ALL_PDB_IDS -t "$TARGET_DIRECTORY" -l $LOG 
+python3 00_search_pdb.py -g $GENES -o "$ORGANISM" -a $ALL_PDB_IDS -t "$TARGET_DIRECTORY" -l $LOG 
 # python3 01_download_files.py -f $FORMAT -t "$TARGET_DIRECTORY" -l $LOG
 # python3 02_parse_cif_files.py -pp $POLYPEPTIDES -t "$TARGET_DIRECTORY" -l $LOG
 # python3 03_parse_fasta_files.py -t "$TARGET_DIRECTORY" -l $LOG
