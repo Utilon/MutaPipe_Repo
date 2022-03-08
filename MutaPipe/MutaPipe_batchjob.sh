@@ -11,6 +11,10 @@
 # Get path to the directory where all the python scripts are stored:
 MUTAPIPE_DIRECTORY="$(dirname "$0")"
 
+# for batch jobs: make extra variable to MutaPipe directory on Rosalind to run python_scripts
+ROSALIND_MUTAPIPE="/scratch/groups/structural_bioinfo/deb/MutaPipe_Repo/MutaPipe"
+
+
 # for some reason it seems we need to store the full path of the MutaPipe directory too
 # otherwise we cannot access the uniprot reference sequences later on.
 # however, we still need the first variable to read in the default genes (this doesn't work with the full path/second variable)
@@ -140,7 +144,7 @@ echo "                        N_BEST_STRUCTURES:              $N_BEST_STRUCTURES
 cd "$MUTAPIPE_DIRECTORY"
 
 # run all MutaPipe python scripts one after another
-python3 00_search_pdb.py -g $GENES -o "$ORGANISM" -a $ALL_PDB_IDS -t "$TARGET_DIRECTORY" -l $LOG 
+python3 "$ROSALIND_MUTAPIPE"/00_search_pdb.py -g $GENES -o "$ORGANISM" -a $ALL_PDB_IDS -t "$TARGET_DIRECTORY" -l $LOG 
 # python3 01_download_files.py -f $FORMAT -t "$TARGET_DIRECTORY" -l $LOG
 # python3 02_parse_cif_files.py -pp $POLYPEPTIDES -t "$TARGET_DIRECTORY" -l $LOG
 # python3 03_parse_fasta_files.py -t "$TARGET_DIRECTORY" -l $LOG
