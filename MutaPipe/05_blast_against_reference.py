@@ -8,7 +8,6 @@
 #                - all reference sequences and unique sequences of all structures are stored in .fasta format in the newly created Results/RefSeqs folder
 #                - all BLASTp outputs are stored in .xml format in the newly created Results/RefSeqs folder
 #                - a csv file called 05_blastp_results.csv listing all the information in the input file and the corresponding blastp results
-
 # ===========================================================================================
 
 # Set up
@@ -32,7 +31,6 @@ from Bio.SeqRecord import SeqRecord
 script_name = os.path.basename(__file__)
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # use argparse to make it so we can pass arguments to script via terminal
 
 # define a function to convert different inputs to booleans
@@ -86,13 +84,11 @@ target_directory  = target_directory if args["target"]   == None else args["targ
 uniprot_fasta = uniprot_fasta if args["reference_sequences"] == None else args["reference_sequences"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # We want to write all our Output into the Results directory
 
 results_dir = f'{target_directory}/Results' #define path to results directory
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 #  create log file for console output:
 if create_search_log == True:
     with open(f'{results_dir}/search_log_05.txt', 'w') as search_log:
@@ -112,7 +108,6 @@ start_time = datetime.now()
 print(f'start: {start_time}\n')
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # we make a new folder in the Results folder to store all reference sequences (permanently) and individual fasta files (temporarily)
 # which we need during our for loop when doing the blastp
 refseqs_dir = f'{results_dir}/RefSeqs'
@@ -421,7 +416,6 @@ for fasta_df_index, row in fasta_df.iterrows():
     xml_df.loc[fasta_df_index, 'sbjct_sequence'] = hsp.sbjct
     xml_df.loc[fasta_df_index, 'match_sequence'] = hsp.match
 
-
 # Before we change back to the results folder, we clean up the RefSeqs folder a bit
 # we want to make a subdirectory in this folder called PDB_seqs_and_blastp_outputs
 # we will move all the fasta files from the PDB structures and the blastp outputs there and
@@ -449,7 +443,6 @@ xml_df.to_csv('05_blastp_results.csv', index = False)
 refseq_warnings.to_csv('05_refeseq_warnings.csv', index = False)
 blastp_warnings.to_csv('05_blastp_warnings.csv', index = False)
 
-
 # Finally we want to write the gene-specific csv outputs in the respective gene folders:
 print(f'>>> writing all gene-specific csv files containing blastp results and storing them in the respective gene folders\n')
 for gene in xml_df.gene_name.unique():
@@ -472,7 +465,6 @@ for gene in xml_df.gene_name.unique():
     
 # change back to target directory
 os.chdir(target_directory)
-    
     
 print('\n============================== Summary ================================================\n')
 print(f'Complete! \n    Performed BLASTp on a total of {len(fasta_df)} sequences listed in the file 04_fasta_combined_info.csv.\n')

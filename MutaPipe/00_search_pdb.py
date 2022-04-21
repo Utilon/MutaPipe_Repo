@@ -2,8 +2,6 @@
 #       - searches the pdb for all structures associated with each gene name (in Homo Sapiens)
 #       - outputs a csv file called 00_search_overview_PDBids.csv containing all gene names and corresponding PDB structure id's if available
 #       - outputs a csv file called 00_search_overview_availability.csv containing a boolean value for each gene to indicate whether there are any structures available or not
-
-
 # ----------------------------------------------------------------------------------------------------------------------------------
 # Set up workspace
 import os
@@ -115,7 +113,6 @@ def search_pdb(query_url):
     :param query_url: string
     :return: Dict or None
     """
-    
     # Make a GET call to the API URL
     get_request = requests.get(url=query_url)
     
@@ -167,7 +164,6 @@ for gene in gene_list:
     parameter_value3 =  species_name.replace(" ", "%20") #replace spaces in search term with '%20' to make it url-conform
     
     # ----------------------------------------------------------------------------------------------------------------------------------
-    
     # Build query string (no packages required)
     # Make json string url-compatible
     
@@ -186,14 +182,12 @@ for gene in gene_list:
     query_string = query_string_replace4.replace("]", "%5D") # we call our final query link 'query_string'
     
     # ----------------------------------------------------------------------------------------------------------------------------------
-    
     # Set up search
     query_url = base_url + "?json=" + query_string
     # https://search.rcsb.org/rcsbsearch/v1/query?json={search-request}
     # the curly brackets around the search-request are defined in the query_string
     
     # ----------------------------------------------------------------------------------------------------------------------------------
-    
     # perfom search
        
     print(f">>> Searching the PDB for gene {gene_counter} of {n_genes}:             {gene_name}")
@@ -220,24 +214,19 @@ for gene in gene_list:
     # sort found_pdbs
     found_pdbs.sort()
     print(f'            Number of PDB IDs retrieved :            {len(found_pdbs)} \n')
-    
     # add number of found pdb ID's to counter n_pdbs_all_genes
     n_pdbs_all_genes += len(found_pdbs)
-    
     # append information to search_overview df to later write to file
     # in order to add a new row to the bottom of the df, we use .loc and specify the index as the current df lenght!
     search_overview.loc[len(search_overview)] = [gene, len(found_pdbs), found_pdbs]
     gene_counter += 1
 
-
 # write search_overview to csv file
 search_overview.to_csv(f'{results_dir}/00_search_overview_PDBids.csv')
 
 # write a csv file that contains a boolean value for each gene to indicate whether there are any structures available or not
-
 # create an empty dataframe
 df = pd.DataFrame(columns=['gene_name', 'data_available'])
-
 # populate df with information on availability
 for gene in gene_list:
     if gene in genes_data_available:
@@ -260,8 +249,6 @@ print(f'    o      No PDB IDs have been found for {len(genes_no_data_available)}
 print('The following files have been created:')
 print('   o      00_search_overview_availability.csv      (contains information on which genes have available structures)')
 print('   o      00_search_overview_PDBids.csv            (contains information on which PDB IDs are available per structures)\n\n')
-
-
 
 # print script name to console/log file
 print(f'end of script {script_name}')

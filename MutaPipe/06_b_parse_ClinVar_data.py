@@ -34,15 +34,13 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
-    
-    
+        
 # set default values for arguments we want to implement
 # we have to do this here if we want to print the default values in the help message
 
 create_search_log = False     # will create a file called search_log.txt with console output if set to True,
                                             # prints to console if set to False.
-target_directory = os.getcwd()    # set target directory (where Results folder is located)
-                                            
+target_directory = os.getcwd()    # set target directory (where Results folder is located)                                            
                                             
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""**** This script takes no csv file as input, but will automatically read in and parse
@@ -63,13 +61,11 @@ create_search_log  = create_search_log  if args["log"]   == None else args["log"
 target_directory  = target_directory if args["target"]   == None else args["target"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # We want to write all our Output into the Results directory
 
 results_dir = f'{target_directory}/Results' #define path to results directory
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 #  create log file for console output:
 if create_search_log == True:
     with open(f'{results_dir}/search_log_06_b.txt', 'w') as search_log:
@@ -89,7 +85,6 @@ start_time = datetime.now()
 print(f'start: {start_time}\n')
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # change to ClinVar_Annotations  folder (where we have the data of all variants for all genes in xml files; from running the previous script 06_a)
 clinvar_dir = f'{results_dir}/ClinVar_Annotations'
 os.chdir(clinvar_dir)
@@ -189,7 +184,6 @@ for id_file in id_files:
                 # this file will be overwritten everytime a new row is added.
                 clinvar_data.to_csv(f'{results_dir}/06_b_ClinVar_Annotations.csv', index = False)
                     
-
 # write df to csv
 clinvar_data.to_csv(f'{results_dir}/06_b_ClinVar_Annotations.csv', index = False)
 
@@ -216,7 +210,6 @@ print('            (lists all ClinVar annotations for all variants in this gene)
 print('\nThe following files have been created and stored in the Results folder:')
 print('   o      06_b_ClinVar_Annotations.csv')
 print('            (lists all ClinVar annotations for all variants in all genes)')
-
 
 # print script name to console/log file
 print(f'end of script {script_name}')

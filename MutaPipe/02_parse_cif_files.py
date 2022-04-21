@@ -12,7 +12,6 @@
 #                - a csv file called 02_all_resolutions.csv containing the resolutions of all parsed structures for all genes
 #                - a csv file called 02_all_poly_seq.csv containing all polypeptide sequences in all structures of all genes
 #                - a csv file called 02_structure_info.csv which lists all available header information for each structure for all genes
-    
 #  ----------------------------------------------------------------------------------------------------------------------------------
    
 # Set up
@@ -33,8 +32,6 @@ from Bio.PDB.Polypeptide import PPBuilder
 script_name = os.path.basename(__file__)
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
-
 # use argparse to make it so we can pass arguments to script via terminal
 
 # define a function to convert different inputs to booleans
@@ -280,7 +277,6 @@ if extract_pp == True:
 # change back to target directory
 os.chdir(target_directory)
 
-
 print('\n============================== Summary ================================================\n')
 print(f'Complete! \n    Succesfully parsed a total of {cif_total} mmCIF files stored across {n_folders} folders.')
 
@@ -295,8 +291,6 @@ if extract_pp == True:
     print('   o      02_all_poly_seq.csv                (lists all polypeptide sequences for each structure of all genes)')
 print('   o      02_all_resolutions.csv            (lists the resolution for each structure of all genes; 999 indicates a missing value)')
 print('   o      02_structure_info.csv            (lists all available header information for each structure for all genes)\n\n')
-
-
 
 # print script name to console/log file
 print(f'end of script {script_name}')

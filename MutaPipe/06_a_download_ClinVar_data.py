@@ -22,8 +22,8 @@ import xml.etree.ElementTree as ET
 
 # get this script's name:
 script_name = os.path.basename(__file__)
-# ----------------------------------------------------------------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------------------------------------------------------------
 # use argparse to make it so we can pass arguments to script via terminal
 
 # define a function to convert different inputs to booleans
@@ -36,16 +36,14 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
-    
-    
+        
 # set default values for arguments we want to implement
 # we have to do this here if we want to print the default values in the help message
 
 create_search_log = False     # will create a file called search_log.txt with console output if set to True,
                                             # prints to console if set to False.
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
-                                            
-                                            
+                                                                                      
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""****   This script takes a csv file (00_search_overview_availability.csv) containing the gene names of all available genes and unavailable genes (with/without PDB data) as input and will:
 1. download xml files with ids for all variants in ClinVar for each gene
@@ -65,13 +63,11 @@ create_search_log  = create_search_log  if args["log"]   == None else args["log"
 target_directory  = target_directory if args["target"]   == None else args["target"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # We want to write all our Output into the Results directory
 
 results_dir = f'{target_directory}/Results' #define path to results directory
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 #  create log file for console output:
 if create_search_log == True:
     with open(f'{results_dir}/search_log_06_a.txt', 'w') as search_log:
@@ -85,7 +81,6 @@ print('=========================================================================
 
 # print script name to console/log file
 print(f'script name: {script_name}')
-
 
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
@@ -152,13 +147,6 @@ for gene in avail_genes.gene_name:
 
     # make a string of identiefiers (from the list identifiers) which we can insert into a link to get esummary
     # string must be without commas
-    # don't need this code anymore, it's in the paragraph below in the for loop
-#     string_identifiers = ''
-#     for identifier in identifiers:
-#         string_identifiers += (identifier + ',')
-#     # remove the last comma
-#     string_identifiers = string_identifiers[:-1]
-
     # problem: sometimes there are so many identifiers, we can get problems with the url getting too long
     # solution: we send only 250 identifiers at once
     # it seems the url cannot be too long, e.g. for AARS1, there are 695 identifiers and if we send all of them in
@@ -207,7 +195,6 @@ with open(f'{results_dir}/06_a_ClinVar_Annotations_genes_no_data_retrieved.txt',
     for element in genes_no_data_retrieved:
         file.write(element + '\n')
 
-
 # change back to target directory
 os.chdir(target_directory)
 
@@ -219,7 +206,6 @@ print('\n     All xml outputs from ClinVar stored in .xml format in the folder C
 print('The following files have been created and stored in the Results folder:')
 print('   o      06_a_ClinVar_Annotations_genes_no_data_retrieved.txt')
 print('            (lists all genes for which no ClinVar annotations could be retrieved)\n\n')
-
 
 # print script name to console/log file
 print(f'end of script {script_name}')

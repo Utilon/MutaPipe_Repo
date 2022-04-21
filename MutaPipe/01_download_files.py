@@ -2,7 +2,6 @@
 #      - create a folder for each gene in the results folder
 #      - download specified formats (cif, pdb, fasta) into respective folders 
 #      - outputs a csv file called 01_search_overview_folders listing all the the newly created folders and their contents
-    
 #  ----------------------------------------------------------------------------------------------------------------------------------
    
 # Set up
@@ -21,7 +20,6 @@ from datetime import datetime
 script_name = os.path.basename(__file__)
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # use argparse to make it so we can pass arguments to script via terminal
 
 # define a function to convert different inputs to booleans
@@ -129,12 +127,7 @@ for gene, structures in pdb_ids.iterrows():
 
     # create new folder to save all pdb/mmcif/fasta files found for the query gene:
     folder_name = f'{results_dir}/{gene}_{len(found_pdbs)}structures'
-#     folder_name_add_on = 1 #number will be added to folder name if folder name already exists # I commented this because, we actually don't want to make a new folder if the folder already exists, I think that's better
-
-#         commented the while loop because we don't make a new folder, instead I added an if statement here
-#     while os.path.exists(folder_name):
-#         folder_name = f'{results_dir}/{gene}_{len(found_pdbs)}structures_{folder_name_add_on}'
-#         folder_name_add_on += 1
+    # create folder if it doesn't already exist and change to folder
     if os.path.exists(folder_name):
         os.chdir(folder_name)
         created_folders.append(folder_name)
@@ -219,7 +212,6 @@ for gene, structures in pdb_ids.iterrows():
         continue
     # change directory back to results to create next gene folder there
     os.chdir(results_dir) 
-
     
 # change back to results directory
 os.chdir(results_dir)    

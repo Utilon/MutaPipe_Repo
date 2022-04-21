@@ -52,7 +52,6 @@ script_name = os.path.basename(__file__)
 pd.options.mode.chained_assignment = None  # default='warn'
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # use argparse to make it so we can pass arguments to script via terminal
 
 # define a function to convert different inputs to booleans
@@ -93,8 +92,7 @@ hsp_coverage = 0.1                                # filter out sequences whose b
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
 
 n_best_structures = 6 # number of top structures you want to include in the output table (1 for the best, 2 for the two best available one) per sequence/mismatch
-                                            
-                                            
+                                                                                    
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""****     Script to get best n structures per mutation. This script takes the following csv files as input:
 - 02_structure_info.csv
@@ -138,14 +136,13 @@ target_directory  = target_directory if args["target"]   == None else args["targ
 relative_sequence_length = relative_sequence_length if args["relative_sequence_length"] == None else args["relative_sequence_length"]
 hsp_coverage  = hsp_coverage if args["hsp_coverage"]   == None else args["hsp_coverage"]
 n_best_structures = n_best_structures if args["n_best_structures"] == None else args["n_best_structures"]
-# ----------------------------------------------------------------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------------------------------------------------------------
 # We want to write all our Output into the Results directory
 
 results_dir = f'{target_directory}/Results' #define path to results directory
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 #  create log file for console output:
 if create_search_log == True:
     with open(f'{results_dir}/search_log_07.txt', 'w') as search_log:
@@ -165,7 +162,6 @@ start_time = datetime.now()
 print(f'start: {start_time}\n')
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # Define functions
 def add_empty_cols(df):
     new_df = df.reindex(columns=([col for col in df.columns] +
@@ -227,7 +223,6 @@ def add_clinvar_annotations(df):
     return df
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 #  read in data
 # ===========
 #       - 02_structure_info.csv
@@ -374,9 +369,7 @@ for gene in single_mut_sorted.gene_name.unique():
 
 # now we can sort the df according to the aa_index
 df_SAV = n_best_structures_single_mut.sort_values(by=['gene_name', 'aa_index', 'mismatch_of_interest', 'resolution'])
-
 # write final output to file at the end of script (with other outputs)
-
 
 # GET N BEST STRUCTURES FOR ANY UNIQUE COMBINATION OF MUTATIONS
 # =======================================================================================
@@ -413,11 +406,7 @@ for gene in unique_genes:
 
     # now that we have all unique mismatch combinations, we can filter our df
     # to get only the structures with this particular combination
-    # we can then filter again in order to get the structure with the highest resolution for each combination!
-
-    # we do this by looping over the unique values, extracting the matching rows and then selecting the best structure
-    # (sorting by structure_id, resolution) and then dropping all duplicates but keeping the first row (=best resolution)
-    
+    # we can then filter again in order to get the n best structures with the highest resolution for each combination!
     # initiate for loop
     for combination in unique_mismatch_combinations:
         # we extract a slice of the df only containing the rows with this mismatch combination
@@ -432,7 +421,6 @@ for gene in unique_genes:
         
         # we now append the best_n_structures_this_combi to the best_structure_unique_combis df
         df_unique_combi = best_structure_unique_combis.append(best_n_structures_this_combi)
-        
         
     # GET N BEST STRUCTURE FOR ANY MUTATION (still in the loop)
     # =========================================================================================
@@ -615,7 +603,6 @@ print('   o      07_best_structures_any_mutation.csv')
 print('            (lists best structure for any mismatch regardless of other mismatches in all genes)')
 print('   o      07_wildtype_structures.csv')
 print('            (lists all available WT structures for all genes)\n')
-
 
 # print script name to console/log file
 print(f'end of script {script_name}')

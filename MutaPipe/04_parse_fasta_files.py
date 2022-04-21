@@ -17,9 +17,7 @@
 #                - a csv file called GENNAME_04_fasta_combined_info.csv per gene/folder containing combined information extracted from all fasta and fasta_ex files for this genes
 #                - a csv file called 04_fasta_info.csv containing information extracted from all fasta files for all genes
 #                - a csv file called 04_fasta_ex_info.csv containing information extracted from all fasta_ex files for all genes
-#                - a csv file called 04_fasta_combined_info.csv containing combined information extracted from all fasta and fasta_ex files for all genes
-
-    
+#                - a csv file called 04_fasta_combined_info.csv containing combined information extracted from all fasta and fasta_ex files for all genes    
 #  ----------------------------------------------------------------------------------------------------------------------------------
    
 # Set up
@@ -36,8 +34,8 @@ from datetime import datetime
 
 # get this script's name:
 script_name = os.path.basename(__file__)
-# ----------------------------------------------------------------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------------------------------------------------------------
 # use argparse to make it so we can pass arguments to script via terminal
 
 # define a function to convert different inputs to booleans
@@ -84,13 +82,11 @@ target_directory  = target_directory if args["target"]   == None else args["targ
 delete_files = delete_files if args["delete_files"] == None else args["delete_files"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # We want to write all our Output into the Results directory
 
 results_dir = f'{target_directory}/Results' #define path to results directory
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 #  create log file for console output:
 if create_search_log == True:
     with open(f'{results_dir}/search_log_04.txt', 'w') as search_log:
@@ -105,14 +101,11 @@ print('=========================================================================
 # print script name to console/log file
 print(f'script name: {script_name}')
 
-
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
 print(f'start: {start_time}\n')
 
-
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # Read in data from csv file
 folder_info = pd.read_csv(f'{results_dir}/01_search_overview_folders.csv', usecols=['folder_name', 'full_path'])
 
@@ -243,12 +236,8 @@ for index, row in folder_info.iterrows():
                     uniprot_id = 'unknown'
                     description = 'unknown'                
             
-            # now we append all the defined variables in a new row to the bottom of the fasta_ex_df
+            # now we append all the defined variables in a new row to the bottom of temporary df
             #     the columns are:    ['gene_name', 'structure_id', 'record_id', 'chain_name', 'uniprot_id', 'description', 'sequence'])
-            # okay, for some reason, this code doesn't work, generates a visibleDeprecationWarning and only adds some rows to the df (e.g. for FUS). no clue why.
-            # surpressing the warning, doesn't fix the output.
-#             fasta_ex_df.loc[len(fasta_ex_df)] = [gene, fasta_ex.replace('_ex.fasta', ''), record_id, chain_name, uniprot_id, description, sequence]            
-            # so we try something else:
             # we create a small df for just this sequence /record and append it to the other df
             temp_ex_df = pd.DataFrame.from_dict({'gene_name':[gene], 'structure_id':[fasta_ex.replace('_ex.fasta', '')], 'record_id':[record_id], 'chain_name':[chain_name], 'uniprot_id':[uniprot_id], 'description':[description], 'sequence':[sequence]})
             
@@ -295,7 +284,6 @@ print('Complete!\n')
 # change back to target directory
 os.chdir(target_directory)
 
-
 print('\n============================== Summary ================================================\n')
 print(f'Complete! \n    Parsed a total of {fasta_total} fasta files and {fasta_ex_total} fasta_ex files stored across {n_folders} folders.')
 
@@ -308,7 +296,6 @@ print('\nThe following files have been created and stored in the Results folder:
 print('   o      04_fasta_info.csv                (lists information extracted from all fasta files for all genes)')
 print('   o      04_fasta_ex_info.csv           (lists information extracted from all fasta_ex files for all genes)')
 print('   o      04_fasta_combined_info.csv (lists combined information extracted from all fasta and fasta_ex files for all genes)\n\n')
-
 
 # print script name to console/log file
 print(f'end of script {script_name}')

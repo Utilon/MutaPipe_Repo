@@ -8,7 +8,6 @@
 #                  (one row for each structure)
 #                - a csv files called 03_unsolved_residues_per_chain.csv listing all unsolved residues in all chains of all structures for all genes
 #                  (one row for each chain)
-# 
 #  ----------------------------------------------------------------------------------------------------------------------------------
    
 # Set up
@@ -27,7 +26,6 @@ from Bio.PDB import *
 script_name = os.path.basename(__file__)
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # use argparse to make it so we can pass arguments to script via terminal
 
 # define a function to convert different inputs to booleans
@@ -71,13 +69,11 @@ create_search_log  = create_search_log  if args["log"]   == None else args["log"
 target_directory  = target_directory if args["target"]   == None else args["target"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # We want to write all our Output into the Results directory
 
 results_dir = f'{target_directory}/Results' #define path to results directory
 
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 #  create log file for console output:
 if create_search_log == True:
     with open(f'{results_dir}/search_log_03.txt', 'w') as search_log:
@@ -97,9 +93,7 @@ print(f'script name: {script_name}')
 start_time = datetime.now()
 print(f'start: {start_time}\n')
 
-
 # ----------------------------------------------------------------------------------------------------------------------------------
-
 # read in csv files
 folders = pd.read_csv(f'{results_dir}/01_search_overview_folders.csv')
 
@@ -208,7 +202,6 @@ print(f'Complete! \n    Parsed a total of {pdb_total} pdb files stored across {l
 print('\nThe following files have been created and stored in the Results folder:')
 print('   o      03_unsolved_residues_per_structure.csv     (lists unsolved residues per structure for all genes (one row = one structure))')
 print('   o      03_unsolved_residues_per_chain.csv           (lists unsolved residues per chain for all genes (one row = one chain))\n')
-
 
 # print script name to console/log file
 print(f'end of script {script_name}')
