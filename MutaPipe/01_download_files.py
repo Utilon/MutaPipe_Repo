@@ -1,7 +1,6 @@
 # This script takes a csv file containing gene names and corresponding PDB IDs as input and will:
 #      - create a folder for each gene in the results folder
 #      - download specified formats (cif, pdb, fasta) into respective folders 
-#        (atm automatically downloads mmCIF, pdb and FASTA files --> update later with argparse to be able to specify desired file format via terminal)
 #      - outputs a csv file called 01_search_overview_folders listing all the the newly created folders and their contents
     
 #  ----------------------------------------------------------------------------------------------------------------------------------
@@ -17,6 +16,9 @@ from Bio.PDB import *
 import sys
 import argparse
 from datetime import datetime
+
+# get this script's name:
+script_name = os.path.basename(__file__)
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -75,7 +77,7 @@ results_dir = f'{target_directory}/Results' #define path to results directory
 #  create log file for console output:
 if create_search_log == True:
     with open(f'{results_dir}/search_log_01.txt', 'w') as search_log:
-        search_log.write(f'Search log for 01_download_files.py\n\n')
+        search_log.write(f'Search log for {script_name}\n\n')
     sys.stdout = open(f'{results_dir}/search_log_01.txt', 'a')
     
 # print nice title
@@ -84,7 +86,7 @@ print('*****    Downloading Files from the Protein Data Bank for Input Genes    
 print('===============================================================================\n')
 
 # print script name to console/log file
-print(f'script name: {os.path.basename(__file__)}')
+print(f'script name: {script_name}')
 
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
@@ -263,7 +265,7 @@ print('   o      01_search_overview_n_structures.csv          (lists number of s
 
 
 # print script name to console/log file
-print(f'end of script {os.path.basename(__file__)}')
+print(f'end of script {script_name}')
 
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()

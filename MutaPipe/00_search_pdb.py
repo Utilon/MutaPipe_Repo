@@ -12,6 +12,9 @@ import sys
 import argparse
 import requests
 from datetime import datetime
+
+# get this script's name:
+script_name = os.path.basename(__file__)
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 #  read in gene_list from textfile
@@ -83,7 +86,7 @@ if not os.path.exists(results_dir):
 #  create log file for console output:
 if create_search_log == True:
     with open(f'{results_dir}/search_log_00.txt', 'w') as search_log:
-        search_log.write(f'Search log for 00_search_pdb.py with genes {gene_list}\n\n')
+        search_log.write(f'Search log for {script_name} with genes {gene_list}\n\n')
     sys.stdout = open(f'{results_dir}/search_log_00.txt', 'a')
 
 # print nice title
@@ -92,7 +95,7 @@ print('*****    Searching the Protein Data Bank for Structures Associated with I
 print('===============================================================================\n')
 
 # print script name to console/log file
-print(f'script name: {os.path.basename(__file__)}')
+print(f'script name: {script_name}')
 
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
@@ -261,7 +264,7 @@ print('   o      00_search_overview_PDBids.csv            (contains information 
 
 
 # print script name to console/log file
-print(f'end of script {os.path.basename(__file__)}')
+print(f'end of script {script_name}')
 
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()

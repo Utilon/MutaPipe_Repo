@@ -29,6 +29,9 @@ from Bio.PDB import *
 from Bio.PDB.MMCIFParser import MMCIFParser
 from Bio.PDB.Polypeptide import PPBuilder
 
+# get this script's name:
+script_name = os.path.basename(__file__)
+
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -87,7 +90,7 @@ results_dir = f'{target_directory}/Results' #define path to results directory
 #  create log file for console output:
 if create_search_log == True:
     with open(f'{results_dir}/search_log_02.txt', 'w') as search_log:
-        search_log.write(f'Search log for 02_parse_cif_files.py\n\n')
+        search_log.write(f'Search log for {script_name}\n\n')
     sys.stdout = open(f'{results_dir}/search_log_02.txt', 'a')
 
 # print nice title
@@ -96,7 +99,7 @@ print('*****    Parsing mmCif Files from the Protein Data Bank for Input Genes  
 print('===============================================================================\n')
 
 # print script name to console/log file
-print(f'script name: {os.path.basename(__file__)}')
+print(f'script name: {script_name}')
 
 
 # store current date and time in an object and print to console / write to log file
@@ -289,7 +292,7 @@ print('   o      02_structure_info.csv            (lists all available header in
 
 
 # print script name to console/log file
-print(f'end of script {os.path.basename(__file__)}')
+print(f'end of script {script_name}')
 
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()

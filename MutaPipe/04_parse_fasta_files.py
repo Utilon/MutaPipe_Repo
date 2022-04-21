@@ -12,12 +12,12 @@
 #                - sequence
 #      - merge the dataframes and combine information from both fasta and fasta_ex files
 #      - output the following files:
-#                - a csv file called GENENAME_03_fasta_info.csv per gene/folder containing information extracted from all fasta files for this gene
-#                - a csv file called GENENAME_03_fasta_ex_info.csv per gene/folder containing information extracted from all fasta_ex files for this gene
-#                - a csv file called GENNAME_03_fasta_combined_info.csv per gene/folder containing combined information extracted from all fasta and fasta_ex files for this genes
-#                - a csv file called 03_fasta_info.csv containing information extracted from all fasta files for all genes
-#                - a csv file called 03_fasta_ex_info.csv containing information extracted from all fasta_ex files for all genes
-#                - a csv file called 03_fasta_combined_info.csv containing combined information extracted from all fasta and fasta_ex files for all genes
+#                - a csv file called GENENAME_04_fasta_info.csv per gene/folder containing information extracted from all fasta files for this gene
+#                - a csv file called GENENAME_04_fasta_ex_info.csv per gene/folder containing information extracted from all fasta_ex files for this gene
+#                - a csv file called GENNAME_04_fasta_combined_info.csv per gene/folder containing combined information extracted from all fasta and fasta_ex files for this genes
+#                - a csv file called 04_fasta_info.csv containing information extracted from all fasta files for all genes
+#                - a csv file called 04_fasta_ex_info.csv containing information extracted from all fasta_ex files for all genes
+#                - a csv file called 04_fasta_combined_info.csv containing combined information extracted from all fasta and fasta_ex files for all genes
 
     
 #  ----------------------------------------------------------------------------------------------------------------------------------
@@ -34,6 +34,8 @@ import sys
 import argparse
 from datetime import datetime
 
+# get this script's name:
+script_name = os.path.basename(__file__)
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 # use argparse to make it so we can pass arguments to script via terminal
@@ -62,12 +64,12 @@ ap = argparse.ArgumentParser(description="""****    This script takes a csv file
 1. extract information from each fasta file 
 2. merge information from multiple fasta files whenever available (fasta and fasta_ex files [extracted from mmCif]) 
 3. output the following files: 
-(1) a csv file called GENENAME_03_fasta_info.csv per gene/folder containing information extracted from all fasta files for this gene 
-(2) a csv file called GENENAME_03_fasta_ex_info.csv per gene/folder containing information extracted from all fasta_ex files for this gene 
-(3) a csv file called GENNAME_03_fasta_combined_info.csv per gene/folder containing combined information extracted from all fasta and fasta_ex files for this genes 
-(4) a csv file called 03_fasta_info.csv containing information extracted from all fasta files for all genes 
-(5) a csv file called 03_fasta_ex_info.csv containing information extracted from all fasta_ex files for all genes 
-(6) a csv file called 03_fasta_combined_info.csv containing combined information extracted from all fasta and fasta_ex files for all genes    ***""")
+(1) a csv file called GENENAME_04_fasta_info.csv per gene/folder containing information extracted from all fasta files for this gene 
+(2) a csv file called GENENAME_04_fasta_ex_info.csv per gene/folder containing information extracted from all fasta_ex files for this gene 
+(3) a csv file called GENNAME_04_fasta_combined_info.csv per gene/folder containing combined information extracted from all fasta and fasta_ex files for this genes 
+(4) a csv file called 04_fasta_info.csv containing information extracted from all fasta files for all genes 
+(5) a csv file called 04_fasta_ex_info.csv containing information extracted from all fasta_ex files for all genes 
+(6) a csv file called 04_fasta_combined_info.csv containing combined information extracted from all fasta and fasta_ex files for all genes    ***""")
 
 ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
@@ -89,9 +91,9 @@ results_dir = f'{target_directory}/Results' #define path to results directory
 
 #  create log file for console output:
 if create_search_log == True:
-    with open(f'{results_dir}/search_log_03.txt', 'w') as search_log:
-        search_log.write(f'Search log for 03_parse_fasta_files.py\n\n')
-    sys.stdout = open(f'{results_dir}/search_log_03.txt', 'a')
+    with open(f'{results_dir}/search_log_04.txt', 'w') as search_log:
+        search_log.write(f'Search log for {script_name}\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_04.txt', 'a')
 
 # print nice title
 print('===============================================================================')
@@ -99,7 +101,7 @@ print('*****    Parsing Fasta Files from the Protein Data Bank for Input Genes  
 print('===============================================================================\n')
 
 # print script name to console/log file
-print(f'script name: {os.path.basename(__file__)}')
+print(f'script name: {script_name}')
 
 
 # store current date and time in an object and print to console / write to log file
@@ -264,11 +266,11 @@ for index, row in folder_info.iterrows():
     
     # before we change to the next folder, we write the gene-specific csv files with info on fasta and fasta ex into the current directory
     print(f'\n    >>> writing csv file containing information extracted from fasta files for gene {gene}...')
-    fasta_df[fasta_df['gene_name'] == gene].to_csv(f'{gene}_03_fasta_info.csv', index = False)
+    fasta_df[fasta_df['gene_name'] == gene].to_csv(f'{gene}_04_fasta_info.csv', index = False)
     print(f'    >>> writing csv file containing information extracted from fasta_ex files for gene {gene}...')
-    fasta_ex_df[fasta_ex_df['gene_name'] == gene].to_csv(f'{gene}_03_fasta_ex_info.csv', index = False)
+    fasta_ex_df[fasta_ex_df['gene_name'] == gene].to_csv(f'{gene}_04_fasta_ex_info.csv', index = False)
     print(f'    >>> writing csv file containing combined information extracted from fasta and fasta_ex files for gene {gene}...')
-    combined_df[combined_df['gene_name'] == gene].to_csv(f'{gene}_03_fasta_combined_info.csv', index = False)
+    combined_df[combined_df['gene_name'] == gene].to_csv(f'{gene}_04_fasta_combined_info.csv', index = False)
 
 print('Complete!\n        All gene-specific csv files have been stored in their respective folders\n')
 
@@ -276,11 +278,11 @@ print('Complete!\n        All gene-specific csv files have been stored in their 
 os.chdir(results_dir)
 print(f'>>> writing csv files with information on all genes to {results_dir}') 
 print('    >>> writing csv file containing information extracted from fasta files for all genes...')
-fasta_df.to_csv('03_fasta_info.csv', index = False)
+fasta_df.to_csv('04_fasta_info.csv', index = False)
 print('    >>> writing csv file containing information extracted from fasta_ex files for all genes...')
-fasta_ex_df.to_csv('03_fasta_ex_info.csv', index = False)
+fasta_ex_df.to_csv('04_fasta_ex_info.csv', index = False)
 print('    >>> writing csv file containing combined information extracted from fasta and fasta_ex files for all genes...')
-combined_df.to_csv('03_fasta_combined_info.csv', index = False)
+combined_df.to_csv('04_fasta_combined_info.csv', index = False)
 print('Complete!\n')
 # change back to target directory
 os.chdir(target_directory)
@@ -290,18 +292,18 @@ print('\n============================== Summary ================================
 print(f'Complete! \n    Parsed a total of {fasta_total} fasta files and {fasta_ex_total} fasta_ex files stored across {n_folders} folders.')
 
 print('\nThe following files have been created for each gene and stored in the respective folder:')
-print('   o      GENENAME_03_fasta_info.csv                (lists information extracted from all fasta files for this gene/folder)')
-print('   o      GENENAME_03_fasta_ex_info.csv           (lists information extracted from all fasta_ex files for this gene/folder)')
-print('   o      GENENAME_03_fasta_combined_info.csv (lists combined information extracted from all fasta and fasta_ex files for this gene/folder)')
+print('   o      GENENAME_04_fasta_info.csv                (lists information extracted from all fasta files for this gene/folder)')
+print('   o      GENENAME_04_fasta_ex_info.csv           (lists information extracted from all fasta_ex files for this gene/folder)')
+print('   o      GENENAME_04_fasta_combined_info.csv (lists combined information extracted from all fasta and fasta_ex files for this gene/folder)')
 
 print('\nThe following files have been created and stored in the Results folder:')
-print('   o      03_fasta_info.csv                (lists information extracted from all fasta files for all genes)')
-print('   o      03_fasta_ex_info.csv           (lists information extracted from all fasta_ex files for all genes)')
-print('   o      03_fasta_combined_info.csv (lists combined information extracted from all fasta and fasta_ex files for all genes)\n\n')
+print('   o      04_fasta_info.csv                (lists information extracted from all fasta files for all genes)')
+print('   o      04_fasta_ex_info.csv           (lists information extracted from all fasta_ex files for all genes)')
+print('   o      04_fasta_combined_info.csv (lists combined information extracted from all fasta and fasta_ex files for all genes)\n\n')
 
 
 # print script name to console/log file
-print(f'end of script {os.path.basename(__file__)}')
+print(f'end of script {script_name}')
 
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()

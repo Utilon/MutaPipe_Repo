@@ -1,4 +1,4 @@
-# This script takes a csv file (03_fasta_combined_info.csv) containing information for all genes extracted from their
+# This script takes a csv file (04_fasta_combined_info.csv) containing information for all genes extracted from their
 #  respective fasta files and fasta_ex files as input and will:
 #      - download the reference sequence for the gene from uniprot
 #      - perform BLASTp with each sequence of each structure (=each row of the df) against the respective
@@ -7,7 +7,7 @@
 #      - outputs the following files:
 #                - all reference sequences and unique sequences of all structures are stored in .fasta format in the newly created Results/RefSeqs folder
 #                - all BLASTp outputs are stored in .xml format in the newly created Results/RefSeqs folder
-#                - a csv file called 04_blast_two_sequences.csv listing all the information in the input file and the corresponding blastp results
+#                - a csv file called 05_blastp_results.csv listing all the information in the input file and the corresponding blastp results
 
 # ===========================================================================================
 
@@ -27,6 +27,9 @@ from Bio.Blast import NCBIXML
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+
+# get this script's name:
+script_name = os.path.basename(__file__)
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -58,7 +61,7 @@ uniprot_fasta = f'{MutaPipe_dir}/Uniprot_reference_seqs/UP000005640_9606.fasta' 
         
 
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
-ap = argparse.ArgumentParser(description="""****    This script takes a csv file (03_fasta_combined_info.csv) containing information for all input genes extracted from their
+ap = argparse.ArgumentParser(description="""****    This script takes a csv file (04_fasta_combined_info.csv) containing information for all input genes extracted from their
 #  respective fasta files and fasta_ex files as input and will: 
 1. retrieve the reference sequence for the gene associated with each structure from the uniprot reference fasta file 
 2. perform BLASTp with each sequence of each structure against the respective reference sequence (e.g. FUS canonical sequence for all sequences in all FUS structures) 
@@ -66,7 +69,7 @@ ap = argparse.ArgumentParser(description="""****    This script takes a csv file
 4. outputs the following files: 
 (1) all reference sequences and unique sequences of all structures are stored in .fasta format in the newly created Results/RefSeqs folder 
 (2) all BLASTp outputs are stored in .xml format in the newly created Results/RefSeqs folder 
-(3) a csv file called 04_blast_two_sequences.csv listing all the information on all sequences in all structures for all genes and the corresponding blastp results    ***""")
+(3) a csv file called 05_blastp_results.csv listing all the information on all sequences in all structures for all genes and the corresponding blastp results    ***""")
 
 ap.add_argument('-bp','--blastp_path', required=False, help=f"Specify the path to blastp on your system ; default = {blastp_path}")
 ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'Write output to .log file in output directory if set to True, default = {str(create_search_log)}')
@@ -92,9 +95,9 @@ results_dir = f'{target_directory}/Results' #define path to results directory
 
 #  create log file for console output:
 if create_search_log == True:
-    with open(f'{results_dir}/search_log_04.txt', 'w') as search_log:
-        search_log.write(f'Search log for 04_blast_against_reference.py\n\n')
-    sys.stdout = open(f'{results_dir}/search_log_04.txt', 'a')
+    with open(f'{results_dir}/search_log_05.txt', 'w') as search_log:
+        search_log.write(f'Search log for {script_name}\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_05.txt', 'a')
     
 # print nice title
 print('===============================================================================')
@@ -102,7 +105,7 @@ print('*****    BLASTp against Reference Sequence for all Identified PDB Sequenc
 print('===============================================================================\n')
 
 # print script name to console/log file
-print(f'script name: {os.path.basename(__file__)}')
+print(f'script name: {script_name}')
 
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
@@ -120,7 +123,7 @@ if not os.path.isdir(refseqs_dir):
 os.chdir(refseqs_dir)
 
 # Read in data from csv files
-fasta_df = pd.read_csv(f'{results_dir}/03_fasta_combined_info.csv')
+fasta_df = pd.read_csv(f'{results_dir}/04_fasta_combined_info.csv')
 
 # create a df based on the fasta_df with additional columns to populate with results from blast p
 xml_df = pd.concat([fasta_df, pd.DataFrame(columns=['alignment_length', 'hsp_number',
@@ -138,7 +141,7 @@ xml_df = pd.concat([fasta_df, pd.DataFrame(columns=['alignment_length', 'hsp_num
 refseq_warnings = pd.DataFrame(columns=['gene', 'n_refseqs_identified'])
 blastp_warnings = pd.DataFrame(columns=['gene', 'blast_status', 'n_alignments'])
 
-# we also read in the a fasta file downloaded from uniprot containing all canonical sequences for the human genome:
+# we also read in the fasta file downloaded from uniprot containing all canonical sequences for the human genome:
 uniprot_refseqs = list(SeqIO.parse(uniprot_fasta, 'fasta'))
 
 # the gene_name is included in the description of the fasta record with the canonical sequence: 
@@ -429,7 +432,8 @@ all_fasta_files_for_blastp = [f for f in listdir(refseqs_dir) if isfile(join(ref
 # now we get a list of all the files that are not reference fasta files and move them to a new subfolder
 PDB_fasta_files_for_blastp = [f for f in all_fasta_files_for_blastp if not 'reference.fasta' in f]
 # make the folder
-os.mkdir('PDB_seqs_and_blastp_outputs')
+if not os.path.isdir('PDB_seqs_and_blastp_outputs'):
+    os.mkdir('PDB_seqs_and_blastp_outputs')
 # and move the files
 for PDB_fasta in PDB_fasta_files_for_blastp:
     os.rename(f'{PDB_fasta}', f'PDB_seqs_and_blastp_outputs/{PDB_fasta}')
@@ -439,30 +443,56 @@ os.chdir(results_dir)
 
 # write csv file
 print(f'>>> writing csv file containing blastp results for all structures of all genes\n')
-xml_df.to_csv('04_blast_two_sequences.csv', index = False)
+xml_df.to_csv('05_blastp_results.csv', index = False)
 
 # we also write the warnings to csv files
-refseq_warnings.to_csv('04_refeseq_warnings.csv', index = False)
-blastp_warnings.to_csv('04_blastp_warnings.csv', index = False)
+refseq_warnings.to_csv('05_refeseq_warnings.csv', index = False)
+blastp_warnings.to_csv('05_blastp_warnings.csv', index = False)
+
+
+# Finally we want to write the gene-specific csv outputs in the respective gene folders:
+print(f'>>> writing all gene-specific csv files containing blastp results and storing them in the respective gene folders\n')
+for gene in xml_df.gene_name.unique():
+    # we take a slice of the xml df for only the current gene
+    xml_df_this_gene = xml_df[xml_df.gene_name == gene]
+    # we also take slices of the warnings for the current gene
+    refseq_warnings_this_gene = refseq_warnings[refseq_warnings.gene == gene]
+    blastp_warnings_this_gene = blastp_warnings[blastp_warnings.gene == gene]
+    # no we change to the relevant gene folder
+    for item in os.listdir():
+        # we loop over all items in this directory
+        # if it's a sudirectory AND it contains the gene name followed by an underscore, that's the relevant directory!
+        if (os.path.isdir(item)) & (f'{gene}_' in item):
+            # we change to the gene directory
+            os.chdir(item)
+            # and we write all the csv files
+            xml_df_this_gene.to_csv(f'{gene}_05_blastp_results.csv', index=False)
+            refseq_warnings_this_gene.to_csv(f'{gene}_05_refseq_warnings.csv', index=False)
+            blastp_warnings_this_gene.to_csv(f'{gene}_05_blastp_warnings.csv', index=False)    
     
 # change back to target directory
 os.chdir(target_directory)
     
     
 print('\n============================== Summary ================================================\n')
-print(f'Complete! \n    Performed BLASTp on a total of {len(fasta_df)} sequences listed in the file 03_fasta_combined_info.csv.\n')
+print(f'Complete! \n    Performed BLASTp on a total of {len(fasta_df)} sequences listed in the file 04_fasta_combined_info.csv.\n')
 
 print('     All reference sequences (one per gene) used for blastp have been stored in .fasta format in the Results/RefSeqs folder.')
 print('     All all unique sequences per structure used for blastp have been stored in .fasta format in the Results/RefSeqs/PDB_seqs_and_blastp_outputs folder.')
 print('     All BLASTp outputs are stored in .xml format in the Results/RefSeqs/PDB_seqs_and_blastp_outputs folder.')
 
+print('\nThe following files have been created for each gene and stored in the respective folder:')
+print('   o      GENENAME_05_blastp_results.csv                 (lists all info contained in the input file as well as their blastp results)')
+print('   o      GENENAME_05_refeseq_warnings.csv                (contains warning if there is no or more than one identified reference sequence for this gene (only first one is used for further analyses))')
+print('   o      GENENAME_05_blastp_warnings.csv                (lists warnings regarding blastp for this gene, including if blastp failed or if there is more than one alignment (should only be one as only one reference is used)')
+
 print('\nThe following files have been created and stored in the Results folder:')
-print('   o      04_blast_two_sequences.csv                (lists all info contained in the input file as well as their blastp results)')
-print('   o      04_refeseq_warnings.csv                (lists genes with no or more than one identified reference sequence (only first one is used for further analyses))')
-print('   o      04_blastp_warnings.csv                (lists warnings regarding blastp, including if blastp failed or if there is more than one alignment (should only be one as only one reference is used)\n\n')
+print('   o      05_blastp_results.csv                (lists all info contained in the input file as well as their blastp results)')
+print('   o      05_refeseq_warnings.csv                (lists genes with no or more than one identified reference sequence (only first one is used for further analyses))')
+print('   o      05_blastp_warnings.csv                (lists warnings regarding blastp, including if blastp failed or if there is more than one alignment (should only be one as only one reference is used)\n\n')
 
 # print script name to console/log file
-print(f'end of script {os.path.basename(__file__)}')
+print(f'end of script {script_name}')
 
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()

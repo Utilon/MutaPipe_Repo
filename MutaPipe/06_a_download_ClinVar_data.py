@@ -1,18 +1,12 @@
-# Download clinvar data per gene (instead of sending a request for every gene-mismatch)
+# Download clinvar data for all genes with available PDB data
 # ************************************************************************************
 # This script takes a csv file (00_search_overview_availability.csv) containing the gene names of all available genes
 #  and unavailable genes (ClinVar genes with/without PDB data) as input and will:
-#      - download xml files with ids for all variants in ClinVar for each gene
+#      - download xml files with ids for all variants in ClinVar for each available gene
 #      - parse xml files and download/retrieve data from ClinVar for all variant ids associated with a gene
-#      - parse xml files and create a df with ClinVar information for all variants for all input genes
 #      - outputs the following files:
-#                - all xml files downloaded from ClinVar are stored in the newly created ClinVar_Annotations folder
-#                - a txt file called 07_a_ClinVar_Annotations_genes_no_data_retrieved.txt which lists all genes for which no ClinVar annotations could be retrieved
-
-# Note: Initially, I would also parse the xml files in the same script, however - this took too long on rosalind when
-# I wanted to do it with >2500 genes (from ClinVar), therefore I had to split the script.
-# Now it's 07a to download information from ClinVar and 07b to parse the downloaded files.
-# The code not used in this part of the script has been commented out below
+#                - all xml files containing variant information downloaded from ClinVar are stored in the newly created ClinVar_Annotations folder
+#                - a txt file called 06_a_ClinVar_Annotations_genes_no_data_retrieved.txt which lists all genes for which no ClinVar annotations could be retrieved
 # ===========================================================================================
 
 # Set up
@@ -25,6 +19,9 @@ import argparse
 from datetime import datetime
 
 import xml.etree.ElementTree as ET
+
+# get this script's name:
+script_name = os.path.basename(__file__)
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 # use argparse to make it so we can pass arguments to script via terminal
@@ -55,7 +52,7 @@ ap = argparse.ArgumentParser(description="""****   This script takes a csv file 
 2. parse xml files and download/retrieve data from ClinVar for all variant ids associated with each gene
 3. output the following files:
 (a) all xml files downloaded from ClinVar are stored in the newly created folder ClinVar_Annotations 
-(b) a txt file called 07_a_ClinVar_Annotations_genes_no_data_retrieved.txt which lists all genes for which no ClinVar annotations could be retrieved       ***""")
+(b) a txt file called 06_a_ClinVar_Annotations_genes_no_data_retrieved.txt which lists all genes for which no ClinVar annotations could be retrieved       ***""")
 
 ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
@@ -77,9 +74,9 @@ results_dir = f'{target_directory}/Results' #define path to results directory
 
 #  create log file for console output:
 if create_search_log == True:
-    with open(f'{results_dir}/search_log_07_a.txt', 'w') as search_log:
-        search_log.write(f'Search log for 07_a_ClinVar_Annotations_edirect_per_gene_download_files.py\n\n')
-    sys.stdout = open(f'{results_dir}/search_log_07_a.txt', 'a')
+    with open(f'{results_dir}/search_log_06_a.txt', 'w') as search_log:
+        search_log.write(f'Search log for {script_name}\n\n')
+    sys.stdout = open(f'{results_dir}/search_log_06_a.txt', 'a')
 
 # print nice title
 print('===============================================================================')
@@ -87,7 +84,7 @@ print('*****    Downloading ClinVar Annotations for Input Genes    *****')
 print('===============================================================================\n')
 
 # print script name to console/log file
-print(f'script name: {os.path.basename(__file__)}')
+print(f'script name: {script_name}')
 
 
 # store current date and time in an object and print to console / write to log file
@@ -108,10 +105,6 @@ if not os.path.exists(f'{results_dir}/ClinVar_Annotations'):
 # change to ClinVar_Annotations  folder
 clinvar_dir = f'{results_dir}/ClinVar_Annotations'
 os.chdir(clinvar_dir)
-
-# make a df to populate with relevant info from clinvar xml output for all genes
-clinvar_data = pd.DataFrame(columns=['input_gene', 'gene', 'accession', 'title', 'variant_type',  'protein_change', 'aliases', 'clinical significance', 'last_evaluated', 'review_status', 'associated_traits', 'dbs_and_accessions'])
-
 
 # Set up edirect request to clinvar
 # ------------------------------------------
@@ -138,7 +131,7 @@ for gene in avail_genes.gene_name:
 
     if response.status_code == 200:
         print(f'    Downloading ClinVar ids for variants in {gene}')
-        with open(f'07_a_ClinVar_{gene}_ids.xml', 'w') as file:
+        with open(f'06_a_ClinVar_{gene}_ids.xml', 'w') as file:
             file.write(response.text)
     else:
         # If there is no data, print status code and response
@@ -150,7 +143,7 @@ for gene in avail_genes.gene_name:
    
     # now we can use this file to download the data for these identifiers 
     # so we parse the file to get the ids
-    tree = ET.parse(f'07_a_ClinVar_{gene}_ids.xml')
+    tree = ET.parse(f'06_a_ClinVar_{gene}_ids.xml')
     root = tree.getroot()
         
     # save relevant information from xml file into variables
@@ -196,10 +189,10 @@ for gene in avail_genes.gene_name:
             # a try and except statement to try write the data normally ('w') (previous code) except there is an error,
             # in which case we write bytes ('wb')
             try:
-                with open(f'07_a_ClinVar_{gene}_data_batch_{batch_counter}_of_{math.ceil(len(identifiers)/250)}.xml', 'w') as file:
+                with open(f'06_a_ClinVar_{gene}_data_batch_{batch_counter}_of_{math.ceil(len(identifiers)/250)}.xml', 'w') as file:
                     file.write(response.text)
             except:
-                with open(f'07_a_ClinVar_{gene}_data_batch_{batch_counter}_of_{math.ceil(len(identifiers)/250)}.xml', 'wb') as file:
+                with open(f'06_a_ClinVar_{gene}_data_batch_{batch_counter}_of_{math.ceil(len(identifiers)/250)}.xml', 'wb') as file:
                     file.write(response.text.encode('utf-8', 'ignore'))
         else:
             # If there is no data, print status code and response
@@ -209,82 +202,8 @@ for gene in avail_genes.gene_name:
             genes_no_data_retrieved.append(gene)
             continue
             
-#         # yippiee, now we have the data of all variants for this gene in an xml file!
-#         # we read it in to extract information
-#         tree = ET.parse(f'07_a_ClinVar_{gene}_data_batch_{batch_counter}_of_{math.ceil(len(identifiers)/250)}.xml')
-#         root = tree.getroot()
-# 
-#         # figured out way to get specific variants and their attributes by trial and error, ahaha
-#         # we can acces elements of the tree with indexing the root, e.g. root[0][1]
-#         # [0] first number is alway 0 (DocumentSummarySet ; all records are stored in this first and only set)
-#         # [0-n] second number a DocumentSummary for a specific record (for a clinvar id)
-#         # [] third number accesses attributes within a record for one clinvar id
-#         # so for the the following attributes of the first DocumentSummary, you could do:
-#         # variant_type = root[0][1][0].text
-#         # alleles_type = root[0][1][3].text
-#         # protein_change = root[0][1][15].text
-# 
-#         # but we don't just want to do this for one DocumentSummary, but for all of them
-#         # so we loop over all DocumentSummaries like this:
-#         for summary in root.iter('DocumentSummary'):
-#             sum_gene = summary[9].text
-#             accession = summary[1].text
-#             title = summary[3].text
-#             variant_type = summary[0].text
-#             protein_change = summary[15].text
-#             clinical_significance = summary[7][0].text
-#             last_evaluated = summary[7][1].text
-#             review_status = summary[7][2].text
-#             
-#             all_aliases = []
-#             for variation_set in summary.iter('variation_set'):
-#                 for variation in variation_set.iter('variation'):
-#                     for alias in variation.iter('aliases'):
-#                         aliases = [x.text for x in alias.iter('string')]
-#                         for a in aliases:
-#                             all_aliases.append(a)
-#             # bring aliases in nice format:
-#             if len(all_aliases)==1:
-#                 all_aliases = all_aliases[0]
-#             elif len(all_aliases) == 0:
-#                 all_aliases = ''              
-#                             
-#             all_associated_traits = []
-#             dbs_and_accessions = {}
-#             for trait_set in summary.iter('trait_set'):
-#                 for trait in trait_set.iter('trait'):
-#                     trait_name = trait[1].text
-#                     all_associated_traits.append(trait_name)
-#                     for references in trait.iter('trait_xrefs'):
-#                         for db in references.iter('trait_xref'):
-#                             db_name = db[0].text
-#                             db_accession = db[1].text
-#                             dbs_and_accessions[db_name] = db_accession
-#             
-#             # now we append all these variables to the df clinvar_data
-#             # however, sometimes the retrieved variants are associated with other genes (not the current query gene)
-#             # we only append a row to the df if it's for the correct gene (the current query gene)
-#             if gene == sum_gene:
-#                 clinvar_data.loc[len(clinvar_data)] = [gene, sum_gene, accession, title, variant_type, protein_change, all_aliases, clinical_significance, last_evaluated, review_status, all_associated_traits, dbs_and_accessions]
-#                 
-#                 # whenever, we create a new row in the clinvar_data df, we write the current version to a csv file.
-#                 # this file will be overwritten everytime a new row is added.
-#                 clinvar_data.to_csv(f'{results_dir}/07_a_ClinVar_Annotations.csv', index = False)
-#                 # we also write a textfile containing all gene names which were not available for ClinVar
-#                 with open(f'{results_dir}/07_a_ClinVar_Annotations_genes_no_data_retrieved.txt', 'w') as file:
-#                     for element in genes_no_data_retrieved:
-#                         file.write(element + '\n')
-#                     
-# 
-# # write df to csv
-# clinvar_data.to_csv(f'{results_dir}/07_a_ClinVar_Annotations.csv', index = False)
-# 
-# # now we can use the columns protein_change and aliases to see if the mismatches from the pdb are in clinvar!!!!!
-# # then we can directly get the information we need for each mismatch from the clinvar_data df without having to
-# # query clinvar for each individual mismatch! :-) --> in separate script!
-
 # we also write a textfile containing all gene names which were not available for ClinVar
-with open(f'{results_dir}/07_a_ClinVar_Annotations_genes_no_data_retrieved.txt', 'w') as file:
+with open(f'{results_dir}/06_a_ClinVar_Annotations_genes_no_data_retrieved.txt', 'w') as file:
     for element in genes_no_data_retrieved:
         file.write(element + '\n')
 
@@ -298,11 +217,12 @@ print(f'Complete! \n    Queried ClinVar for a total of {len(avail_genes)} genes 
 print('\n     All xml outputs from ClinVar stored in .xml format in the folder ClinVar_Annotations\n')
 
 print('The following files have been created and stored in the Results folder:')
-print('   o      07_a_ClinVar_Annotations_genes_no_data_retrieved.txt       (lists all genes for which no ClinVar annotations could be retrieved)\n\n')
+print('   o      06_a_ClinVar_Annotations_genes_no_data_retrieved.txt')
+print('            (lists all genes for which no ClinVar annotations could be retrieved)\n\n')
 
 
 # print script name to console/log file
-print(f'end of script {os.path.basename(__file__)}')
+print(f'end of script {script_name}')
 
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()
