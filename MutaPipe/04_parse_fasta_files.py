@@ -57,7 +57,7 @@ def str2bool(v):
 create_search_log = False     # will create a file called search_log.txt with console output if set to True,
                                             # prints to console if set to False.
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
-                                            
+delete_files=True                  # specify whether to delete fasta files after parsing them or not
                                             
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""****    This script takes a csv file (01_search_overview_folders.csv) containing information on the folders where all fasta files are stored as input and will: 
@@ -73,6 +73,7 @@ ap = argparse.ArgumentParser(description="""****    This script takes a csv file
 
 ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
+ap.add_argument("-del", "--delete_files", type=str2bool, required = False, help=f'Specify whether to delete pdb files after parsing (True) or not (False), default = {str(delete_files)}')
 
 args = vars(ap.parse_args())
 
@@ -80,6 +81,7 @@ args = vars(ap.parse_args())
 # So we update our variables whenever there is a user input via the terminal:
 create_search_log  = create_search_log  if args["log"]   == None else args["log"]
 target_directory  = target_directory if args["target"]   == None else args["target"]
+delete_files = delete_files if args["delete_files"] == None else args["delete_files"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -169,6 +171,9 @@ for index, row in folder_info.iterrows():
     for fasta in fasta_files:
         # we read in all sequences/chains from a fasta file and store them in fasta_records 
         fasta_records = list(SeqIO.parse(fasta, 'fasta'))
+        # now that we've read in the sequence from the fasta file, we can delete it (don't use it anymore)
+        if delete_files == True:
+            os.remove(fasta)
         # now we loop over all sequence records to extract the information associated with every sequence
         record_id = 0
         for record in fasta_records:
@@ -199,6 +204,9 @@ for index, row in folder_info.iterrows():
     for fasta_ex in fasta_ex_files:
         # we read in all sequences/chains from a fasta_ex file and store them in fasta_ex_records 
         fasta_ex_records = list(SeqIO.parse(fasta_ex, 'fasta'))
+        # now that we've read in the sequence from the fasta_ex file, we can delete it (don't use it anymore)
+        if delete_files == True:
+            os.remove(fasta_ex)        
         # now we loop over all sequence records to extract the information associated with every sequence
         record_id = 0
         for record in fasta_ex_records:

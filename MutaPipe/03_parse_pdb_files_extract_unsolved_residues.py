@@ -47,6 +47,7 @@ def str2bool(v):
 create_search_log = False     # will create a file called search_log.txt with console output if set to True,
                                             # prints to console if set to False.
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
+delete_files=True                  # specify whether to delete pdb files after parsing them or not
                                             
                                             
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
@@ -60,6 +61,7 @@ ap = argparse.ArgumentParser(description="""****    This script takes a csv file
 
 ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
+ap.add_argument("-del", "--delete_files", type=str2bool, required = False, help=f'Specify whether to delete pdb files after parsing (True) or not (False), default = {str(delete_files)}')
 
 args = vars(ap.parse_args())
 
@@ -146,6 +148,10 @@ for index, row in folders.iterrows():
     for pdb in pdb_files:
         # we parse the header like so:
         header = parse_pdb_header(pdb)
+        # now that we have parese the header information from the pdb file, we can delete the pdb file (don't use it anymore)
+        if delete_files == True:
+            os.remove(pdb)
+        # and we use the header to get the missing residues
         missing_res = header['missing_residues']
         # missing_res is a list of dictionaries. For each unsolved/missing residue, there is one dictionary with the following keys:
         # 'model', 'res_name', 'chain', 'sseq', 'insertion'

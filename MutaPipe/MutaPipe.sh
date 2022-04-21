@@ -22,6 +22,7 @@ ORGANISM="Homo sapiens"
 ALL_PDB_IDS="True"
 FORMAT="cif pdb fasta"
 POLYPEPTIDES="True"
+DELETE_FILES="True"
 BLASTp_PATH="blastp"
 UNIPROT_REFSEQS="$MUTAPIPE_DIRECTORY_FULL_PATH"/Uniprot_reference_seqs/UP000005640_9606.fasta
 RELATIVE_SEQUENCE_LENGTH="0.5"
@@ -51,6 +52,7 @@ Help()
    echo "	-a	ALL_PDB_IDS		    	Specify whether to retrieve all (True) or max. 10 PDB IDs (False) per gene. Default = $ALL_PDB_IDS"
    echo "	-f	FORMAT			  	Specify file formats to download. Default = $FORMAT. Options = [cif pdb fasta]"
    echo "	-p	POLYPEPTIDES			Specify whether to extract polypeptide sequence (True) or not (False). Default = $POLYPEPTIDES"
+   echo "        -d      DELETE_FILES                    Specify whether to delete mmCIF, pdb and fasta files after parsing (True) or not (False). Default = $DELETE_FILES"
    echo "	-b	BLASTp_PATH			Set path to blastp on your system. Default = $BLASTp_PATH"
    echo "	-u	UNIPROT_REFSEQS			Set path to reference proteome fasta file. Default = $UNIPROT_REFSEQS"
    echo "	-r	RELATIVE_SEQUENCE_LENGTH	Set to filter out sequences shorter than a given % of the reference sequence (0.1-1.0). Default = $RELATIVE_SEQUENCE_LENGTH"
@@ -92,6 +94,8 @@ while getopts ":hl:t:g:o:a:f:p:b:u:r:c:n:" option; do
 		   FORMAT=${OPTARG};;
 	   p) # Specify whether to extract polypeptide sequences or not
 		   POLYPEPTIDES=${OPTARG};;
+      d) # Specify whether to delete files after parsing or not
+         DELETE_FILES=${OPTARG};;   
 	   b) # Set PATH to blastp on your system
 		   BLASTp_PATH=${OPTARG};;
 	   u) # Set PATH to UniProt reference proteome fasta file
@@ -126,6 +130,7 @@ echo "			ORGANISM 			$ORGANISM"
 echo "			ALL_PDB_IDS			$ALL_PDB_IDS"
 echo "			FORMAT				$FORMAT"
 echo "			POLYPEPTIDES			$POLYPEPTIDES"
+echo "                        DELETE_FILES                    $DELETE_FILES"
 echo "			BLASTp_PATH			$BLASTp_PATH"
 echo "			UNIPROT_REFSEQS 		$UNIPROT_REFSEQS"
 echo "			RELATIVE_SEQUENCE_LENGTH	$RELATIVE_SEQUENCE_LENGTH"
@@ -139,14 +144,13 @@ cd "$MUTAPIPE_DIRECTORY"
 # run all MutaPipe python scripts one after another
 python3 00_search_pdb.py -g $GENES -o "$ORGANISM" -a $ALL_PDB_IDS -t "$TARGET_DIRECTORY" -l $LOG 
 python3 01_download_files.py -f $FORMAT -t "$TARGET_DIRECTORY" -l $LOG
-python3 02_parse_cif_files.py -pp $POLYPEPTIDES -t "$TARGET_DIRECTORY" -l $LOG
-python3 03_parse_pdb_files_extract_unsolved_residues.py -t "$TARGET_DIRECTORY" -l $LOG
-python3 04_parse_fasta_files.py -t "$TARGET_DIRECTORY" -l $LOG
+python3 02_parse_cif_files.py -pp $POLYPEPTIDES -del $DELETE_FILES -t "$TARGET_DIRECTORY" -l $LOG 
+python3 03_parse_pdb_files_extract_unsolved_residues.py -del $DELETE_FILES -t "$TARGET_DIRECTORY" -l $LOG
+python3 04_parse_fasta_files.py -del $DELETE_FILES -t "$TARGET_DIRECTORY" -l $LOG
 python3 05_blast_against_reference.py -bp "$BLASTp_PATH" -refseq "$UNIPROT_REFSEQS" -t "$TARGET_DIRECTORY" -l $LOG
 python3 06_a_download_ClinVar_data.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 06_b_parse_ClinVar_data.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 07_combine_data_to_get_best_n_structures_per_sequence.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG -n_best $N_BEST_STRUCTURES
-
 
 # change (back) to target directory
 cd "$TARGET_DIRECTORY"
@@ -171,6 +175,13 @@ cd "$TARGET_DIRECTORY"
 
 # additional options for script 02_parse_cif_files.py
 #   -pp, --polypeptides             Specify whether to extract polypeptide sequence (True) or not (False), default = True
+#   -del, --delete_files            Specify whether to delete mmCIF files after parsing (True) or not (False), default = True
+
+# additional options for script 03_parse_pdb_files_extract_unsolved_residues.py
+#   -del, --delete_files            Specify whether to delete pdbb files after parsing (True) or not (False), default = True
+
+# additional options for script 04_parse_fasta_files.py
+#   -del, --delete_files            Specify whether to delete fasta files after parsing (True) or not (False), default = True
 
 # new in 05_blast_against_reference.py
 # -bp, --blastp_path 	            Specify the path to blastp on your system ; default = /usr/local/ncbi/blast/bin/blastp       

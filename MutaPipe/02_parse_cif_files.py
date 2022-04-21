@@ -55,7 +55,7 @@ create_search_log = False     # will create a file called search_log.txt with co
                                             # prints to console if set to False.
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
 extract_pp = True                 # specify whether to extract the polypeptide sequences or whther to skip this step
-                                            
+delete_files=True                  # specify whether to delete cif files after parsing them or not
                                             
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""****    This script takes a csv file (01_search_overview_folders.csv) containing information on the folders where the mmCIF files are stored as input and will:
@@ -72,6 +72,7 @@ ap = argparse.ArgumentParser(description="""****    This script takes a csv file
 ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
 ap.add_argument("-pp", "--polypeptides", type=str2bool, required = False, help=f'Specify whether to extract polypeptide sequence (True) or not (False), default = {str(extract_pp)}')
+ap.add_argument("-del", "--delete_files", type=str2bool, required = False, help=f'Specify whether to delete mmCIF files after parsing (True) or not (False), default = {str(delete_files)}')
 
 args = vars(ap.parse_args())
 
@@ -80,6 +81,7 @@ args = vars(ap.parse_args())
 create_search_log  = create_search_log  if args["log"]   == None else args["log"]
 target_directory  = target_directory if args["target"]   == None else args["target"]
 extract_pp = extract_pp if args["polypeptides"] == None else args["polypeptides"]
+delete_files = delete_files if args["delete_files"] == None else args["delete_files"]
 # ----------------------------------------------------------------------------------------------------------------------------------
 # We want to write all our Output into the Results directory
 
@@ -166,6 +168,11 @@ for index, row in folder_info.iterrows():
         print(f'        >>> creating FASTA file extracted from mmCIF file for {structure_id}')
         seq = SeqIO.parse(cif_file, 'cif-seqres')
         SeqIO.write(seq, f'{structure_id}_ex.fasta', 'fasta')
+        
+        # now that we have extracted the structure object as well as the fasta file from the cif file,
+        # we can delete this cif file to save space on the disk
+        if delete_files == True:
+            os.remove(cif_file)      
         
         # extract header information:
         # =====================
