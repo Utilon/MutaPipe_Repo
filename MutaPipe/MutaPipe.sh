@@ -57,7 +57,7 @@ Help()
    echo "	-u	UNIPROT_REFSEQS			Set path to reference proteome fasta file. Default = $UNIPROT_REFSEQS"
    echo "	-r	RELATIVE_SEQUENCE_LENGTH	Set to filter out sequences shorter than a given % of the reference sequence (0.1-1.0). Default = $RELATIVE_SEQUENCE_LENGTH"
    echo "	-c	HSP_COVERAGE			Set to filter out sequences whose best hsp is shorter than a given % of the reference sequence (0.1-1.0). Default = $HSP_COVERAGE"
-   echo "        -n      N_BEST_STRUCTURES               Set number of best structures to be listed in output for each sequence/variant. Default = $N_BEST_STRUCTURES"   
+   echo "        -n      N_BEST_STRUCTURES               Set number of best structures to be listed in output for each sequence/variant. Default = $N_BEST_STRUCTURES"
    echo
    echo "Usage examples:"
    echo "(1)"
@@ -75,7 +75,7 @@ Help()
 ############################################################
 
 # Get the options
-while getopts ":h:l:t:g:o:a:f:p:d:b:u:r:c:n:" option; do
+while getopts ":hl:t:g:o:a:f:p:d:b:u:r:c:n:" option; do
    case "${option}" in
       h) # display Help
          Help
