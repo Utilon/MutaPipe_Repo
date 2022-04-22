@@ -22,13 +22,13 @@
 
 ## Introduction
 
-MutaPipe is a fast and efficient bioinformatics pipeline to screen the [Protein Data Bank (PDB)](https://www.rcsb.org/) for genes of interest and retrieve the highest quality protein structures (best resolution) for each unique sequence associated with a gene. Additionally, whenever corresponding data is available, variants will be annotated using information on variant pathogenicity from [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/intro/).
+MutaPipe is a fast and efficient bioinformatics pipeline to screen the [Protein Data Bank (PDB)](https://www.rcsb.org/) for genes of interest and retrieve the highest quality protein structure (best resolution) for each unique sequence associated with a gene. Additionally, whenever corresponding data is available, variants will be annotated using information on variant pathogenicity from [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/intro/).
 
-This allows researchers to efficiently screen the PDB for the most suitable template structures for a specific WT or mutant gene/protein, which can then be used for further in silico analysis such as homology modeling, mutagenesis experiments or molecular dynamics simulations.
+This allows researchers to efficiently screen the PDB for the most suitable template structures for a specific WT or mutant gene/protein which can be used for further in silico analysis such as homology modeling, mutagenesis experiments or molecular dynamics simulations.
 
 ![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/files_for_README/Figure1_pipeline_simple_flowchart.jpeg)
 
-**Figure 1.** Pipeline overview. MutaPipe takes a list of gene names as input. The pipeline firstly performs a search of the entire Protein Data Bank (PDB) and retrieves information on all available protein structures associated with the input genes (and the species: Homo sapiens). Subsequently, a BLASTp against the canonical protein reference sequence (obtained from [UniProt](https://www.uniprot.org/)) is performed for each identified PDB sequence. The BLASTp alignment is used to identify mismatches, including single amino variants (SAVs), in the amino acid sequence of the PDB structures relative to the canonical sequence. Next, the data is filtered and rearranged to output a table listing the *n* highest quality structures for all available sequences in the PDB which are associated with the input genes. Additionally, if a given amino acid change has corresponding variant data in ClinVar, this information will be added to the output table.
+**Figure 1.** Pipeline overview. MutaPipe requires a list of gene names as input. The pipeline firstly performs a search of the entire Protein Data Bank (PDB) to retrieve information on all protein structures available in the PDB which are associated with the input genes (and the species: Homo sapiens). In a second step, a BLASTp against the canonical reference sequence for a given input gene (obtained from [UniProt](https://www.uniprot.org/)) is performed for each sequence of every identified protein structure associated with said gene of interest. The BLASTp alignment is used to identify mismatches in the amino acid sequence of the PDB structures relative to the canonical sequence. In a subsequent step, the data is filtered and rearranged to output a table listing the highest quality structure for all available sequences in the PDB which are associated with the input genes. Additionally, if a given amino acid change in an input gene is listed in ClinVar, this information will be added to the output table.
 
 
 
@@ -36,21 +36,22 @@ This allows researchers to efficiently screen the PDB for the most suitable temp
 
 MutaPipe has been developed by Deborah Ness, an NIHR Maudsley Biomedical Research Centre PhD Student, in collaboration with and supervised by [Dr Alfredo Iacoangeli](https://www.kcl.ac.uk/people/alfredo-iacoangeli), for her PhD project at the [Department of Basic and Clinical Neuroscience at King's College London](https://www.kcl.ac.uk/neuroscience/about/departments/basic-clinical-neuroscience).
 
-This work has not yet been published (April 2022). 
+This work has not yet been published (Dec 2021). 
 
+However, a dataset produced with MutaPipe for all genes available in the ClinVar Database has been presented as a poster at an international research conference in Italy in September 2021 ("THE 1° MASBIC - DISVA ANNUAL SYMPOSIUM - From structure to function: unveiling the role of proteins in health and disease")
+The dataset is available [here](https://drive.google.com/drive/folders/1hqvAOLGMJuYqKuB1poH5_JPXFHDxwX80?usp=sharing).
 
 ## Documentation
 
 ### Workflow 
 
-MutaPipe uses the inputted gene names to find all associated PDB IDs (using the PDB API) and downloads all corresponding `fasta`, `mmCif`, and `pdb` files for further anaylses (will require disk space depending on the number and size of the available structures).
-In a next step, MutaPipe parses all the downloaded files and combines all relevant information (e.g. resolution, sequence, unsolved residues in PDB structures). Subsequently, MutaPipe accessess the canonical protein sequences for all input genes (from the UniProt fasta file) and uses *BLASTp* (e-value threshold: .05) to identify all mismatches, incl. SAVs, available in the identified PDB structures. *BLASTp* is performed separately for every sequence in every structure against the UniProt reference sequence for the input gene associated with this structure (e.g. *BLASTp* of all sequences in a given *FUS* structure against the canonical protein sequence for *FUS*). The `.xml` output files generated by *BLASTp* are parsed and used to extract information, incl.: e-value, bit, alignment length, mismatches, close mismatches, gaps, indels. This information will be used by MutaPipe to identify all unique sequences in the PDB which are associated with the input genes and subsequently get the best n structures (the ones with the highest resolution) for each of these sequences. 
+MutaPipe uses the inputted gene names to find all associated PDB IDs (using the PDB API) and download all corresponding `fasta`, `mmCif`, and `pdb` files for further anaylses (will require disk space dependant on how many structures are available for the input genes (and their size)).
+In a next step, MutaPipe parses all the downloaded files and combines all relevant information (e.g. resolution, sequence, unsolved residues in PDB structures). Subsequently, MutaPipe accessess the canonical protein sequences for all input genes (from the UniProt fasta file) and uses *BLASTp* (e-value threshold: .05) to identify all variants available in the identified PDB structures. *BLASTp* is performed for every sequence in every structure against the UniProt reference sequence for the gene associated with this structure (e.g. *BLASTp* of all sequences in a given *FUS* structure against the canonical sequence for *FUS*). The `.xml` output files generated by *BLASTp* are parsed and used to extract information, incl.: e-value, bit, alignment length, mismatches, close mismatches, gaps, indels.  This information will be used by MutaPipe to identify all unique sequences in the PDB which are associated with the input genes and subsequently get the best structure (the one with the highest resolution) for each of them. 
 
 MutaPipe achieves this by sorting the data to get:
-- all available wildtype (WT) structures for the input genes
-- the best *n* structures per SAV (structures with only this one amino acid change/mutation and no other amino acid changes/mutations)
-- the best *n* structures per unique sequence/combination of mutations available in the PDB (including WT/no mutation)
-- the best *n* structures for any specific mutation, regardless of other mutations in the same structure
+- the best structure per point mutation (structures with only this one mutation and no other mutations)
+- the best structure per unique combination of mutations available in the PDB (including WT/no mutation)
+- the best structure for any specific mutation, regardless of other mutations in the same structure
 
 Finally, whenever corresponding data is available, MutaPipe will annotate variants using variant information from ClinVar, incl. information on variant pathogenicity.
 
@@ -59,14 +60,18 @@ To ensure sequences not associated with the gene of interest which are present i
 1. which are shorter than a given percentage of the reference sequence (set variable relative_sequence_length; default value = 0.5)
 2. whose best High Scoring Segment Pair (HSP) covers less than a given percentage of the reference sequence (set variable hsp_coverage; default value = 0.1) *(***Note***: A high-scoring segment pair, or HSP, is a subsegment of a pair of sequences, either nucleotide or amino acid, that share high level of similarity. The level of similarity between the sequences depends on the settings of the local or global alignment algorithm which generated them.)*
 
+![alt text](https://github.com/Utilon/Pipeline_Git/blob/main/files_for_README/Figure2_Pipeline_detailled_workflow.jpeg)
+
+**Figure 2.** Detailled description of the steps performed by MutaPipe to identify variant and wildtype PDB structures associated with the input genes and identify the highest quality structure for each available sequence. *Note:* The final step which adds available variant annotations from ClinVar is not displayed.
+
 
 ### Incorporated Scripts
 
 ```diff
-+NOTE: The table in this section is not completely up to date (April 2022).
++NOTE: The table in this section is not yet completely up to date.
 ```
 
-There are currently 8 different python scripts incorporated in MutaPipe:
+There are currently 9 different python scripts incorporated in MutaPipe:
 
 | Script                                                                                                                        | Input                                                                                                                                                                                   | Operations                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Output                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 |-------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -85,12 +90,10 @@ There are currently 8 different python scripts incorporated in MutaPipe:
 ### Minimum Requirements
 
 - stable internet connection
-- python > 3.6.8
-	- Biopython
-- NCBI BLAST+
-- RAM: >16GB)
+- python > 3.6.8 (?)
+- RAM: ?? (works fine with 16GB)
 - Space required by the installation: 36 MB
-- Scratch space for usage: depends the number and and size of PDB structures associated with the input genes. *NOTE: To check how many structures are available for your genes of interest, run the command `python3 00_search_pdb.py -g GENES_OF_INTEREST`. This will generate console output as well as csv files both of which provide an overview of how many structures have been identified for your input genes.*
+- Scratch space for usage: depends the number and and size of PDB structures associated with the input genes. To check how many structures are available for your genes of interest, run the command `python3 00_search_pdb.py -g GENES_OF_INTEREST`. This will generate console output as well as csv files both of which provide an overview of how many structures have been identified for your input genes.
 
 ### Local Deployment
 
@@ -99,7 +102,7 @@ To obtain MutaPipe please use git to download the most recent development tree:
 ```bash
 git clone https://github.com/Utilon/MutaPipe_Repo.git
 ```
-#### NOTE: Reference Proteome Required (default version included in MutaPipe)
+#### NOTE: Reference Proteome Required
 In order to run MutaPipe a fasta file containing the reference proteome / canonical protein sequences for the organism in question (= Homo sapiens) will have to be downloaded from UniProt and stored in a folder called `Uniprot_reference_seqs` in the `MutaPipe` directory (where the python scripts are stored). The filename should be `UP000005640_9606.fasta` for the script to work properly.
 The latest version of this fasta file can be accessed via the [UniProt ftp client](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/Eukaryota/UP000005640/).
 
@@ -108,19 +111,19 @@ The latest version of this fasta file can be accessed via the [UniProt ftp clien
 
 ### Usage
 
-MutaPipe can be run in two different ways (from within the `MutaPipe` directory):
+MutaPipe can be run in two main ways (from within the `MutaPipe`directory):
 1. Using the bash script `MutaPipe.sh`
-2. Using the MutaPipe python scripts individually
+2. Using the MutaPipe python scripts
 
 #### Using the bash script
 
-MutaPipe can be run using the bash script `MutaPipe.sh`. MutaPipe.sh executes all python scripts incorporated in the pipeline one after another. (If instead you wish to run any of the pipeline stages separately, please follow the instructions further [below](#Using-the-python-scripts)). 
+MutaPipe can be run using the bash script `MutaPipe.sh`. MutaPipe.sh runs all scripts incorporated in the pipeline one after another. (If instead you wish to run any of the pipeline stages separately, please follow the instructions further [below](#Using-the-python-scripts)). 
 
-**All arguments for the MutaPipe.sh script are OPTIONAL.** The script has preset default values, i.e. it can be run *without* setting any of the available flags. To view the default values set in MutaPipe.sh, use the command `./MutaPipe.sh -h`.
+Its basic use requires the following three options:
 
 ```bash
 
-  Usage: [-h|l|t|g|o|a|f|p|d|b|u|r|c|n]
+  Usage: [-h|l|t|g|o|a|f|p|b|u|r|c]
    
   General options:
   -h	HELP				Print this help message and exit
@@ -128,24 +131,22 @@ MutaPipe can be run using the bash script `MutaPipe.sh`. MutaPipe.sh executes al
   -t	TARGET_DIRECTORY  		Specify target directory where output will be stored. Default = current_working_directory
   
   MutaPipe options:
-  -g	GENES				Specify genes of interest. To to pass a file containing all gene names use -g \$(cat filename). Default = ['OPTN', 'ERBB4', 'DCTN1']
+  -g	GENES				Specify genes of interest. To to pass a file containing all gene names use -g \$(cat filename). Default = default = ['OPTN', 'ERBB4', 'DCTN1']
   -o	ORGANISM			Set species for which to search pdb structures. Default = Homo sapiens
   -a	ALL_PDB_IDS		    	Specify whether to retrieve all (True) or max. 10 PDB IDs (False) per gene. Default = True
   -f	FORMAT			  	Specify file formats to download. Default = [cif pdb fasta]. Options = [cif pdb fasta]
   -p	POLYPEPTIDES			Specify whether to extract polypeptide sequence (True) or not (False). Default = True
-  -d    DELETE_FILES            Specify whether to delete mmCIF, pdb and fasta files after parsing (True) or not (False). Default = True
   -b	BLASTp_PATH			Set path to blastp on your system. Default = blastp
   -u	UNIPROT_REFSEQS			Set path to reference proteome fasta file. Default = MutaPipe_Repo/MutaPipe/Uniprot_reference_seqs/
   -r	RELATIVE_SEQUENCE_LENGTH	Set to filter out sequences shorter than a given percentage of the reference sequence (0.1-1.0). Default = 0.5
   -c	HSP_COVERAGE			Set to filter out sequences whose best hsp covers less than a given percentage of the reference sequence (0.1-1.0). Default = 0.1   
-  -n    N_BEST_STRUCTURES       Set number of best structures to be listed in output for each sequence/variant. Default =
 
 ```
 
 ##### Usage example bash
 
 To run MutaPipe for gene NEK1 and set the paramaters to filter out
-1. sequences shorter than 70% of the reference sequence and 
+1. sequences covering less than 70% of the reference sequence and 
 2. sequences whose best HSP covers less than 30% of the reference sequence, 
 use the command:
 
@@ -165,7 +166,7 @@ To run MutaPipe passing a file containing the genes of interest, e.g. this examp
 
 #### Using the python scripts 
 
-MutaPipe can be run manually, by running the 8 python scripts one after another (script [`00`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00_search_pdb.py), [`01`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/01_download_files.py), [`02`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/02_parse_cif_files.py), [`03`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/03_parse_fasta_files.py), [`04`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/04_blast_against_reference.py), [`05`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/05_pdb_extract_unsolved_res.py), [`06`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06_best_structure_per_mutation.py), [`07_a`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_a_ClinVar_Annotations_edirect_per_gene_download_files.py), [`07_b`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py), [`08`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/08_add_clinvar_annotations_to_best_structures.py)). Use the `-h` flag on any MutaPipe python script to see instructions and available arguments (e.g. use the command: `python3 script_name -h`).
+MutaPipe can be run manually, by running the 9 python scripts one after another (script [`00`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00_search_pdb.py), [`01`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/01_download_files.py), [`02`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/02_parse_cif_files.py), [`03`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/03_parse_fasta_files.py), [`04`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/04_blast_against_reference.py), [`05`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/05_pdb_extract_unsolved_res.py), [`06`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06_best_structure_per_mutation.py), [`07_a`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_a_ClinVar_Annotations_edirect_per_gene_download_files.py), [`07_b`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_b_ClinVar_Annotations_edirect_per_gene_parse_files.py), [`08`](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/08_add_clinvar_annotations_to_best_structures.py)). Use the `-h` flag on any MutaPipe python script to see instructions and available arguments (e.g. use the command: `python3 script_name -h`).
 
 **All arguments for the MutaPipe python scripts are OPTIONAL.** The scripts have preset default values, i.e. they can be run *without* setting any of the available flags. To view the default values set in each MutaPipe python script, use the command `python3 script_name -h`.
 
@@ -195,22 +196,14 @@ Moreover, additional arguments can be set during different stages of MutaPipe:
 
 # additional arguments for script 02_parse_cif_files.py
 -pp, --polypeptides	Specify whether to extract polypeptide sequence (True) or not (False), default = True
--del, --delete_files Specify whether to delete mmCIF files after parsing (True) or not (False), default = True
 
-# additional arguments for script 03_parse_pdb_files_extract_unsolved_residues.py
--del, --delete_files Specify whether to delete mmCIF files after parsing (True) or not (False), default = True
-
-# additional arguments for script 04_parse_fasta_files.py
--del, --delete_files Specify whether to delete mmCIF files after parsing (True) or not (False), default = True
-
-# additional arguments for script 05_blast_against_reference.py
+# additional arguments for script 04_blast_against_reference.py
 -bp, --blastp_path		Specify the path to blastp on your system ; default = blastp       
 -refseq, --reference_sequences	Specify path to uniprot reference fasta, default = MutaPipe_Repo/MutaPipe/Uniprot_reference_seqs/UP000005640_9606.fasta    
 
-# additional arguments for script 07_combine_data_to_get_best_n_structures_per_sequence.py
+# additional arguments for script 06_best_structure_per_mutation.py
 -rsl, --relative_sequence_length	filter out sequences shorter than a given percentage of the reference sequence, default = 0.5
 -cov, --hsp_coverage			filter out sequences whose best HSP covers less than a given percentage of the reference sequence, default = 0.1
--n_best, --n_best_structures	Specify number of top structures per sequence/variant to be included in final output, default = 5
 ```
 
 ##### Usage example python
