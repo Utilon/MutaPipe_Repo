@@ -75,7 +75,7 @@ Help()
 ############################################################
 
 # Get the options
-while getopts ":hl:t:g:o:a:f:p:b:u:r:c:n:" option; do
+while getopts ":h:l:t:g:o:a:f:p:d:b:u:r:c:n:" option; do
    case "${option}" in
       h) # display Help
          Help
