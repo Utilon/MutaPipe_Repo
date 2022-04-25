@@ -5,8 +5,7 @@
 ```
 ## Table of Contents
 1. [Introduction](#introduction)
-2. [Citation](#citation)
-3. [Documentation](#documentation)
+2. [Documentation](#documentation)
   	* [Workflow](#workflow)
   	* [Incorporated Scripts](#incorporated-scripts)
 	* [Minimum Requirements](#minimum-requirements)
@@ -19,6 +18,7 @@
 	* [Output](#output)
 		* [Output example](#ouput-example)
 	* [How to Download the Reference Proteome](#how-to-download-the-reference-proteome)
+3. [Citation](#citation)
 
 ## Introduction
 
@@ -30,13 +30,6 @@ This allows researchers to efficiently screen the PDB for the most suitable temp
 
 **Figure 1.** Pipeline overview. MutaPipe takes a list of gene names as input. The pipeline firstly performs a search of the entire Protein Data Bank (PDB) and retrieves information on all available protein structures associated with the input genes (and the species: Homo sapiens). Subsequently, a BLASTp against the canonical protein reference sequence (obtained from [UniProt](https://www.uniprot.org/)) is performed for each identified PDB sequence. The BLASTp alignment is used to identify mismatches, including single amino variants (SAVs), in the amino acid sequence of the PDB structures relative to the canonical sequence. Next, the data is filtered and rearranged to output a table listing the *n* highest quality structures for all available sequences in the PDB which are associated with the input genes. Additionally, if a given amino acid change has corresponding variant data in ClinVar, this information will be added to the output table.
 
-
-
-## Citation
-
-MutaPipe has been developed by Deborah Ness, an NIHR Maudsley Biomedical Research Centre PhD Student, in collaboration with and supervised by [Dr Alfredo Iacoangeli](https://www.kcl.ac.uk/people/alfredo-iacoangeli), for her PhD project at the [Department of Basic and Clinical Neuroscience at King's College London](https://www.kcl.ac.uk/neuroscience/about/departments/basic-clinical-neuroscience).
-
-This work has not yet been published (April 2022). 
 
 
 ## Documentation
@@ -362,3 +355,9 @@ The latest version of this fasta file can be accessed via the [UniProt ftp clien
 
 **NOTE**: When installing MutaPipe (see [Local Deployment](#local-deployment)) a fasta file of the reference proteome for Homo sapiens will be included (version from December 2021). Please feel free to update to a newer version if one is available (we will also regularly update the reference proteome file on here, but this is currently not done automatically).
 
+
+## Citation
+
+MutaPipe has been developed by Deborah Ness, an NIHR Maudsley Biomedical Research Centre PhD Student, in collaboration with and supervised by [Dr Alfredo Iacoangeli](https://www.kcl.ac.uk/people/alfredo-iacoangeli), for her PhD project at the [Department of Basic and Clinical Neuroscience at King's College London](https://www.kcl.ac.uk/neuroscience/about/departments/basic-clinical-neuroscience).
+
+This work has not yet been published (April 2022). 
