@@ -56,7 +56,7 @@ To ensure sequences not associated with the gene of interest which are present i
 ### Incorporated Scripts
 
 ```diff
-+NOTE: The table in this section is not completely up to date (April 2022).
++NOTE: The table in this section is not yet up to date (April 2022).
 ```
 
 There are currently 8 different python scripts incorporated in MutaPipe:
@@ -81,7 +81,7 @@ There are currently 8 different python scripts incorporated in MutaPipe:
 - python > 3.6.8
 	- Biopython
 - NCBI BLAST+
-- RAM: >16GB)
+- RAM: >16GB
 - Space required by the installation: 36 MB
 - Scratch space for usage: depends the number and and size of PDB structures associated with the input genes. *NOTE: To check how many structures are available for your genes of interest, run the command `python3 00_search_pdb.py -g GENES_OF_INTEREST`. This will generate console output as well as csv files both of which provide an overview of how many structures have been identified for your input genes.*
 
