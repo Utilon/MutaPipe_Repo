@@ -316,7 +316,7 @@ After a complete MutaPipe run with the default settings the following main outpu
 - 05_refeseq_warnings.csv 				* lists genes with no or more than one identified reference sequence (only first one is used for further analyses)
 - 06_a_ClinVar_Annotations_genes_no_data_retrieved.txt 	* lists all genes for which no ClinVar annotations could be retrieved
 - 06_b_ClinVar_Annotations.csv 				* lists all variants availalbe in ClinVar and their annotations for the input genes
-- 07_best_structures_all_unique_combinations.csv 		* lists best structure for all unique mismatch combinations for all input genes, incl. ClinVar annotations
+- 07_best_structures_all_unique_combinations.csv 	* lists best structure for all unique mismatch combinations for all input genes, incl. ClinVar annotations
 - 07_best_structures_any_mutation.csv 			* lists best structure for any mismatch regardless of other mismatches in the same structure for all input genes, incl. ClinVar annotations
 - 07_best_structures_per_SAV.csv 			* lists best structure for each SAV (one mutation per structure) for all input genes, incl. ClinVar annotations
 - 07_wildtype_structures.csv 				* lists all available WT structures for all input genes
