@@ -133,12 +133,12 @@ MutaPipe can be run using the bash script `MutaPipe.sh`. MutaPipe.sh executes al
   -a	ALL_PDB_IDS		    	Specify whether to retrieve all (True) or max. 10 PDB IDs (False) per gene. Default = True
   -f	FORMAT			  	Specify file formats to download. Default = [cif pdb fasta]. Options = [cif pdb fasta]
   -p	POLYPEPTIDES			Specify whether to extract polypeptide sequence (True) or not (False). Default = True
-  -d    DELETE_FILES   		     	    Specify whether to delete mmCIF, pdb and fasta files after parsing (True) or not (False). Default = True
+  -d    DELETE_FILES   		     	  Specify whether to delete mmCIF, pdb and fasta files after parsing (True) or not (False). Default = True
   -b	BLASTp_PATH			Set path to blastp on your system. Default = blastp
   -u	UNIPROT_REFSEQS			Set path to reference proteome fasta file. Default = MutaPipe_Repo/MutaPipe/Uniprot_reference_seqs/
   -r	RELATIVE_SEQUENCE_LENGTH	Set to filter out sequences shorter than a given percentage of the reference sequence (0.1-1.0). Default = 0.5
   -c	HSP_COVERAGE			Set to filter out sequences whose best hsp covers less than a given percentage of the reference sequence (0.1-1.0). Default = 0.1   
-  -n    N_BEST_STRUCTURES  		     Set number of best structures to be listed in output for each sequence/variant. Default =
+  -n    N_BEST_STRUCTURES  		   Set number of best structures to be listed in output for each sequence/variant. Default =
 
 ```
 
