@@ -16,7 +16,7 @@
 #      - add all availalable ClinVar annotations to all three n_best_structure tables/dfs
 # and outputs the following files:
 #      - In each respective gene folder:
-#               - GENENAME_07_best_structuresest_structures_per_SAV.csv
+#               - GENENAME_07_best_structures_per_SAV.csv
 #                 lists n best structures for each SAV (one mutation per structure) for this gene (incl. ClinVar annotations)
 #               - GENENAME_07_best_structures_all_unique_combinations.csv
 #                 lists n best structure for all unique mismatch combinations for this gene (incl. ClinVar annotations)
@@ -111,7 +111,7 @@ It will perform the following:
 (5) add all availalable ClinVar annotations to all three n_best_structure tables/dfs
 (6) output the following files:
 - In each respective gene folder:
-(a) GENENAME_07_best_structuresest_structures_per_SAV.csv (lists n best structures for each SAV (one mutation per structure) for this gene (incl. ClinVar annotations))
+(a) GENENAME_07_best_structures_per_SAV.csv (lists n best structures for each SAV (one mutation per structure) for this gene (incl. ClinVar annotations))
 (b) GENENAME_07_best_structures_all_unique_combinations.csv (lists n best structure for all unique mismatch combinations for this gene (incl. ClinVar annotations))
 (c) GENENAME_07_best_structures_any_mutation.csv (lists n best structures for any mismatch regardless of other mismatches in the same structure (incl. ClinVar annotations))
 (d) GENENAME_07_wildtype_structures.csv (lists all available WT structures for this gene)
