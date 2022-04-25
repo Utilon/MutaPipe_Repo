@@ -306,8 +306,8 @@ After a complete MutaPipe run with the default settings the following main outpu
 - 01_search_overview_n_structures.csv 			* lists number of structures retrieved per gene (simple overview)
 - 02_all_poly_seq.csv 					* lists polypeptide sequences for all PDB structures associated with the input genes
 - 02_all_resolutions.csv 				* lists resolutions for all PDB structures associated with the input genes
-- 03_unsolved_residues_per_chain.csv 	* lists all unsolved residues in all chains of all PDB structures for all genes (one row for each chain)
-- 03_unsolved_residues_per_structure.csv 	* lists all unsolved residues in all PDB structures for all genes (one row for each structure)
+- 03_unsolved_residues_per_chain.csv 			* lists all unsolved residues in all chains of all PDB structures for all genes (one row for each chain)
+- 03_unsolved_residues_per_structure.csv 		* lists all unsolved residues in all PDB structures for all genes (one row for each structure)
 - 04_fasta_combined_info.csv 				* lists combined information extracted from all fasta and fasta_ex files for all available sequences in the PDB associated with the input genes
 - 04_fasta_info.csv 					* lists information extracted from all fasta files (downloaded from PDB) for all available sequences in the PDB associated with the input genes
 - 04_fasta_ex_info.csv 					* lists information extracted from all _ex.fasta files (extracted from mmCif files) for all available sequences in the PDB associated with the input genes
@@ -315,11 +315,11 @@ After a complete MutaPipe run with the default settings the following main outpu
 - 05_blastp_warnings.csv 				* lists blastp warnings (if blastp failed or if there is more than one alignment)
 - 05_refeseq_warnings.csv 				* lists genes with no or more than one identified reference sequence (only first one is used for further analyses)
 - 06_a_ClinVar_Annotations_genes_no_data_retrieved.txt 	* lists all genes for which no ClinVar annotations could be retrieved
-- 06_b_ClinVar_Annotations.csv 					* lists all variants availalbe in ClinVar and their annotations for the input genes
-- 07_best_structures_all_unique_combinations.csv 	* lists best structure for all unique mismatch combinations for all input genes, incl. ClinVar annotations
-- 07_best_structures_any_mutation.csv 		* lists best structure for any mismatch regardless of other mismatches in the same structure for all input genes, incl. ClinVar annotations
-- 07_best_structures_per_SAV.csv 		* lists best structure for each SAV (one mutation per structure) for all input genes, incl. ClinVar annotations
-- 07_wildtype_structures.csv 			* lists all available WT structures for all input genes
+- 06_b_ClinVar_Annotations.csv 				* lists all variants availalbe in ClinVar and their annotations for the input genes
+- 07_best_structures_all_unique_combinations.csv 		* lists best structure for all unique mismatch combinations for all input genes, incl. ClinVar annotations
+- 07_best_structures_any_mutation.csv 			* lists best structure for any mismatch regardless of other mismatches in the same structure for all input genes, incl. ClinVar annotations
+- 07_best_structures_per_SAV.csv 			* lists best structure for each SAV (one mutation per structure) for all input genes, incl. ClinVar annotations
+- 07_wildtype_structures.csv 				* lists all available WT structures for all input genes
 ```
 
 To avoid cluttering the directory containing the main output files, MutaPipe creates subfolders in the `Results` directory where it stores any additional files and relevant data retrieved or extracted from the reference proteome fasta files, the ClinVar database, and the PDB. 
