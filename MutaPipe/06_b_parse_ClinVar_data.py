@@ -204,7 +204,7 @@ print('\n============================== Summary ================================
 print(f'Complete! \n    Parsed all ClinVar data for a total of {n_genes_clinvar_data} genes.')
 
 print('\nThe following files have been created for each gene and stored in the respective gene folder:')
-print('   o      GENENAME__b_ClinVar_Annotations.csv')
+print('   o      GENENAME_06_b_ClinVar_Annotations.csv')
 print('            (lists all ClinVar annotations for all variants in this gene)')
 
 print('\nThe following files have been created and stored in the Results folder:')
