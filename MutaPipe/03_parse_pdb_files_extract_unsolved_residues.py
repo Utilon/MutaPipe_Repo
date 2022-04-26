@@ -67,6 +67,7 @@ args = vars(ap.parse_args())
 # So we update our variables whenever there is a user input via the terminal:
 create_search_log  = create_search_log  if args["log"]   == None else args["log"]
 target_directory  = target_directory if args["target"]   == None else args["target"]
+delete_files  = delete_files if args["delete_files"]   == None else args["delete_files"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 # We want to write all our Output into the Results directory
