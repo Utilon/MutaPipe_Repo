@@ -9,8 +9,6 @@
 
 # Set up
 import pandas as pd
-import requests
-import math
 import os
 from os import listdir
 from os.path import isfile, join

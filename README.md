@@ -72,12 +72,28 @@ There are currently 8 different python scripts incorporated in MutaPipe:
 ### Minimum Requirements
 
 - stable internet connection
-- python > 3.6.8
+- python > 3.6.8 (see Table below for required modules, packages and libraries)
 	- Biopython
 - NCBI BLAST+
 - RAM: >16GB
 - Space required by the installation: 36 MB
 - Scratch space for usage: depends on the number and size of PDB structures associated with the input genes. *NOTE: To check how many structures are available for your genes of interest, install MutaPipe and run the command `python3 00_search_pdb.py -g GENES_OF_INTEREST` from with the MutaPipe directory. This will generate console output as well as csv files both of which provide an overview of how many structures have been identified for your input genes.*
+
+The table below list all requirements, including required Python modules, packages and libraries, for each of the 8 Python scripts in MutaPipe:
+
+| **Python Script**                                                                                                            | **Required Modules / Packages / Libraries <br>(* = not included in Python)** | **Other requirements**                                                            |
+|------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| All scripts                                                                                                                  | `argparse`<br>`datetime`<br>`os`<br>`pandas`<br>`sys`                        | Python > 3.6.8<br><br>RAM: >16GB<br><br>Space required by the installation: 36 MB |
+| [00](<br>https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00<br>_search_pdb.py)                                     | `requests*`                                                                  | Internet access (PDB API)                                                         |
+| [01](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/01<br>_download_files.py)                                     | `ast`<br>`Biopython*`<br>`requests*`                                         | Internet access (PDB API)                                                         |
+| [02](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/02<br>_parse_cif_files.py)                                    | `Biopython*`                                                                 |                                                                                   |
+| [03](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/03<br>_parse_pdb_files_extract_unsolved_residues.py)          | `Biopython*`                                                                 |                                                                                   |
+| [04](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/04<br>_parse_fasta_files.py)                                  | `Biopython*`                                                                 |                                                                                   |
+| [05](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/05<br>_blast_against_reference.py)                            | `Biopython*`<br>`numpy`<br>`re`                                              | UniProt Reference Proteome (fasta)<br><br>NCBI BLAST+                             |
+| [06_a](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06<br>_a_<br>download<br>_ClinVar_data.py)                  | `math`<br>`requests*`<br>`xml.etree.ElementTree*`                            | Internet access (ClinVar API)                                                     |
+| [06_b](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06<br>_b_<br>parse<br>_ClinVar_data.py)                     | `xml.etree.ElementTree*`                                                     |                                                                                   |
+| [07](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07<br>_combine_data_to_get_best_n_structures_per_sequence.py) | `ast`<br>`numpy`                                                             |                                                                                   |
+
 
 ### Local Deployment
 
