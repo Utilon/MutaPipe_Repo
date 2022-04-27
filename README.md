@@ -77,8 +77,10 @@ There are currently 8 different python scripts incorporated in MutaPipe:
 - NCBI BLAST+
 - RAM: >16GB
 - Space required by the installation: 36 MB
-- Scratch space for usage: depends on the number and size of PDB structures associated with the input genes. *NOTE: To check how many structures are available for your genes of interest, install MutaPipe and run the command `python3 00_search_pdb.py -g GENES_OF_INTEREST` from with the MutaPipe directory. This will generate console output as well as csv files both of which provide an overview of how many structures have been identified for your input genes.*
-- Reference Proteome (default version included in MutaPipe) *NOTE: To run MutaPipe a fasta file containing the reference proteome / canonical protein sequences for the organism in question (= Homo sapiens) is required (see [further below](#How-to-download-the-reference-proteome) for download instructions)*.
+- Scratch space for usage: depends on the number and size of PDB structures associated with the input genes. 
+*NOTE: To check how many structures are available for your genes of interest, install MutaPipe and run the command `python3 00_search_pdb.py -g GENES_OF_INTEREST` from with the MutaPipe directory. This will generate console output as well as csv files both of which provide an overview of how many structures have been identified for your input genes.*
+- Reference Proteome (default version included in MutaPipe) 
+*NOTE: To run MutaPipe a fasta file containing the reference proteome / canonical protein sequences for the organism in question (= Homo sapiens) is required (see [further below](#How-to-download-the-reference-proteome) for download instructions)*.
 
 The table below list all requirements (including required Python modules, packages and libraries) for each of the 8 Python scripts in MutaPipe:
 
