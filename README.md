@@ -77,7 +77,7 @@ There are currently 8 different python scripts incorporated in MutaPipe:
 - NCBI BLAST+
 - RAM: >16GB
 - Space required by the installation: 36 MB
-- Scratch space for usage: depends the number and and size of PDB structures associated with the input genes. *NOTE: To check how many structures are available for your genes of interest, run the command `python3 00_search_pdb.py -g GENES_OF_INTEREST`. This will generate console output as well as csv files both of which provide an overview of how many structures have been identified for your input genes.*
+- Scratch space for usage: depends on the number and size of PDB structures associated with the input genes. *NOTE: To check how many structures are available for your genes of interest, install MutaPipe and run the command `python3 00_search_pdb.py -g GENES_OF_INTEREST` from with the MutaPipe directory. This will generate console output as well as csv files both of which provide an overview of how many structures have been identified for your input genes.*
 
 ### Local Deployment
 
