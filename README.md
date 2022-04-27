@@ -82,7 +82,7 @@ There are currently 8 different python scripts incorporated in MutaPipe:
 The table below list all requirements, including required Python modules, packages and libraries, for each of the 8 Python scripts in MutaPipe:
 
 
-| **Python Script**                                                                                                        | **Required Modules / Packages / Libraries <br>(* = not included in Python)**                                  | **Other requirements**                                                                                                                  |
+| **Python Script**                                                                                                        | **Required Modules / Packages / Libraries <br>(\* = not included in Python)**                                 | **Other requirements**                                                                                                                  |
 |--------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | All scripts                                                                                                              | `argparse`<br>`datetime`<br>`os`<br>`pandas`<br>`sys`                                                         | Python > 3.6.8<br><br>RAM: >16GB                                                                                                        |
 | [00](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/00_search_pdb.py)                                         | [`requests*`](https://docs.python-requests.org/en/latest/)                                                    | Internet access (PDB API)                                                                                                               |
@@ -94,8 +94,6 @@ The table below list all requirements, including required Python modules, packag
 | [06_a](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06_a_download_ClinVar_data.py)                          | `math`<br>[`requests*`](https://docs.python-requests.org/en/latest/)<br>`xml.etree.ElementTree`               | Internet access (ClinVar API)                                                                                                           |
 | [06_b](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/06_b_parse_ClinVar_data.py)                             | `xml.etree.ElementTree`                                                                                       |                                                                                                                                         |
 | [07](https://github.com/Utilon/Pipeline_Git/blob/main/MutaPipe/07_combine_data_to_get_best_n_structures_per_sequence.py) | `ast`<br>`numpy`                                                                                              |                                                                                                                                         |
-
-
 
 
 
