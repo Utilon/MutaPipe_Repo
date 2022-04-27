@@ -78,6 +78,10 @@ There are currently 8 different python scripts incorporated in MutaPipe:
 - RAM: >16GB
 - Space required by the installation: 36 MB
 - Scratch space for usage: depends on the number and size of PDB structures associated with the input genes. *NOTE: To check how many structures are available for your genes of interest, install MutaPipe and run the command `python3 00_search_pdb.py -g GENES_OF_INTEREST` from with the MutaPipe directory. This will generate console output as well as csv files both of which provide an overview of how many structures have been identified for your input genes.*
+- Reference Proteome (default version included in MutaPipe) *NOTE: To run MutaPipe a fasta file containing the reference proteome / canonical protein sequences for the organism in question (= Homo sapiens) is required (see [further below](#How-to-download-the-reference-proteome) for download instructions)*.
+
+**NOTE**: When installing MutaPipe a fasta file of the reference proteome for Homo sapiens will be included (version from December 2021). Please feel free to update to a newer version if one is available (we will also regularly update the reference proteome file on here, but this is currently not done automatically).
+
 
 The table below list all requirements (including required Python modules, packages and libraries) for each of the 8 Python scripts in MutaPipe:
 
@@ -105,12 +109,6 @@ To obtain MutaPipe please use git to download the most recent development tree:
 ```bash
 git clone https://github.com/Utilon/MutaPipe_Repo.git
 ```
-#### NOTE: Reference Proteome Required (default version included in MutaPipe)
-In order to run MutaPipe a fasta file containing the reference proteome / canonical protein sequences for the organism in question (= Homo sapiens) will have to be downloaded from UniProt and stored in a folder called `Uniprot_reference_seqs` in the `MutaPipe` directory (where the python scripts are stored). The filename should be `UP000005640_9606.fasta` for the script to work properly.
-The latest version of this fasta file can be accessed via the [UniProt ftp client](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/Eukaryota/UP000005640/).
-
-**NOTE**: When installing MutaPipe a fasta file of the reference proteome for Homo sapiens will be included (version from December 2021). Please feel free to update to a newer version if one is available (we will also regularly update the reference proteome file on here, but this is currently not done automatically).
-
 
 ### Usage
 
