@@ -285,6 +285,7 @@ for index, row in blastp_results.iterrows():
 structure_info.rename(columns={'gene': 'gene_name'}, inplace=True)
 df = blastp_results.merge(structure_info, how='left', on=['gene_name', 'structure_id'])
 
+
 # FILTER RELATIVE SEQUENCE LENGTH
 # filter out structures which are shorter a given percentage of the reference sequence
 # --> relative_sequence_length, e.g. 50% (0.5) or 10% (0.1) of the reference sequence

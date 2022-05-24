@@ -52,7 +52,7 @@ create_search_log = False     # will create a file called search_log.txt with co
                                             # prints to console if set to False.
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
 extract_pp = True                 # specify whether to extract the polypeptide sequences or whther to skip this step
-delete_files=True                  # specify whether to delete cif files after parsing them or not
+delete_files= True                  # specify whether to delete cif files after parsing them or not
                                             
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""****    This script takes a csv file (01_search_overview_folders.csv) containing information on the folders where the mmCIF files are stored as input and will:
