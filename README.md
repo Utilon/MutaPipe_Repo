@@ -212,8 +212,8 @@ Moreover, additional arguments can be set during different stages of MutaPipe:
 
 # additional arguments for script 07_combine_data_to_get_best_n_structures_per_sequence.py
 -rsl, --relative_sequence_length filter out sequences shorter than a given percentage of the reference sequence, default = 0.5
--cov, --hsp_coverage		  filter out sequences whose best HSP covers less than a given percentage of the reference sequence, default = 0.1
--n_best, --n_best_structures	  Specify number of top structures per sequence/variant to be included in final output, default = 5
+-cov, --hsp_coverage		 filter out sequences whose best HSP covers less than a given percentage of the reference sequence, default = 0.1
+-n_best, --n_best_structures	 Specify number of top structures per sequence/variant to be included in final output, default = 5
 ```
 
 ##### Usage example python
