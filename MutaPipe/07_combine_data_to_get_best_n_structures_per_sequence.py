@@ -206,15 +206,7 @@ def add_clinvar_annotations(df):
         # if len(corresponding_clinvar_annotations) > 1, we need to figure out another way to add the information to the current row
         if len(corresponding_clinvar_annotations) == 1:
             # we fill the rows 'accession' to 'dbs_and_accessions' of the df with the the values from all but the first two columns of the one entry in the corresponding_clinvar_annotations df
-            df.loc[index, 'accession':'dbs_and_accessions'] = corresponding_clinvar_annotations.iloc[0, 2:]
-            
-# #####      THE BELOW DOESN'T WORK FOR df_any_mutation (when running script for 45 ALS genes) !!!! 
-#             # added try and except statement to catch potential ValueErrors
-#             try:
-#                 df.loc[index, 'accession':'dbs_and_accessions'] = corresponding_clinvar_annotations.iloc[0, 2:]
-#             except ValueError:
-#                 print('something went wrong')
-                
+            df.loc[index, 'accession':'dbs_and_accessions'] = corresponding_clinvar_annotations.iloc[0, 2:]                
         elif len(corresponding_clinvar_annotations) > 1:
             # if there is more than one row, we want to get the entire series (each column) from corresponding_clinvar_annotations and write that into the cells in the df
             # sometimes this doesn't work, so we add a try and except statement
@@ -498,7 +490,6 @@ df_any_mutation = add_empty_cols(df_any_mutation)
 # next, we add clinvar annotations to the new dfs using the function we defined earlier
 add_clinvar_annotations(df_SAV)
 add_clinvar_annotations(df_unique_combi)
-####### THIS LINE BELOW HERE DOESN'T WORK - NEED TO FIX ASAP ######
 add_clinvar_annotations(df_any_mutation)
 
 # we have the following dfs with the following cols (see paragraph below for legend)
