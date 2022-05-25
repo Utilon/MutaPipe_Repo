@@ -198,7 +198,7 @@ Moreover, additional arguments can be set during different stages of MutaPipe:
 
 # additional arguments for script 02_parse_cif_files.py
 -pp, --polypeptides	Specify whether to extract polypeptide sequence (True) or not (False), default = True
--del, --delete_files Specify whether to delete mmCIF files after parsing (True) or not (False), default = True
+-del, --delete_files 		Specify whether to delete mmCIF files after parsing (True) or not (False), default = True
 
 # additional arguments for script 03_parse_pdb_files_extract_unsolved_residues.py
 -del, --delete_files Specify whether to delete mmCIF files after parsing (True) or not (False), default = True
