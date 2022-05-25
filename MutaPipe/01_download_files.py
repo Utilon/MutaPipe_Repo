@@ -127,14 +127,23 @@ for gene, structures in pdb_ids.iterrows():
 
     # create new folder to save all pdb/mmcif/fasta files found for the query gene:
     folder_name = f'{results_dir}/{gene}_{len(found_pdbs)}structures'
-    # create folder if it doesn't already exist and change to folder
-    if os.path.exists(folder_name):
-        os.chdir(folder_name)
-        created_folders.append(folder_name)
-    else:
-         os.makedirs(folder_name)
-         os.chdir(folder_name)
-         created_folders.append(folder_name)
+    # get a list of all the currently existing gene folders (if any) to check if a folder for this specific gene has already been created
+    existing_folders = [f.path for f in os.scandir(results_dir) if f.is_dir()]
+    # it could be the case that a folder for the current gene already exists, but that there are more structures available now
+    # in this case we change to the existing folder for the current gene, and rename it to adequately reflect the number of structures available now
+    # this ensures that we don't download all already downloaded files again into a new folder
+    if any(f'{gene}_' in existing_folder for existing_folder in existing_folders) & any('structures' in existing_folder for existing_folder in existing_folders):
+        # if a folder for the current gene exists, we rename it
+        # first we get a list of all folders containing the current gene name and take the first (and only) element
+        existing_folder_name = [existing_folder for existing_folder in existing_folders if gene in existing_folder][0]
+        # now we rename the folder
+        os.rename (existing_folder_name, folder_name)
+    # create folder if it doesn't already exist
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+    # finally we change to the gene folder (created or renamed) and append the foldername to the list created_folders
+    os.chdir(folder_name)
+    created_folders.append(folder_name)
             
     # download all mmCIF files to newly created folder
     # if-statement added, so mmCif files are only downloaded if specified (default)
