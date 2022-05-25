@@ -171,12 +171,16 @@ def add_empty_cols(df):
 
 # Define a function to add clinvar data to dfs
 def add_clinvar_annotations(df):
+    
+    # reset index of df! (drop old index with drop=True)
+    df.reset_index(drop=True, inplace=True)
+    
     for index, row in df.iterrows():
         gene = row.gene_name
         # get a slice of the clinvar_annotations df with variants for only the current gene
         clinvar_annotations_this_gene = clinvar_annotations[clinvar_annotations.gene == gene]
         
-        # we add a try and except statement to use the mismatch_of_interest colum if available
+        # we add a try and except statement to use the mismatch_of_interest column if available
         # and otherwise we work with the columns mismatch_substitutions and close_mismatch_substitutions
         # (only the case in the unique_combi df)
         try:
@@ -203,6 +207,14 @@ def add_clinvar_annotations(df):
         if len(corresponding_clinvar_annotations) == 1:
             # we fill the rows 'accession' to 'dbs_and_accessions' of the df with the the values from all but the first two columns of the one entry in the corresponding_clinvar_annotations df
             df.loc[index, 'accession':'dbs_and_accessions'] = corresponding_clinvar_annotations.iloc[0, 2:]
+            
+# #####      THE BELOW DOESN'T WORK FOR df_any_mutation (when running script for 45 ALS genes) !!!! 
+#             # added try and except statement to catch potential ValueErrors
+#             try:
+#                 df.loc[index, 'accession':'dbs_and_accessions'] = corresponding_clinvar_annotations.iloc[0, 2:]
+#             except ValueError:
+#                 print('something went wrong')
+                
         elif len(corresponding_clinvar_annotations) > 1:
             # if there is more than one row, we want to get the entire series (each column) from corresponding_clinvar_annotations and write that into the cells in the df
             # sometimes this doesn't work, so we add a try and except statement
@@ -386,7 +398,7 @@ df['all_mismatches'] = df.mismatch_substitutions.apply(lambda x: ast.literal_eva
 unique_genes = df.gene_name.unique()
 
 # create empty df to populate with best structure per unique combination:
-best_structure_unique_combis = pd.DataFrame(columns=df.columns)
+df_unique_combi = pd.DataFrame(columns=df.columns)
 
 # create empty df to populate with best structure per unique mutation (regardless of other mutations)
 best_structure_any_mutation = pd.DataFrame(columns=df.columns)
@@ -420,8 +432,8 @@ for gene in unique_genes:
         # we want to get the first n rows for each df_this_combi_sorted
         best_n_structures_this_combi = df_this_combi_sorted[:n_best_structures]
         
-        # we now append the best_n_structures_this_combi to the best_structure_unique_combis df
-        df_unique_combi = best_structure_unique_combis.append(best_n_structures_this_combi)
+        # we now append the best_n_structures_this_combi to the df_unique_combi df
+        df_unique_combi = df_unique_combi.append(best_n_structures_this_combi)
         
     # GET N BEST STRUCTURE FOR ANY MUTATION (still in the loop)
     # =========================================================================================
@@ -486,6 +498,7 @@ df_any_mutation = add_empty_cols(df_any_mutation)
 # next, we add clinvar annotations to the new dfs using the function we defined earlier
 add_clinvar_annotations(df_SAV)
 add_clinvar_annotations(df_unique_combi)
+####### THIS LINE BELOW HERE DOESN'T WORK - NEED TO FIX ASAP ######
 add_clinvar_annotations(df_any_mutation)
 
 # we have the following dfs with the following cols (see paragraph below for legend)
@@ -563,7 +576,11 @@ output_any_mutation.to_csv(f'{results_dir}/07_best_structures_any_mutation.csv',
 # we can loop over all the gene names in the structure_info df (contains all the genes for which structures are available)
 for gene in structure_info.gene_name.unique():
     # we get the name of the gene folder of the current gene like so
-    gene_folder = [name for name in os.listdir(results_dir) if name.startswith(f'{gene}_')][0]
+    try:
+        gene_folder = [name for name in os.listdir(results_dir) if name.startswith(f'{gene}_')][0]
+    # in case no folder for this gene exists, we skip writing out gene-specific outputs altogether
+    except IndexError:
+        continue
     
     # get a slice of all the output dfs for just this gene:
     output_slice_wt = output_wt[output_wt.gene_name == gene]
