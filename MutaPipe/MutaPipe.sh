@@ -151,6 +151,7 @@ python3 05_blast_against_reference.py -bp "$BLASTp_PATH" -refseq "$UNIPROT_REFSE
 python3 06_a_download_ClinVar_data.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 06_b_parse_ClinVar_data.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 07_combine_data_to_get_best_n_structures_per_sequence.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG -n_best $N_BEST_STRUCTURES
+python3 08_download_AlphaFold_structures.py -g $GENES -t "$TARGET_DIRECTORY" -l $LOG
 
 # change (back) to target directory
 cd "$TARGET_DIRECTORY"
@@ -183,14 +184,15 @@ cd "$TARGET_DIRECTORY"
 # additional options for script 04_parse_fasta_files.py
 #   -del, --delete_files            Specify whether to delete fasta files after parsing (True) or not (False), default = True
 
-# new in 05_blast_against_reference.py
-# -bp, --blastp_path 	            Specify the path to blastp on your system ; default = /usr/local/ncbi/blast/bin/blastp       
-# -refseq, --reference_sequences    Specify path to uniprot reference fasta, default = /Users/debs/OneDrive - King's College London/Pipeline/Pipeline_Git/MutaPipe/Uniprot_reference_seqs/UP000005640_9606.fasta   				                   
+# additional options in 05_blast_against_reference.py
+#   -bp, --blastp_path 	            Specify the path to blastp on your system ; default = /usr/local/ncbi/blast/bin/blastp       
+#   -refseq, --reference_sequences    Specify path to uniprot reference fasta, default = /Users/debs/OneDrive - King's College London/Pipeline/Pipeline_Git/MutaPipe/Uniprot_reference_seqs/UP000005640_9606.fasta   				                   
 
-# new in 07_combine_data_to_get_best_n_structures_per_sequence.py
-# -rsl, --relative_sequence_length  filter out sequences shorter than a given percentage of the reference sequence, default = 0.5
-# -cov, --hsp_coverage              filter out sequences whose best hsp covers less than a given percentage of the reference sequence, default = 0.1
-# -n_best, --n_best_structures      number of best structures to be listed in output for each sequence/variant, default = 1
+# additional options in 07_combine_data_to_get_best_n_structures_per_sequence.py
+#   -rsl, --relative_sequence_length  filter out sequences shorter than a given percentage of the reference sequence, default = 0.5
+#   -cov, --hsp_coverage              filter out sequences whose best hsp covers less than a given percentage of the reference sequence, default = 0.1
+#   -n_best, --n_best_structures      number of best structures to be listed in output for each sequence/variant, default = 1
 
-
+# additional options in 08_download_AlphaFold_structures.py
+#   -g, --genes                        Specify genes for which to download AlphaFold predicted structures
 

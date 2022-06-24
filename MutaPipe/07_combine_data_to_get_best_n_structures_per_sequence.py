@@ -342,7 +342,9 @@ single_mut_sorted = single_mutation.sort_values(by=['gene_name', 'mismatch_subst
 # in order to get the aa index for each mutation so we are able to sort the df accordingly, we do the following:
 # make mismatch of interest col in df single_mut_sorted 
 # first we make a column called mismiatch_of_interest
-single_mut_sorted.loc[:,'mismatch_of_interest'] = None
+# single_mut_sorted.loc[:,'mismatch_of_interest'] = None # this line does not work with KL 24.6.2022
+# try this instead
+single_mut_sorted['mismatch_of_interest'] = None  # this works with KL 24.6.2022
 # to fill the column with values, we loop over the df (couldn't figure out how else to do it)
 for index, row in single_mut_sorted.iterrows():
     close_mis = ast.literal_eval(row.close_mismatch_substitutions)
@@ -373,7 +375,14 @@ for gene in single_mut_sorted.gene_name.unique():
         n_best_structures_single_mut = n_best_structures_single_mut.append(n_best_single_mut_for_this_gene)
 
 # now we can sort the df according to the aa_index
-df_SAV = n_best_structures_single_mut.sort_values(by=['gene_name', 'aa_index', 'mismatch_of_interest', 'resolution'])
+# the following line throws an Error (KeyError) if the df is empty (if there are no SAVs)
+# e.g. in the case of KL (24.6.2022)
+# we thus we add a try and except statement
+try:
+    df_SAV = n_best_structures_single_mut.sort_values(by=['gene_name', 'aa_index', 'mismatch_of_interest', 'resolution'])
+except KeyError:
+    # if this throws an Error we don't sort the df, and use the other df with all relevant column names
+    df_SAV = single_mut_sorted
 # write final output to file at the end of script (with other outputs)
 
 # GET N BEST STRUCTURES FOR ANY UNIQUE COMBINATION OF MUTATIONS
