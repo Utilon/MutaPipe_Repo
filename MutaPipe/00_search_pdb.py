@@ -16,11 +16,14 @@ script_name = os.path.basename(__file__)
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 #  read in gene_list from textfile
-with open('genes.txt', 'r') as f:
-    gene_list = f.read().split(' ')
-# remove empty entries
-if '' in gene_list:
-    gene_list.remove('')
+try:
+    with open('genes.txt', 'r') as f:
+        genes = f.read().split(' ')
+    # remove empty entries
+    if '' in genes:
+        genes.remove('')
+except FileNotFoundError:
+    genes = ['DCTN1', 'ERBB4', 'SOD1']
 
 # set default values for arguments we want to implement
 # we have to do this here if we want to print the default values in the help message
