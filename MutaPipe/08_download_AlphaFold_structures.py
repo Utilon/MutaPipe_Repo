@@ -99,23 +99,36 @@ print('Input genes: ', genes, '\n')
 # Define a function which will retrieve data from UniProt for all input gene names
 def get_UniProt_data(genes):
     # we define the beginning of the url but don't add the genes yet
-    url = 'https://www.uniprot.org/uniprot/?query=organism:%22homo%20sapiens%22%20and%20('
+    # url = 'https://www.uniprot.org/uniprot/?query=organism:%22homo%20sapiens%22%20and%20('
+    # url above doesn't work anymore (28.6.2022); use new format instead:
+    # url = 'https://rest.uniprot.org/uniprotkb/search?compressed=true&fields=accession%2Cid%2Cprotein_name%2Cgene_names%2Corganism_name%2Clength&format=tsv&query=organism_name%3A%22homo%20sapiens%22'
+    # url = 'https://rest.uniprot.org/uniprotkb/search?compressed=true&fields=accession%2Cid%2Cprotein_name%2Cgene_names%2Corganism_name%2Clength&format=xlsx&query=organism_name%3A%22homo%20sapiens%22'
+    url = 'https://rest.uniprot.org/uniprotkb/search?fields=accession%2Cid%2Cprotein_name%2Cgene_names%2Corganism_name%2Clength&format=tsv&query=organism_name%3A%22homo%20sapiens%22'
     # now we loop over all the genes to add them in our query url
     for gene in genes:
         # for the first gene we use the AND operator, for the rest the OR operator
         # so we add an if else statement like so, to catch the first gene
         if genes.index(gene)==0:
-            gene_url_string = f'gene_exact:{gene.lower()}'
+            # gene_url_string = f'gene_exact:{gene.lower()}'
+            # url above doesn't work anymore (28.6.2022); use new format instead:
+            gene_url_string = f'%20AND%20%28gene_exact%3A{gene.lower()}'
         else:
-            gene_url_string = f'%20or%20gene_exact:{gene.lower()}'
+            # gene_url_string = f'%20or%20gene_exact:{gene.lower()}'
+            # url above doesn't work anymore (28.6.2022); use new format instead:
+            gene_url_string = f'%20OR%20gene_exact%3A{gene.lower()}' 
         # now we add the part of the url for this gene to the overall url
         url = url + gene_url_string
     # finally we add the other components of our search to the url:
-    search_params = ')%20and%20reviewed:yes&format=tab&columns=id,entry%20name,reviewed,protein%20names,genes,organism,length&sort=score'
+    # search_params = ')%20and%20reviewed:yes&format=tab&columns=id,entry%20name,reviewed,protein%20names,genes,organism,length&sort=score'
+    # url above doesn't work anymore (28.6.2022); use new format instead:
+    search_params = '%29%20AND%20reviewed%3Atrue&size=500'
     # we combine everything to get our final url (to download data from the uniprot API)
     final_url = url + search_params
     # to download results from uniprot my url should look like this
     # 'https://www.uniprot.org/uniprot/?query=organism:%22homo%20sapiens%22%20and%20(gene_exact:nek1%20or%20gene_exact:kl%20or%20gene_exact:fus)%20and%20reviewed:yes&format=tab&columns=id,entry%20name,reviewed,protein%20names,genes,organism,length&sort=score'
+    # apparently this doesn't work anymore (28.6.2022)
+    # try this format instead:
+    # 'https://rest.uniprot.org/uniprotkb/search?compressed=true&fields=accession%2Cid%2Cprotein_name%2Cgene_names%2Corganism_name%2Clength&format=tsv&query=organism_name%3A%22homo%20sapiens%22%20AND%20%28gene_exact%3Abraf%20OR%20gene_exact%3Abrca1%20OR%20gene_exact%3Abrca2%20OR%20gene_exact%3Abtk%20OR%20gene_exact%3Acasp10%20OR%20gene_exact%3Acasp8%29%20AND%20reviewed%3Atrue&size=500'
     # Now we get data from the API and save it as a txt file
     response = requests.get(final_url)
     if response.status_code == 200:
@@ -165,7 +178,7 @@ print('>>> getting UniProt identifiers...')
 uniprot_data = get_UniProt_data(genes)
 print(f'Complete!\n    Identified {len(uniprot_data)} UniProt enries for a total of {len(genes)} input genes\n')
 # We define a df to output at the end of the script, containing relevant information from uniprot and a link to the AlphaFold Database entry
-output_df = pd.concat([uniprot_data.drop(columns='Status'), pd.DataFrame(columns=['Link AlphaFold Database', 'Status'])])
+output_df = pd.concat([uniprot_data, pd.DataFrame(columns=['Link AlphaFold Database', 'Status'])])
 
 # We loop over this table and get the Alphafold structure for each UniProt ID (stored in the column 'Entry') using the function defined above
 # we will simultaneously fill in the table with additional data (the link to the entry in the AlphaFold database, and the download status)
@@ -181,7 +194,7 @@ for index, row in output_df.iterrows():
         output_df.loc[index, 'Status'] = 'downloaded'
         # we also rename the downloaded structure file (currently in format: uniprotID_AFprediction.cif)
         # it should also contain the gene name (one or more gene names for each structure stored in column output_df['Gene names']
-        gene_name = [gene_name for gene_name in output_df.loc[index, 'Gene names'].split(' ') if gene_name in genes][0]
+        gene_name = [gene_name for gene_name in output_df.loc[index, 'Gene Names'].split(' ') if gene_name in genes][0]
         os.rename(f'{uniprot_id}_AFprediction.cif', f'{gene_name}_{uniprot_id}_AFprediction.cif')
     else:
         output_df.loc[index, 'Status'] = 'failed'
