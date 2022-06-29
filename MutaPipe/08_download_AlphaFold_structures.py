@@ -201,8 +201,8 @@ for index, row in output_df.iterrows():
         output_df.loc[index, 'Status'] = 'downloaded'
         # we also rename the downloaded structure file (currently in format: uniprotID_AFprediction.cif)
         # it should also contain the gene name (one or more gene names for each structure stored in column output_df['Gene names']
-        gene_name = [gene_name for gene_name in output_df.loc[index, 'Gene Names'].split(' ') if gene_name in genes][0]
-        os.rename(f'{uniprot_id}_AFprediction.cif', f'{gene_name}_{uniprot_id}_AFprediction.cif')
+        gene_name = [gene_name for gene_name in output_df.loc[index, 'Gene Names'].split(' ') if gene_name.upper() in genes][0]
+        os.rename(f'{uniprot_id}_AFprediction.cif', f'{gene_name}_{uniprot_id}_AFprediction.cif')        
     else:
         output_df.loc[index, 'Status'] = 'failed'
     # we also add the link to this Entry in the AlphaFold Database to the table
