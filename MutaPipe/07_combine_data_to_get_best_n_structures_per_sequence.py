@@ -14,6 +14,7 @@
 #               - n best structures (best resolution) for any specific mutation, regardless of other mutations in the same structure
 #               - all wildtype structures (defined as HSP covering 99% of reference sequence, 100% similarity, no mismatches)
 #      - add all availalable ClinVar annotations to all three n_best_structure tables/dfs
+#      - add additional info (validation report) from the PDB API to the all output tables/dfs 
 # and outputs the following files:
 #      - In each respective gene folder:
 #               - GENENAME_07_best_structures_per_SAV.csv
@@ -43,6 +44,7 @@ import os
 import ast
 import sys
 import argparse
+import requests
 from datetime import datetime
 
 # get this script's name:
@@ -109,7 +111,8 @@ It will perform the following:
     (c) n best structures (best resolution) for any specific mutation, regardless of other mutations in the same structure
     (d) all wildtype structures (defined as HSP covering 99% of reference sequence, 100% similarity, no mismatches)
 (5) add all availalable ClinVar annotations to all three n_best_structure tables/dfs
-(6) output the following files:
+(6) add additional info (validation report) from the PDB API to the all output tables/dfs 
+(7) output the following files:
 - In each respective gene folder:
 (a) GENENAME_07_best_structures_per_SAV.csv (lists n best structures for each SAV (one mutation per structure) for this gene (incl. ClinVar annotations))
 (b) GENENAME_07_best_structures_all_unique_combinations.csv (lists n best structure for all unique mismatch combinations for this gene (incl. ClinVar annotations))
@@ -225,6 +228,93 @@ def add_clinvar_annotations(df):
                                                                                 str(corresponding_clinvar_annotations.associated_traits.values),
                                                                                 str(corresponding_clinvar_annotations.dbs_and_accessions.values)]
     return df
+
+# define function for GET request to PDB API
+def get_data(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        # If there is no data, print status code and response
+        print(response.status_code, response.text)
+        print(f'No data file retrieved for input url {url}\n')
+        return None
+
+# define a function which takes a pdb id as input and generates
+# a csv file with all the relevant information from the PDB API
+
+def get_validation_report(pdb_id):
+    # construct urls to query PDB API
+    # see https://data.rcsb.org/#rest-api
+    # define base url
+    base_url = 'https://data.rcsb.org/rest/v1/core'
+
+    # define all specific query urls
+    entry_url = base_url + f'/entry/{pdb_id.upper()}'
+    # we need to specify the assembly number as well, we take the first one
+    assembly = '1'
+    assembly_url = base_url + f'/assembly/{pdb_id.upper()}/{assembly}'
+    
+    # use the GET function and the urls to get data from the PDB API
+    entry_data = get_data(entry_url)
+    assembly_data = get_data(assembly_url)
+
+    # EXTRACTING INFORMATION FROM THE ENTRY DATA
+    # ======================================
+    # all attributes listed here:
+    # https://data.rcsb.org/data-attributes.html#entry-attributeshttps://data.rcsb.org/data-attributes.html#entry-attributes
+
+    # I think pdbx_vrpt_summary is the validation report for protein structures
+    # get data as shown in experimental snapshot on pdb
+    resolution = entry_data['pdbx_vrpt_summary']['pdbresolution']
+    r_free = entry_data['pdbx_vrpt_summary']['pdbrfree']                                           
+    r_work = entry_data['pdbx_vrpt_summary']['pdb_r']                   
+    r_observed = entry_data['pdbx_vrpt_summary']['dcc_r']
+    clashscore = entry_data['pdbx_vrpt_summary']['clashscore']
+    ramachandran_outliers = entry_data['pdbx_vrpt_summary']['percent_ramachandran_outliers']
+    sidechain_outliers = entry_data['pdbx_vrpt_summary']['percent_rotamer_outliers']
+    rsrz_outliers = entry_data['pdbx_vrpt_summary']['percent_rsrzoutliers']
+
+    # EXTRACTING INFORMATION FROM THE ASSEMBLY DATA
+    # ======================================
+    # all attributes listed here:
+    # https://data.rcsb.org/data-attributes.html#entry-attributeshttps://data.rcsb.org/data-attributes.html#entry-attributes
+    assembly_info = assembly_data['rcsb_assembly_info']
+    # to get
+    polymer_composition = assembly_data['rcsb_assembly_info']['polymer_composition']
+
+    structure_symmetry = assembly_data['rcsb_struct_symmetry'][0]
+    # to get
+    symmetry = structure_symmetry['type']
+    stoichiometry = structure_symmetry['stoichiometry']
+    oligomeric_state = structure_symmetry['oligomeric_state']
+    
+    # ----------------------------
+    # include a link to pdf file of the validation report, this has many great figures which I cannot
+    # include in the output tables, and is easier to read overall anyway
+    # not sure that works for all structures, but for the ones I checked the link seems to be constructed as follows:
+    pdf_full_val_report = f'https://files.rcsb.org/pub/pdb/validation_reports/{pdb_id[1:3]}/{pdb_id}/{pdb_id}_full_validation.pdf'
+
+    # Create df to populate with extracted variables
+    structure_info = pd.DataFrame({'structure_id' : [pdb_id], 
+                                           'resolution' : [resolution],
+                                           'r_free' : [r_free],
+                                           'r_work' : [r_work],
+                                           'r_observed' : [r_observed],
+                                           'clashscore' : [clashscore],
+                                           'ramachandran_outliers' : [ramachandran_outliers],
+                                           'sidechain_outliers' : [sidechain_outliers],
+                                           'RSRZ_outliers' : [rsrz_outliers],
+                                           'polymer_composition' : [polymer_composition],
+                                           'oligomeric_state' : [oligomeric_state],
+                                           'symmetry' : [symmetry],
+                                           'stoichometry' : [stoichiometry],
+                                           'full_validation_report' : [pdf_full_val_report]})
+    
+    return structure_info
+
+
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 #  read in data
@@ -381,7 +471,7 @@ for gene in single_mut_sorted.gene_name.unique():
 try:
     df_SAV = n_best_structures_single_mut.sort_values(by=['gene_name', 'aa_index', 'mismatch_of_interest', 'resolution'])
 except KeyError:
-    # if this throws an Error we don't sort the df, and use the other df with all relevant column names
+    # if this throws an Error it's because the df is empty, so we don't sort the df, and use the other df with all relevant column names
     df_SAV = single_mut_sorted
 # write final output to file at the end of script (with other outputs)
 
@@ -501,11 +591,37 @@ add_clinvar_annotations(df_SAV)
 add_clinvar_annotations(df_unique_combi)
 add_clinvar_annotations(df_any_mutation)
 
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Add Validation Report Data from PDB API to dfs
+# ===================================
+# next, we also want to download additional information (structure validation report) via the PDB API
+# we can use the function get_validation_report(pdb_id) which we defined above
+# we create an empty df to populate with all the validation report metrics for all the PDB IDs
+all_val_reports = pd.DataFrame()
+
+# get a list of all pdb ids in the 4 dfs
+# make a set of the list; only contains unique pdb ids
+all_pdb_ids = set(list(df_wt.structure_id) + list(df_SAV.structure_id) + list(df_unique_combi.structure_id) + list(df_any_mutation.structure_id))
+
+# now we can iterate over the set with all unique pdb id's to populate the all_val_reports df
+for pdb_id in all_pdb_ids:
+    validation_report = get_validation_report(pdb_id)
+    all_val_reports = all_val_reports.append(validation_report, ignore_index=True)
+    
+# we drop the column 'resolution' from the all_val_reports, because we don't need this / we already have this info in our dfs (extracted from mmCif files)
+all_val_reports.drop(columns='resolution', inplace=True)
+
+# now we can merge the 4 dfs with the all_val_reports df on pdb_id
+df_wt = pd.merge(df_wt, all_val_reports, how='left', on='structure_id')
+df_SAV = pd.merge(df_SAV, all_val_reports, how='left', on='structure_id')
+df_unique_combi = pd.merge(df_unique_combi, all_val_reports, how='left', on='structure_id')
+df_any_mutation =  pd.merge(df_any_mutation, all_val_reports, how='left', on='structure_id')
+
 # we have the following dfs with the following cols (see paragraph below for legend)
-# df_wt:                              38 cols
-# df_SAV:                           50 cols, incl. (2), (3), (4)
-# df_unique_combi:             49 cols, incl (1), (4)
-# df_any_mutation:             51 cols, incl (1), (2), (3), (4)
+# df_wt:                              50 cols 
+# df_SAV:                           62 cols, incl. (2), (3), (4)
+# df_unique_combi:             61 cols, incl (1), (4)
+# df_any_mutation:             63 cols, incl (1), (2), (3), (4)
 
 # Legend: some of the dfs have additional columns compared to the df_wt, including:
 #     (1) all_mismatches (listing mismatches AND close mismatches):
@@ -517,34 +633,46 @@ add_clinvar_annotations(df_any_mutation)
 #           'dbs_and_accessions'
 
 # For reference: these are all the columns which are potentially in the dfs
-# all_cols = [col for col in df_unique_combi.columns]
+# all_cols = [col for col in df_any_mutation.columns]
 # print(all_cols)
-# ['gene_name', 'structure_id', 'chain_name', 'uniprot_id', 'description', 'species',
-#  'description_ex', 'sequence', 'alignment_length', 'hsp_number', 'hsp_length', 'score', 'bit', 'e-value', 'similarity',
-#  'mismatches_incl_gaps', 'mismatches_excl_gaps', 'close_mismatches', 'mismatch_substitutions',
-#  'close_mismatch_substitutions', 'gaps', 'gaps_in_query', 'gaps_in_sbct', 'gaps_start_pos_query',
-#  'gaps_length_query', 'query_del_sbcjt_ins', 'gaps_start_pos_sbjct', 'gaps_length_sbjct', 'sbjct_del_query_ins',
-#  'query_sequence', 'sbjct_sequence', 'match_sequence', 'unsolved_residues_in_structure', 'resolution',
-#  'structure_method', 'deposition_date', 'structure_name', 'classification', 'all_mismatches',
-#  'accession', 'title', 'variant_type', 'protein_change', 'aliases', 'clinical significance',
-#  'last_evaluated', 'review_status', 'associated_traits', 'dbs_and_accessions']
+# ['gene_name', 'structure_id', 'chain_name', 'uniprot_id', 'description', 'species', 'description_ex', 'sequence',
+#  'alignment_length', 'hsp_number', 'hsp_length', 'score', 'bit', 'e-value', 'similarity', 'mismatches_incl_gaps',
+#  'mismatches_excl_gaps', 'close_mismatches', 'mismatch_substitutions', 'close_mismatch_substitutions',
+#  'gaps', 'gaps_in_query', 'gaps_in_sbct', 'gaps_start_pos_query', 'gaps_length_query', 'query_del_sbcjt_ins',
+#  'gaps_start_pos_sbjct', 'gaps_length_sbjct', 'sbjct_del_query_ins', 'query_sequence', 'sbjct_sequence',
+#  'match_sequence', 'unsolved_residues_in_structure', 'resolution', 'structure_method', 'deposition_date',
+#  'structure_name', 'classification', 'all_mismatches', 'mismatch_of_interest', 'aa_index', 'accession', 'title',
+#  'variant_type', 'protein_change', 'aliases', 'clinical significance', 'last_evaluated', 'review_status', 'associated_traits',
+#  'dbs_and_accessions', 'r_free', 'r_work', 'r_observed', 'clashscore', 'ramachandran_outliers', 'sidechain_outliers',
+#  'RSRZ_outliers', 'polymer_composition', 'oligomeric_state', 'symmetry', 'stoichometry', 'full_validation_report']
 
 # first we make a list of columns of interest in the order we want them in the final output files
 # this is our list of columns we'd like to have included in the output whenever they are available
-output_cols = ['gene_name', 'aa_index', 'mismatch_of_interest', 'structure_id', 'structure_name', 'chain_name', 'resolution',
-    'alignment_length',  'hsp_length', 'score', 'bit', 'e-value', 'similarity',
-    'mismatch_substitutions', 'close_mismatch_substitutions', 'gaps',
-    'structure_method', 'deposition_date', 'classification', 'unsolved_residues_in_structure',
-    'accession', 'title', 'variant_type', 'protein_change', 'aliases', 'clinical significance',
-    'last_evaluated', 'review_status', 'associated_traits', 'dbs_and_accessions']
+output_cols = ['gene_name', 'aa_index', 'mismatch_of_interest', # basic info
+               # structure info
+               'structure_id', 'structure_name', 'resolution', 'r_free', 'r_work', 'r_observed', 'clashscore',
+               'ramachandran_outliers', 'sidechain_outliers', 'RSRZ_outliers', 'polymer_composition', 'oligomeric_state',
+               'symmetry', 'stoichometry', 'structure_method', 'unsolved_residues_in_structure', 'deposition_date',
+               'classification', 'full_validation_report',
+               # blastp info
+               'chain_name', 'alignment_length', 'hsp_length', 'score', 'bit', 'e-value', 'similarity', 'mismatch_substitutions',
+               'close_mismatch_substitutions', 'gaps',
+               # ClinVar info
+               'accession', 'title', 'variant_type', 'protein_change', 'aliases', 'clinical significance', 'last_evaluated',
+               'review_status', 'associated_traits', 'dbs_and_accessions']
 
 # we need a slightly different order for the unique_combi output!
-output_cols_for_unique_combi = ['gene_name', 'mismatch_substitutions', 'close_mismatch_substitutions',
-    'structure_id', 'structure_name', 'chain_name', 'resolution', 
-    'alignment_length',  'hsp_length', 'score', 'bit', 'e-value', 'similarity', 'gaps',
-    'structure_method', 'deposition_date', 'classification', 'unsolved_residues_in_structure',
-    'accession', 'title', 'variant_type', 'protein_change', 'aliases', 'clinical significance',
-    'last_evaluated', 'review_status', 'associated_traits', 'dbs_and_accessions']
+output_cols_for_unique_combi = ['gene_name', 'mismatch_substitutions', 'close_mismatch_substitutions', # basic info
+                # structure info
+                'structure_id', 'structure_name', 'resolution', 'r_free', 'r_work', 'r_observed', 'clashscore',
+                'ramachandran_outliers', 'sidechain_outliers', 'RSRZ_outliers', 'polymer_composition', 'oligomeric_state',
+                'symmetry', 'stoichometry', 'structure_method', 'unsolved_residues_in_structure', 'deposition_date',
+               'classification', 'full_validation_report',
+                # blastp info
+                'chain_name', 'alignment_length',  'hsp_length', 'score', 'bit', 'e-value', 'similarity', 'gaps',
+                # ClinVar info
+                'accession', 'title', 'variant_type', 'protein_change', 'aliases', 'clinical significance',
+                'last_evaluated', 'review_status', 'associated_traits', 'dbs_and_accessions']
 
 # we use the output_cols list to filter all our dfs and get the columns in the right order before writing to csv
 output_wt = df_wt[[col for col in output_cols if col in df_wt.columns]]
@@ -593,6 +721,7 @@ for gene in structure_info.gene_name.unique():
     output_slice_SAV.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_best_structures_per_SAV.csv', index=False)
     output_slice_unique_combi.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_best_structures_all_unique_combinations.csv', index=False)
     output_slice_any_mutation.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_best_structures_any_mutation.csv', index=False)
+
 
 # change back to target directory
 os.chdir(target_directory)
