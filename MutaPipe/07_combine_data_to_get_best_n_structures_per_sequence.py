@@ -276,31 +276,31 @@ def get_validation_report(pdb_id):
     try:
         r_free = entry_data['pdbx_vrpt_summary']['pdbrfree']                                           
     except KeyError:
-        r_free = np.Nan
+        r_free = np.NaN
     try:    
         r_work = entry_data['pdbx_vrpt_summary']['pdb_r']
     except KeyError:
-        r_work = np.Nan
+        r_work = np.NaN
     try:
         r_observed = entry_data['pdbx_vrpt_summary']['dcc_r']
     except KeyError:
-        r_observed = np.Nan
+        r_observed = np.NaN
     try:
         clashscore = entry_data['pdbx_vrpt_summary']['clashscore']
     except KeyError:
-        clashscore = np.Nan
+        clashscore = np.NaN
     try:
         ramachandran_outliers = entry_data['pdbx_vrpt_summary']['percent_ramachandran_outliers']
     except KeyError:
-        ramachandran_outliers = np.Nan
+        ramachandran_outliers = np.NaN
     try:
         sidechain_outliers = entry_data['pdbx_vrpt_summary']['percent_rotamer_outliers']
     except KeyError:
-        sidechain_outliers = np.Nan
+        sidechain_outliers = np.NaN
     try:
         rsrz_outliers = entry_data['pdbx_vrpt_summary']['percent_rsrzoutliers']
     except KeyError:
-        rsrz_outliers = np.Nan
+        rsrz_outliers = np.NaN
 
     # EXTRACTING INFORMATION FROM THE ASSEMBLY DATA
     # ======================================
