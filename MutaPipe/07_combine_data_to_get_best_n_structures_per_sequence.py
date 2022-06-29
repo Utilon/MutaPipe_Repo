@@ -267,14 +267,40 @@ def get_validation_report(pdb_id):
 
     # I think pdbx_vrpt_summary is the validation report for protein structures
     # get data as shown in experimental snapshot on pdb
-    resolution = entry_data['pdbx_vrpt_summary']['pdbresolution']
-    r_free = entry_data['pdbx_vrpt_summary']['pdbrfree']                                           
-    r_work = entry_data['pdbx_vrpt_summary']['pdb_r']                   
-    r_observed = entry_data['pdbx_vrpt_summary']['dcc_r']
-    clashscore = entry_data['pdbx_vrpt_summary']['clashscore']
-    ramachandran_outliers = entry_data['pdbx_vrpt_summary']['percent_ramachandran_outliers']
-    sidechain_outliers = entry_data['pdbx_vrpt_summary']['percent_rotamer_outliers']
-    rsrz_outliers = entry_data['pdbx_vrpt_summary']['percent_rsrzoutliers']
+    # some of these keys might not be available for all structures (e.g. Cryo-EM structures or NMR structures)
+    # thus we add a try and exept statement for each key
+    try:
+        resolution = entry_data['pdbx_vrpt_summary']['pdbresolution']
+    except KeyError:
+        resolution = np.NaN
+    try:
+        r_free = entry_data['pdbx_vrpt_summary']['pdbrfree']                                           
+    except KeyError:
+        r_free = np.Nan
+    try:    
+        r_work = entry_data['pdbx_vrpt_summary']['pdb_r']
+    except KeyError:
+        r_work = np.Nan
+    try:
+        r_observed = entry_data['pdbx_vrpt_summary']['dcc_r']
+    except KeyError:
+        r_observed = np.Nan
+    try:
+        clashscore = entry_data['pdbx_vrpt_summary']['clashscore']
+    except KeyError:
+        clashscore = np.Nan
+    try:
+        ramachandran_outliers = entry_data['pdbx_vrpt_summary']['percent_ramachandran_outliers']
+    except KeyError:
+        ramachandran_outliers = np.Nan
+    try:
+        sidechain_outliers = entry_data['pdbx_vrpt_summary']['percent_rotamer_outliers']
+    except KeyError:
+        sidechain_outliers = np.Nan
+    try:
+        rsrz_outliers = entry_data['pdbx_vrpt_summary']['percent_rsrzoutliers']
+    except KeyError:
+        rsrz_outliers = np.Nan
 
     # EXTRACTING INFORMATION FROM THE ASSEMBLY DATA
     # ======================================
