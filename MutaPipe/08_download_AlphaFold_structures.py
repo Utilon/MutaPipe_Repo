@@ -219,7 +219,7 @@ os.chdir(target_directory)
 
 print('\n============================== Summary ================================================\n')
 print(f'    o      A total of {len(uniprot_data)} UniProt IDs have been found for the inputted {len(genes)} genes.')
-print(f'    o      AlphaFold predicted structures have downloaded for {len(output_df[output_df.Status == "downloaded"])} out of {len(uniprot_data)} identified UniProt IDs.\n')
+print(f'    o      AlphaFold predicted structures have been downloaded for {len(output_df[output_df.Status == "downloaded"])} out of {len(uniprot_data)} identified UniProt IDs.\n')
 
 print('The following files have been created:')
 print('   o      08_AlphaFold_structures.csv      (contains information on downloaded AlphaFold structures)\n\n')
