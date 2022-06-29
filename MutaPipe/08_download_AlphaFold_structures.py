@@ -99,6 +99,11 @@ print('Input genes: ', genes, '\n')
 # **********************************
 
 # Define a function which will retrieve data from UniProt for all input gene names
+# see the following links for more info:
+# this is basically an example of a search result which we might want to download:
+# (click on download to choose format + settings and click generate url for API)
+# https://www.uniprot.org/uniprotkb?query=organism_name%3A%22homo%20sapiens%22%20AND%20%28gene_exact%3Abraf%20OR%20gene_exact%3Abrca1%20OR%20gene_exact%3Abrca2%20OR%20gene_exact%3Abtk%20OR%20gene_exact%3Acasp10%20OR%20gene_exact%3Acasp8%29%20AND%20reviewed%3Atrue
+
 def get_UniProt_data(genes):
     # we define the beginning of the url but don't add the genes yet
     # url = 'https://www.uniprot.org/uniprot/?query=organism:%22homo%20sapiens%22%20and%20('
