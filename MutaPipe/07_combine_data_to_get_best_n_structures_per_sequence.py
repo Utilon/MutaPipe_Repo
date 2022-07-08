@@ -183,11 +183,19 @@ def change_aa_code(one_or_three_letter_code):
      'ALA': 'A', 'VAL':'V', 'GLU': 'E', 'TYR': 'Y', 'MET': 'M','XAA':'X'}
       
     if len(one_or_three_letter_code) == 3:
-        updated_code = d[one_or_three_letter_code]
+        try:
+            updated_code = d[one_or_three_letter_code]
+        except KeyError:
+            print(f'"{one_or_three_letter_code}" is not a valid one-/three-letter AA code, no conversion applied')
+            updated_code = one_or_three_letter_code            
     elif len(one_or_three_letter_code) == 1:
-        updated_code = list(d.keys())[list(d.values()).index(one_or_three_letter_code)]
+        try:
+            updated_code = list(d.keys())[list(d.values()).index(one_or_three_letter_code)]
+        except IndexError:
+            print(f'"{one_or_three_letter_code}" is not a valid one-/three-letter AA code, no conversion applied')
+            updated_code = one_or_three_letter_code
     else:
-        print('Not a valid one-/three-letter AA code, no conversion applied')
+        print(f'"{one_or_three_letter_code}" is not a valid one-/three-letter AA code, no conversion applied')
         updated_code = one_or_three_letter_code
     return updated_code
 
