@@ -28,6 +28,7 @@ UNIPROT_REFSEQS="$MUTAPIPE_DIRECTORY_FULL_PATH"/Uniprot_reference_seqs/UP0000056
 RELATIVE_SEQUENCE_LENGTH="0.5"
 HSP_COVERAGE="0.1"
 N_BEST_STRUCTURES="1"
+EXCLUDE_UNSOLVED_MISMATCHES="False"
 
 ############################################################
 # Help                                                     #
@@ -58,6 +59,7 @@ Help()
    echo "	-r	RELATIVE_SEQUENCE_LENGTH	Set to filter out sequences shorter than a given % of the reference sequence (0.1-1.0). Default = $RELATIVE_SEQUENCE_LENGTH"
    echo "	-c	HSP_COVERAGE			Set to filter out sequences whose best hsp is shorter than a given % of the reference sequence (0.1-1.0). Default = $HSP_COVERAGE"
    echo "        -n      N_BEST_STRUCTURES               Set number of best structures to be listed in output for each sequence/variant. Default = $N_BEST_STRUCTURES"
+   echo "        -e      EXCLUDE_UNSOLVED_MISMATCHES     Indicate whether to exclude cases where the mismatch of interest is not solved in the crystal structure (True) or not (False). Default = $EXCLUDE_UNSOLVED_MISMATCHES"
    echo
    echo "Usage examples:"
    echo "(1)"
@@ -75,7 +77,7 @@ Help()
 ############################################################
 
 # Get the options
-while getopts ":hl:t:g:o:a:f:p:d:b:u:r:c:n:" option; do
+while getopts ":hl:t:g:o:a:f:p:d:b:u:r:c:n:e:" option; do
    case "${option}" in
       h) # display Help
          Help
@@ -106,6 +108,8 @@ while getopts ":hl:t:g:o:a:f:p:d:b:u:r:c:n:" option; do
          HSP_COVERAGE=${OPTARG};;
       n) # Set number of best structures per gene/sequence to be returned in the final output table
          N_BEST_STRUCTURES=${OPTARG};;
+      e) # indicate whether to exclude cases where the mismatch of interest is not solved in the crystal structure (True) or not (False)
+         EXCLUDE_UNSOLVED_MISMATCHES=${OPTARG};;
      \?) # Invalid option
          echo "Error: Invalid option."
          echo "Use -h to display help message."
@@ -136,6 +140,7 @@ echo "			UNIPROT_REFSEQS 		$UNIPROT_REFSEQS"
 echo "			RELATIVE_SEQUENCE_LENGTH	$RELATIVE_SEQUENCE_LENGTH"
 echo "			HSP_COVERAGE: 			$HSP_COVERAGE"
 echo "                        N_BEST_STRUCTURES:              $N_BEST_STRUCTURES"
+echo "                        EXCLUDE_UNSOLVED_MISMATCHES:    $EXCLUDE_UNSOLVED_MISMATCHES"
 
 
 # change to directory where this script and the python scripts are stored
@@ -150,7 +155,7 @@ python3 04_parse_fasta_files.py -del $DELETE_FILES -t "$TARGET_DIRECTORY" -l $LO
 python3 05_blast_against_reference.py -bp "$BLASTp_PATH" -refseq "$UNIPROT_REFSEQS" -t "$TARGET_DIRECTORY" -l $LOG
 python3 06_a_download_ClinVar_data.py -t "$TARGET_DIRECTORY" -l $LOG
 python3 06_b_parse_ClinVar_data.py -t "$TARGET_DIRECTORY" -l $LOG
-python3 07_combine_data_to_get_best_n_structures_per_sequence.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG -n_best $N_BEST_STRUCTURES
+python3 07_combine_data_to_get_best_n_structures_per_sequence.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG -n_best $N_BEST_STRUCTURES -e $EXCLUDE_UNSOLVED_MISMATCHES
 python3 08_download_AlphaFold_structures.py -g $GENES -t "$TARGET_DIRECTORY" -l $LOG
 
 # change (back) to target directory
@@ -192,6 +197,7 @@ cd "$TARGET_DIRECTORY"
 #   -rsl, --relative_sequence_length  filter out sequences shorter than a given percentage of the reference sequence, default = 0.5
 #   -cov, --hsp_coverage              filter out sequences whose best hsp covers less than a given percentage of the reference sequence, default = 0.1
 #   -n_best, --n_best_structures      number of best structures to be listed in output for each sequence/variant, default = 1
+#   -e,   --exclude_unsolved_mismatches   indicate whether to exclude cases where the mismatch of interest is not solved in the crystal structure (True) or not (False), default = False
 
 # additional options in 08_download_AlphaFold_structures.py
 #   -g, --genes                        Specify genes for which to download AlphaFold predicted structures
