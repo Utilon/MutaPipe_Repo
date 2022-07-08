@@ -94,6 +94,8 @@ hsp_coverage = 0.1                                # filter out sequences whose b
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
 
 n_best_structures = 5 # number of top structures you want to include in the output table (1 for the best, 2 for the two best available one) per sequence/mismatch
+
+exclude_unsolved_mismatches = False # indicate if structures where the mismatch of interest is not solved in the crystal structure should be excluded (True) or not (False)
                                                                                     
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""****     Script to get best n structures per mutation. This script takes the following csv files as input:
@@ -129,7 +131,7 @@ ap.add_argument("-t", "--target", required = False, help=f'specify target direct
 ap.add_argument("-rsl", "--relative_sequence_length", type=restricted_float, required = False, help=f'filter out sequences shorter than a given percentage of the reference sequence, default = {str(relative_sequence_length)}')
 ap.add_argument("-cov", "--hsp_coverage", type=restricted_float, required = False, help=f'filter out sequences whose best hsp covers less than a given percentage of the reference sequence, default = {str(hsp_coverage)}')
 ap.add_argument("-n_best", "--n_best_structures", type=int , required = False, help=f'Specify number of top structures per sequence/variant to be included in final output, default = {str(n_best_structures)}')
-
+ap.add_argument("-e", "--exclude_unsolved_mismatches", type=str2bool, required = False, help=f'indicate whether to exclude cases where the mismatch of interest is not solved in the crystal structure (True) or not (False), default = {str(exclude_unsolved_mismatches)}')
 args = vars(ap.parse_args())
 
 # Now, in case an argument is used via the terminal, this input has to overwrite the default option we set above
@@ -139,6 +141,7 @@ target_directory  = target_directory if args["target"]   == None else args["targ
 relative_sequence_length = relative_sequence_length if args["relative_sequence_length"] == None else args["relative_sequence_length"]
 hsp_coverage  = hsp_coverage if args["hsp_coverage"]   == None else args["hsp_coverage"]
 n_best_structures = n_best_structures if args["n_best_structures"] == None else args["n_best_structures"]
+exclude_unsolved_mismatches = exclude_unsolved_mismatches if args["exclude_unsolved_mismatches"] == None else args["exclude_unsolved_mismatches"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 # We want to write all our Output into the Results directory
@@ -171,6 +174,22 @@ def add_empty_cols(df):
                                  ['accession', 'title', 'variant_type', 'protein_change', 'aliases', 'clinical significance',
                                   'last_evaluated', 'review_status', 'associated_traits', 'dbs_and_accessions']), fill_value='')
     return new_df
+
+# Define a function that can change one letter AA codes to three letter AA codes and vice versa
+def change_aa_code(one_or_three_letter_code):
+    d = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
+     'ILE': 'I', 'PRO': 'P', 'THR': 'T', 'PHE': 'F', 'ASN': 'N', 
+     'GLY': 'G', 'HIS': 'H', 'LEU': 'L', 'ARG': 'R', 'TRP': 'W', 'TER':'*',
+     'ALA': 'A', 'VAL':'V', 'GLU': 'E', 'TYR': 'Y', 'MET': 'M','XAA':'X'}
+      
+    if len(one_or_three_letter_code) == 3:
+        updated_code = d[one_or_three_letter_code]
+    elif len(one_or_three_letter_code) == 1:
+        updated_code = list(d.keys())[list(d.values()).index(one_or_three_letter_code)]
+    else:
+        print('Not a valid one-/three-letter AA code, no conversion applied')
+        updated_code = one_or_three_letter_code
+    return updated_code
 
 # Define a function to add clinvar data to dfs
 def add_clinvar_annotations(df):
@@ -243,7 +262,6 @@ def get_data(url):
 
 # define a function which takes a pdb id as input and generates
 # a csv file with all the relevant information from the PDB API
-
 def get_validation_report(pdb_id):
     # construct urls to query PDB API
     # see https://data.rcsb.org/#rest-api
@@ -361,13 +379,16 @@ clinvar_annotations = pd.read_csv(f'{results_dir}/06_b_ClinVar_Annotations.csv')
 # we first add an extra columns to the blastp_results df which we populate with unsolved residues
 # (of all chains in this row/with this sequence in this structure)
 blastp_results['unsolved_residues_in_structure'] = np.nan
+# we also add columns for number and percent of unsolved residues
+blastp_results['n_unsolved_residues'] = np.nan
+blastp_results['percent_unsolved_residues'] = np.nan
 
 for index, row in blastp_results.iterrows():
     # chain_name is in format 'Chain B' or for multiple chains in format 'Chains A, B, C, D, E, F, G, H'
     # we first delete the word Chains and then Chain in case it's only a single chain
     chains = row.chain_name.replace('Chains ', '')
     chains = chains.replace('Chain ', '')
-    # now the format of chains is 'B' or A, B, C, D, E, F, G, H' if there are multiple chains
+    # now the format of chains is 'B' or 'A, B, C, D, E, F, G, H' if there are multiple chains
     # in order to get this in a list format, we do
     # for multiple chains:
     if len(chains) > 1:
@@ -375,6 +396,9 @@ for index, row in blastp_results.iterrows():
     # for one chain
     else:
         chains = list(chains)
+    # finally we make sure there are no spaces in the chain names,
+    # e.g. Chains A, B will be a list like ['A', ' B'] and we need to remove the space in ' B'
+    chains = [chain.strip() for chain in chains]
         
     # now we have a list of all chains with identical sequence in the given structure
     # we now loop over this list and retrieve missing residues from the other df (unsolved_per_chain) for each of them
@@ -383,6 +407,8 @@ for index, row in blastp_results.iterrows():
     # which have the same sequence and are thus in one and the same row in the blastp_results df
     # (but found across multiple rows in the unsolved_per_chain df)
     unsolved_dict = {}
+    n_unsolved_res_per_chain = {}
+    percent_unsolved_per_chain = {}
     for chain in chains:
         # find the unsolved residues for this chain in the unsolved_per_chain df (if there are any)
         # we use a try statement, because if there are no missing residues for this chain, the values will be empty and it will throw an IndexError
@@ -391,19 +417,33 @@ for index, row in blastp_results.iterrows():
             unsolved_residues = unsolved_per_chain[(unsolved_per_chain.gene == row.gene_name) &
                                                (unsolved_per_chain.structure_id == row.structure_id) &
                                                (unsolved_per_chain.chain == chain)].unsolved_residues_in_chain.values[0]
+            # currently this is a list in string format, so we convert it to a list:
+            unsolved_residues = ast.literal_eval(unsolved_residues)
             # now we append this value and the chain name to the dictionary:
             unsolved_dict[chain] = unsolved_residues
+            # we also get the length of the list unsolved_residues which corresponds to the number of unsolved res in the chain
+            # we add this to the n_unsolved_res_per_chain dict
+            n_unsolved_res_per_chain[chain] = len(unsolved_residues)
+            # we also get the percentage of unsolved residues in the chain (relative to the sequence length)
+            percent_unsolved_per_chain[chain] = round(len(unsolved_residues) / len(row.sequence), 3)
         except IndexError:
+            # we append an empty list instead if there is no data on unsolved residues for this chain
+            unsolved_dict[chain] = []
+            n_unsolved_res_per_chain[chain] = np.nan
+            percent_unsolved_per_chain[chain] = np.nan
             continue
 
     # now that we've looped over all chains which have the same sequence in this structure, we add the unsolved_dict to the blastp_results df
     blastp_results.loc[index, 'unsolved_residues_in_structure'] = str(unsolved_dict)
+    # we also add the number and the percentage of unsolved residues to the blastp_results df
+    blastp_results.loc[index, 'n_unsolved_residues'] = str(n_unsolved_res_per_chain)
+    blastp_results.loc[index, 'percent_unsolved_residues'] = str(percent_unsolved_per_chain)
 
-# now the blastp_results df contains all corresponding unsolved residues!
+# now the blastp_results df contains all corresponding unsolved residues and more information on them (percentage /number)!
 # However, the blast_p_results df does not yet include the resolutions of the structures, so we get the resolutions from
 # a previous output (structure_info) by combining the two dataframes:
 structure_info.rename(columns={'gene': 'gene_name'}, inplace=True)
-df = blastp_results.merge(structure_info, how='left', on=['gene_name', 'structure_id'])
+df = blastp_results.merge(structure_info, how='left', on=['gene_name', 'structure_id'])    
 
 
 # FILTER RELATIVE SEQUENCE LENGTH
@@ -446,6 +486,7 @@ df_wt = df_wt.sort_values(by=['gene_name', 'hsp_length', 'similarity', 'resoluti
 # we keep all the available wilttype structures in the df (don't drop any) 
 # write final df to file at the end of the script (see below)
 
+
 # GET N BEST STRUCTURES FOR ALL SAVS
 #  =================================================================================
 # next we create a df that contains the n best structure for all single amino acid variants (SAVs; only one mismatch/close_mismatch)
@@ -454,6 +495,9 @@ single_mutation = df[df.close_mismatches + df.mismatches_excl_gaps == 1]
 # we order the single mutation df first by gene name, then by normal mismatches, by close mismatches, and finally by resolution
 single_mut_sorted = single_mutation.sort_values(by=['gene_name', 'mismatch_substitutions', 'close_mismatch_substitutions', 'resolution'])
 
+# we reset the index of our df single_mut_sorted
+single_mut_sorted.reset_index(drop = True, inplace = True)
+
 # Filter rows
 # in order to get the aa index for each mutation so we are able to sort the df accordingly, we do the following:
 # make mismatch of interest col in df single_mut_sorted 
@@ -461,6 +505,9 @@ single_mut_sorted = single_mutation.sort_values(by=['gene_name', 'mismatch_subst
 # single_mut_sorted.loc[:,'mismatch_of_interest'] = None # this line does not work with KL 24.6.2022
 # try this instead
 single_mut_sorted['mismatch_of_interest'] = None  # this works with KL 24.6.2022
+# we also make a column called mismatch_solved_in_crystal_structure where we indicate if the mismatch
+# of interest has been solved in the structure/chain (True) or not (False)
+single_mut_sorted['mismatch_solved_in_crystal_structure'] = None
 # to fill the column with values, we loop over the df (couldn't figure out how else to do it)
 for index, row in single_mut_sorted.iterrows():
     close_mis = ast.literal_eval(row.close_mismatch_substitutions)
@@ -471,6 +518,50 @@ for index, row in single_mut_sorted.iterrows():
 # now we use mismatch_of_interest column to create extra col in single_mut_sorted
 # containing the AA index of each mismatch (position)
 single_mut_sorted.loc[:,'aa_index'] = single_mut_sorted.mismatch_of_interest.apply(lambda x: int(x[1:-1]))
+
+# Now we check if the mismatch of interest is solved in the crystal structure or not:
+# we get the mismatch of interest and check if it's in the unsolved residues
+# for this, we get the unsolved residues and change the amino acid code from 3 to 1 letter code
+for index, row in single_mut_sorted.iterrows():
+    this_mismatch = row.mismatch_of_interest
+    # get a dict with all unsolved residues per chain
+    # in format {'A': ['LYS283', 'ARG184', ...], 'B' : [..., ...]}
+    unsolved_residues = ast.literal_eval(row.unsolved_residues_in_structure)
+    # create an empty dict to populate with transformed values, i.e. changed AA codes
+    one_letter_unsolved_residues = {}
+    for key, value in unsolved_residues.items():
+        one_letter_unsolved_residues[key] = [change_aa_code(res[:3])+res[3:] for res in value]
+    # now we can check if our mismatch_of_interest is listed in the one_letter_unsolved_residues
+    # mismatch of interest in format 'T162A', thus we take all but the last character of the string
+    # we want to create a dictionary with keys = chains and a Boolean value indicating if the mismatch of interest
+    # is solved in the crystal structure (True) or not (False)
+    solved_or_not ={}
+    for key, value in one_letter_unsolved_residues.items():
+        if this_mismatch[:-1] in value:
+            # if this_mismatch is in the unsolved residue list, the mismatch of interest has NOT been solved in
+            # the crystal structure, so we output False
+            solved_or_not[key] = False
+        else:
+            # otherwise the mismatch of interest has been solved in the crystal structure,
+            # and we output True
+            solved_or_not[key] = True
+        # now we can add the solved_or_not dict to the df in the column 'mismatch_solved_in_crystal_structure'
+        single_mut_sorted.loc[index, 'mismatch_solved_in_crystal_structure'] = str(solved_or_not)
+        
+# Add option to be able to exclude structures where the mismatch of interest is unsolved in crystal structure
+# (missing atomic coordinates)     
+if exclude_unsolved_mismatches == True:
+    # we want to drop all rows where the mismatch of interest is NOT solved in the crystal structure
+    # if it's solved in any chain in the corresponding row, the word 'True' will be contained
+    # somewhere in the column mismatch_solved_in_crystal_structure'
+    for index, row in single_mut_sorted.iterrows():
+        # we drop rows if the mismatch has NOT been solved, i.e. True is not in the column mismatch_solved_in_crystal_structure
+        if ' True' not in row.mismatch_solved_in_crystal_structure:
+            single_mut_sorted.drop(labels=index, axis=0, inplace = True)
+    # now that we dropped all the rows for which the mismatch of interest has not been solved in the crystal structure,
+    # we can reset the index of our df again
+    single_mut_sorted.reset_index(drop = True, inplace = True)
+    
 
 # FILTER n_best_structures
 # we want to get the first n rows for each gene and each mismatch of interest
@@ -499,6 +590,8 @@ try:
 except KeyError:
     # if this throws an Error it's because the df is empty, so we don't sort the df, and use the other df with all relevant column names
     df_SAV = single_mut_sorted
+# reset index of df
+df_SAV.reset_index(drop = True, inplace = True)
 # write final output to file at the end of script (with other outputs)
 
 # GET N BEST STRUCTURES FOR ANY UNIQUE COMBINATION OF MUTATIONS
@@ -519,8 +612,11 @@ df_unique_combi = pd.DataFrame(columns=df.columns)
 
 # create empty df to populate with best structure per unique mutation (regardless of other mutations)
 best_structure_any_mutation = pd.DataFrame(columns=df.columns)
-# this df also needs an extra column called mismatch_of_interes
+# this df also needs an extra column called mismatch_of_interest
 best_structure_any_mutation['mismatch_of_interest'] = None
+# and a column called mismatch_solved_in_crystal_structure where we indicate if the mismatch
+# of interest has been solved in the structure/chain (True) or not (False)
+best_structure_any_mutation['mismatch_solved_in_crystal_structure'] = None
 
 # now we loop over the unique genes and take a slice of the df containing only these rows (with this gene)
 for gene in unique_genes:
@@ -551,6 +647,8 @@ for gene in unique_genes:
         
         # we now append the best_n_structures_this_combi to the df_unique_combi df
         df_unique_combi = df_unique_combi.append(best_n_structures_this_combi)
+    # reset index of our df
+    df_unique_combi.reset_index(drop = True, inplace = True)
         
     # GET N BEST STRUCTURE FOR ANY MUTATION (still in the loop)
     # =========================================================================================
@@ -581,13 +679,57 @@ for gene in unique_genes:
         # now we sort the this_mismatch df to get the best structures (highest resolution)
         # sort by  resolution only
         this_mismatch_sorted = this_mismatch.sort_values(by=['resolution'])
+        this_mismatch_sorted.reset_index(drop = True, inplace = True)
+        
+        # we add information on this mismatch to the new column we created earlier
+        this_mismatch_sorted['mismatch_of_interest'] = mismatch
+        
+        # Now we check if the mismatch of interest is solved in the crystal structure or not:
+        # we get the mismatch of interest and check if it's in the unsolved residues
+        # for this, we get the unsolved residues and change the amino acid code from 3 to 1 letter code
+        for index, row in this_mismatch_sorted.iterrows():
+            this_mismatch = row.mismatch_of_interest
+            # get a dict with all unsolved residues per chain
+            # in format {'A': ['LYS283', 'ARG184', ...], 'B' : [..., ...]}
+            unsolved_residues = ast.literal_eval(row.unsolved_residues_in_structure)
+            # create an empty dict to populate with transformed values, i.e. changed AA codes
+            one_letter_unsolved_residues = {}
+            for key, value in unsolved_residues.items():
+                one_letter_unsolved_residues[key] = [change_aa_code(res[:3])+res[3:] for res in value]
+            # now we can check if our mismatch_of_interest is listed in the one_letter_unsolved_residues
+            # mismatch of interest in format 'T162A', thus we take all but the last character of the string
+            # we want to create a dictionary with keys = chains and a Boolean value indicating if the mismatch of interest
+            # is solved in the crystal structure (True) or not (False)
+            solved_or_not ={}
+            for key, value in one_letter_unsolved_residues.items():
+                if this_mismatch[:-1] in value:
+                    # if this_mismatch is in the unsolved residue list, the mismatch of interest has NOT been solved in
+                    # the crystal structure, so we output False
+                    solved_or_not[key] = False
+                else:
+                    # otherwise the mismatch of interest has been solved in the crystal structure,
+                    # and we output True
+                    solved_or_not[key] = True
+                # now we can add the solved_or_not dict to the df in the column 'mismatch_solved_in_crystal_structure'
+                this_mismatch_sorted.loc[index, 'mismatch_solved_in_crystal_structure'] = str(solved_or_not)
+                
+        # Add option to be able to exclude structures where the mismatch of interest is unsolved in crystal structure
+        # (missing atomic coordinates)     
+        if exclude_unsolved_mismatches == True:
+            # we want to drop all rows where the mismatch of interest is NOT solved in the crystal structure
+            # if it's solved in any chain in the corresponding row, the word 'True' will be contained
+            # somewhere in the column mismatch_solved_in_crystal_structure'
+            for index, row in this_mismatch_sorted.iterrows():
+                # we drop rows if the mismatch has NOT been solved, i.e. True is not in the column mismatch_solved_in_crystal_structure
+                if ' True' not in row.mismatch_solved_in_crystal_structure:
+                    this_mismatch_sorted.drop(labels=index, axis=0, inplace = True)
+            # now that we dropped all the rows for which the mismatch of interest has not been solved in the crystal structure,
+            # we can reset the index of our df again
+            this_mismatch_sorted.reset_index(drop = True, inplace = True)      
         
         # FILTER n_best_structures        
         # we want to get the first n rows of the this_mismatch_sorted df
         best_n_structures_this_mismatch = this_mismatch_sorted[:n_best_structures]        
-        
-        # we add information on this mismatch to the new column we created earlier
-        best_n_structures_this_mismatch['mismatch_of_interest'] = mismatch
         
         # we append this df (best_n_structures_this_mismatch) to the df best_structure_any_mutation which
         # contains all the best structures per mismatch (regardless of other mutations in the structure) for all genes
@@ -601,7 +743,7 @@ best_structure_any_mutation['aa_index'] = best_structure_any_mutation.mismatch_o
 
 # now we can sort the df according to the aa_index, mismatch_of_interest and resolution
 df_any_mutation = best_structure_any_mutation.sort_values(by=['gene_name', 'aa_index', 'mismatch_of_interest', 'resolution'])
-
+df_any_mutation.reset_index(drop = True, inplace = True)
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Add ClinVAr Annotations to dfs
 # =======================
@@ -644,10 +786,10 @@ df_unique_combi = pd.merge(df_unique_combi, all_val_reports, how='left', on='str
 df_any_mutation =  pd.merge(df_any_mutation, all_val_reports, how='left', on='structure_id')
 
 # we have the following dfs with the following cols (see paragraph below for legend)
-# df_wt:                              50 cols 
-# df_SAV:                           62 cols, incl. (2), (3), (4)
-# df_unique_combi:             61 cols, incl (1), (4)
-# df_any_mutation:             63 cols, incl (1), (2), (3), (4)
+# df_wt:                              52 cols 
+# df_SAV:                           65 cols, incl. (2), (3), (4), (5)
+# df_unique_combi:             63 cols, incl (1), (4)
+# df_any_mutation:             66 cols, incl (1), (2), (3), (4), (5)
 
 # Legend: some of the dfs have additional columns compared to the df_wt, including:
 #     (1) all_mismatches (listing mismatches AND close mismatches):
@@ -657,20 +799,23 @@ df_any_mutation =  pd.merge(df_any_mutation, all_val_reports, how='left', on='st
 #           'variant_type', 'protein_change', 'aliases', 'clinical significance',
 #           'last_evaluated', 'review_status', 'associated_traits',
 #           'dbs_and_accessions'
+#     (5) mismatch_solved_in_crystal_structure (indicating if mismatch has been solved in structure for each chain)
 
 # For reference: these are all the columns which are potentially in the dfs
 # all_cols = [col for col in df_any_mutation.columns]
 # print(all_cols)
-# ['gene_name', 'structure_id', 'chain_name', 'uniprot_id', 'description', 'species', 'description_ex', 'sequence',
-#  'alignment_length', 'hsp_number', 'hsp_length', 'score', 'bit', 'e-value', 'similarity', 'mismatches_incl_gaps',
-#  'mismatches_excl_gaps', 'close_mismatches', 'mismatch_substitutions', 'close_mismatch_substitutions',
-#  'gaps', 'gaps_in_query', 'gaps_in_sbct', 'gaps_start_pos_query', 'gaps_length_query', 'query_del_sbcjt_ins',
-#  'gaps_start_pos_sbjct', 'gaps_length_sbjct', 'sbjct_del_query_ins', 'query_sequence', 'sbjct_sequence',
-#  'match_sequence', 'unsolved_residues_in_structure', 'resolution', 'structure_method', 'deposition_date',
-#  'structure_name', 'classification', 'all_mismatches', 'mismatch_of_interest', 'aa_index', 'accession', 'title',
-#  'variant_type', 'protein_change', 'aliases', 'clinical significance', 'last_evaluated', 'review_status', 'associated_traits',
-#  'dbs_and_accessions', 'r_free', 'r_work', 'r_observed', 'clashscore', 'ramachandran_outliers', 'sidechain_outliers',
-#  'RSRZ_outliers', 'polymer_composition', 'oligomeric_state', 'symmetry', 'stoichometry', 'full_validation_report']
+# ['gene_name', 'structure_id', 'chain_name', 'uniprot_id', 'description', 'species', 'description_ex',
+#  'sequence', 'alignment_length', 'hsp_number', 'hsp_length', 'score', 'bit', 'e-value', 'similarity',
+#  'mismatches_incl_gaps', 'mismatches_excl_gaps', 'close_mismatches', 'mismatch_substitutions',
+#  'close_mismatch_substitutions', 'gaps', 'gaps_in_query', 'gaps_in_sbct', 'gaps_start_pos_query',
+#  'gaps_length_query', 'query_del_sbcjt_ins', 'gaps_start_pos_sbjct', 'gaps_length_sbjct',
+#  'sbjct_del_query_ins', 'query_sequence', 'sbjct_sequence', 'match_sequence', 'unsolved_residues_in_structure',
+#  'n_unsolved_residues', 'percent_unsolved_residues', 'resolution', 'structure_method', 'deposition_date',
+#  'structure_name', 'classification', 'all_mismatches', 'mismatch_of_interest', 'mismatch_solved_in_crystal_structure',
+#  'aa_index', 'accession', 'title', 'variant_type', 'protein_change', 'aliases', 'clinical significance', 'last_evaluated',
+#  'review_status', 'associated_traits', 'dbs_and_accessions', 'r_free', 'r_work', 'r_observed', 'clashscore',
+#  'ramachandran_outliers', 'sidechain_outliers', 'RSRZ_outliers', 'polymer_composition', 'oligomeric_state',
+#  'symmetry', 'stoichometry', 'full_validation_report']
 
 # first we make a list of columns of interest in the order we want them in the final output files
 # this is our list of columns we'd like to have included in the output whenever they are available
@@ -678,8 +823,9 @@ output_cols = ['gene_name', 'aa_index', 'mismatch_of_interest', # basic info
                # structure info
                'structure_id', 'structure_name', 'resolution', 'r_free', 'r_work', 'r_observed', 'clashscore',
                'ramachandran_outliers', 'sidechain_outliers', 'RSRZ_outliers', 'polymer_composition', 'oligomeric_state',
-               'symmetry', 'stoichometry', 'structure_method', 'unsolved_residues_in_structure', 'deposition_date',
-               'classification', 'full_validation_report',
+               'symmetry', 'stoichometry', 'structure_method', 'mismatch_solved_in_crystal_structure',
+               'n_unsolved_residues', 'percent_unsolved_residues', 'unsolved_residues_in_structure',
+               'deposition_date', 'classification', 'full_validation_report',
                # blastp info
                'chain_name', 'alignment_length', 'hsp_length', 'score', 'bit', 'e-value', 'similarity', 'mismatch_substitutions',
                'close_mismatch_substitutions', 'gaps',
@@ -692,8 +838,8 @@ output_cols_for_unique_combi = ['gene_name', 'mismatch_substitutions', 'close_mi
                 # structure info
                 'structure_id', 'structure_name', 'resolution', 'r_free', 'r_work', 'r_observed', 'clashscore',
                 'ramachandran_outliers', 'sidechain_outliers', 'RSRZ_outliers', 'polymer_composition', 'oligomeric_state',
-                'symmetry', 'stoichometry', 'structure_method', 'unsolved_residues_in_structure', 'deposition_date',
-               'classification', 'full_validation_report',
+                'symmetry', 'stoichometry', 'structure_method',  'n_unsolved_residues', 'percent_unsolved_residues',
+                'unsolved_residues_in_structure', 'deposition_date', 'classification', 'full_validation_report',
                 # blastp info
                 'chain_name', 'alignment_length',  'hsp_length', 'score', 'bit', 'e-value', 'similarity', 'gaps',
                 # ClinVar info
