@@ -125,7 +125,7 @@ MutaPipe can be run using the bash script `MutaPipe.sh`. MutaPipe.sh executes al
 
 ```bash
 
-  Usage: [-h|l|t|g|o|a|f|p|d|b|u|r|c|n]
+  Usage: [-h|l|t|g|o|a|f|p|d|b|u|r|c|n|e]
    
   General options:
   -h	HELP				Print this help message and exit
