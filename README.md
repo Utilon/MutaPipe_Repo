@@ -143,7 +143,8 @@ MutaPipe can be run using the bash script `MutaPipe.sh`. MutaPipe.sh executes al
   -u	UNIPROT_REFSEQS			Set path to reference proteome fasta file. Default = MutaPipe_Repo/MutaPipe/Uniprot_reference_seqs/
   -r	RELATIVE_SEQUENCE_LENGTH	Set to filter out sequences shorter than a given percentage of the reference sequence (0.1-1.0). Default = 0.5
   -c	HSP_COVERAGE			Set to filter out sequences whose best hsp covers less than a given percentage of the reference sequence (0.1-1.0). Default = 0.1   
-  -n    N_BEST_STRUCTURES  		Set number of best structures to be listed in output for each sequence/variant. Default =
+  -n    N_BEST_STRUCTURES  		Set number of best structures to be listed in output for each sequence/variant. Default = 1
+  -e      EXCLUDE_UNSOLVED_MISMATCHES     Indicate whether to exclude cases where the mismatch of interest is not solved in the crystal structure (True) or not (False). Default = False
 
 ```
 
