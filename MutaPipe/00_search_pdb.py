@@ -105,7 +105,8 @@ print(f'start: {start_time}\n')
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 # set up search request
-base_url = "https://search.rcsb.org/rcsbsearch/v1/query"
+base_url = "https://search.rcsb.org/rcsbsearch/v2/query" # old url doesn't work anymore since July 2022 "https://search.rcsb.org/rcsbsearch/v1/query"
+
 
 # define search function to get data from API
 def search_pdb(query_url):
