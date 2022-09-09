@@ -147,16 +147,16 @@ echo "                        EXCLUDE_UNSOLVED_MISMATCHES:    $EXCLUDE_UNSOLVED_
 cd "$MUTAPIPE_DIRECTORY"
 
 # run all MutaPipe python scripts one after another
-python3 00_search_pdb.py -g $GENES -o "$ORGANISM" -a $ALL_PDB_IDS -t "$TARGET_DIRECTORY" -l $LOG 
-python3 01_download_files.py -f $FORMAT -t "$TARGET_DIRECTORY" -l $LOG
-python3 02_parse_cif_files.py -pp $POLYPEPTIDES -del $DELETE_FILES -t "$TARGET_DIRECTORY" -l $LOG 
-python3 03_parse_pdb_files_extract_unsolved_residues.py -del $DELETE_FILES -t "$TARGET_DIRECTORY" -l $LOG
-python3 04_parse_fasta_files.py -del $DELETE_FILES -t "$TARGET_DIRECTORY" -l $LOG
-python3 05_blast_against_reference.py -bp "$BLASTp_PATH" -refseq "$UNIPROT_REFSEQS" -t "$TARGET_DIRECTORY" -l $LOG
-python3 06_a_download_ClinVar_data.py -t "$TARGET_DIRECTORY" -l $LOG
-python3 06_b_parse_ClinVar_data.py -t "$TARGET_DIRECTORY" -l $LOG
-python3 07_combine_data_to_get_best_n_structures_per_sequence.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG -n_best $N_BEST_STRUCTURES -e $EXCLUDE_UNSOLVED_MISMATCHES
-python3 08_download_AlphaFold_structures.py -g $GENES -t "$TARGET_DIRECTORY" -l $LOG
+python3 00_search_pdb_mutafy.py -g $GENES -o "$ORGANISM" -a $ALL_PDB_IDS -t "$TARGET_DIRECTORY" -l $LOG 
+python3 01_download_files_mutafy.py -f $FORMAT -t "$TARGET_DIRECTORY" -l $LOG
+python3 02_parse_cif_files_mutafy.py -pp $POLYPEPTIDES -del $DELETE_FILES -t "$TARGET_DIRECTORY" -l $LOG 
+python3 03_parse_pdb_files_extract_unsolved_residues_mutafy.py -del $DELETE_FILES -t "$TARGET_DIRECTORY" -l $LOG
+python3 04_parse_fasta_files_mutafy.py -del $DELETE_FILES -t "$TARGET_DIRECTORY" -l $LOG
+python3 05_blast_against_reference_mutafy.py -bp "$BLASTp_PATH" -refseq "$UNIPROT_REFSEQS" -t "$TARGET_DIRECTORY" -l $LOG
+python3 06_a_download_ClinVar_data_mutafy.py -t "$TARGET_DIRECTORY" -l $LOG
+python3 06_b_parse_ClinVar_data_mutafy.py -t "$TARGET_DIRECTORY" -l $LOG
+python3 07_combine_data_to_get_best_n_structures_per_sequence_mutafy.py -rsl $RELATIVE_SEQUENCE_LENGTH -cov $HSP_COVERAGE -t "$TARGET_DIRECTORY" -l $LOG -n_best $N_BEST_STRUCTURES -e $EXCLUDE_UNSOLVED_MISMATCHES
+python3 08_download_AlphaFold_structures_mutafy.py -g $GENES -t "$TARGET_DIRECTORY" -l $LOG
 
 # change (back) to target directory
 cd "$TARGET_DIRECTORY"
