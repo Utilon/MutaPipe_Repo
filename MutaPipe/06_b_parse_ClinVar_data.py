@@ -191,9 +191,22 @@ for gene in clinvar_data.gene.unique():
     # get a slice of the clinvar_data df for only this gene
     clinvar_slice = clinvar_data[clinvar_data.input_gene == gene]
     # we get the name of the gene folder of the current gene like so
-    gene_folder = [name for name in os.listdir(results_dir) if name.startswith(f'{gene}_')][0]
+    # gene_folder = [name for name in os.listdir(results_dir) if name.startswith(f'{gene}_')][0]
+    # for Mutafy/webserver, this needs to be updated like so (structures are stored in a different directory)
+    try:
+        gene_folder = [name for name in os.listdir(results_dir) if (name.startswith(f'{gene}_')) & ('structures' in name) & ('.csv' not in name)][0]
+    except IndexError:
+        # store in temp directory for Mutafy (update this /automise this / add arguments to specify where downloaded structures per gene are stored)
+        gene_folder = [name for name in os.listdir(f'{target_directory}/temp') if (name.startswith(f'{gene}_')) & ('structures' in name) & ('.csv' not in name)][0]
     # and we write the clinvar slice df to a csv file in the gene folder
-    clinvar_slice.to_csv(f'{results_dir}/{gene_folder}/{gene}_06_b_ClinVar_Annotations.csv', index=False)
+# ###    # DO SOMETHING ABOUT THIS LINE SO IT WORKS FOR MUTARY. PUT IN TEMP STORAGE. ADD EXTRA OPTION OR SOMETHING!
+    try:
+        clinvar_slice.to_csv(f'{results_dir}/{gene_folder}/{gene}_06_b_ClinVar_Annotations.csv', index=False)
+    except:
+        # store directly in results folder (where the other outputs are too)
+        clinvar_slice.to_csv(f'{results_dir}/{gene}_06_b_ClinVar_Annotations.csv', index=False)
+        # and maybe also: store in temp folder (automise and add arguments to script to specify this folder later!)
+        clinvar_slice.to_csv(f'{target_directory}/temp/{gene_folder}/{gene}_06_b_ClinVar_Annotations.csv', index=False)
 
 # change back to target directory
 os.chdir(target_directory)

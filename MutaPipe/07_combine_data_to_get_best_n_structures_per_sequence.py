@@ -884,12 +884,14 @@ output_any_mutation.to_csv(f'{results_dir}/07_best_structures_any_mutation.csv',
 # we can loop over all the gene names in the structure_info df (contains all the genes for which structures are available)
 for gene in structure_info.gene_name.unique():
     # we get the name of the gene folder of the current gene like so
+    # for Mutafy/webserver, this needs to be updated like so (structures are stored in a different directory)
     try:
-        gene_folder = [name for name in os.listdir(results_dir) if name.startswith(f'{gene}_')][0]
-    # in case no folder for this gene exists, we skip writing out gene-specific outputs altogether
+        gene_folder = [name for name in os.listdir(results_dir) if (name.startswith(f'{gene}_')) & ('structures' in name) & ('.csv' not in name)][0]
     except IndexError:
-        continue
-    
+        # store in temp directory for Mutafy (update this /automise this / add arguments to specify where downloaded structures per gene are stored)
+        gene_folder = [name for name in os.listdir(f'{target_directory}/temp') if (name.startswith(f'{gene}_')) & ('structures' in name) & ('.csv' not in name)][0]
+# ###    # DO SOMETHING ABOUT THIS LINE SO IT WORKS FOR MUTARY. PUT IN TEMP STORAGE. ADD EXTRA OPTION OR SOMETHING!
+   
     # get a slice of all the output dfs for just this gene:
     output_slice_wt = output_wt[output_wt.gene_name == gene]
     output_slice_SAV = output_SAV[output_SAV.gene_name == gene]
@@ -897,11 +899,22 @@ for gene in structure_info.gene_name.unique():
     output_slice_any_mutation = output_any_mutation[output_any_mutation.gene_name == gene]    
         
     # and we write the output slice dfs to csv files in the gene folder
-    output_slice_wt.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_wildtype_structures.csv', index=False)
-    output_slice_SAV.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_best_structures_per_SAV.csv', index=False)
-    output_slice_unique_combi.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_best_structures_all_unique_combinations.csv', index=False)
-    output_slice_any_mutation.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_best_structures_any_mutation.csv', index=False)
-
+    try:
+        output_slice_wt.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_wildtype_structures.csv', index=False)
+        output_slice_SAV.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_best_structures_per_SAV.csv', index=False)
+        output_slice_unique_combi.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_best_structures_all_unique_combinations.csv', index=False)
+        output_slice_any_mutation.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_best_structures_any_mutation.csv', index=False)
+    except:
+        # store directly in results folder (where the other outputs are too)
+        output_slice_wt.to_csv(f'{results_dir}/{gene}_07_wildtype_structures.csv', index=False)
+        output_slice_SAV.to_csv(f'{results_dir}/{gene}_07_best_structures_per_SAV.csv', index=False)
+        output_slice_unique_combi.to_csv(f'{results_dir}/{gene}_07_best_structures_all_unique_combinations.csv', index=False)
+        output_slice_any_mutation.to_csv(f'{results_dir}/{gene}_07_best_structures_any_mutation.csv', index=False)
+        # and maybe also: store in temp folder (automise and add arguments to script to specify this folder later!)
+        output_slice_wt.to_csv(f'{target_directory}/temp/{gene_folder}/{gene}_07_wildtype_structures.csv', index=False)
+        output_slice_SAV.to_csv(f'{target_directory}/temp/{gene_folder}/{gene}_07_best_structures_per_SAV.csv', index=False)
+        output_slice_unique_combi.to_csv(f'{target_directory}/temp/{gene_folder}/{gene}_07_best_structures_all_unique_combinations.csv', index=False)
+        output_slice_any_mutation.to_csv(f'{target_directory}/temp/{gene_folder}/{gene}_07_best_structures_any_mutation.csv', index=False)
 
 # change back to target directory
 os.chdir(target_directory)

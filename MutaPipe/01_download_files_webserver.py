@@ -136,6 +136,10 @@ for gene, structures in pdb_ids.iterrows():
     # create new folder to save all pdb/mmcif/fasta files found for the query gene:
     # if the option to save the files to a different folder is True, we save the structures to the specified folder:
     if download_files_to_separate_directory == True:
+        # create the directory to store downloaded files if it doesn't already exist:
+        if not os.path.exists(downloaded_files_dir):
+            os.mkdir(downloaded_files_dir)
+        # create the folder name for this gene
         folder_name = f'{downloaded_files_dir}/{gene}_{len(found_pdbs)}structures'
         # get a list of all the currently existing gene folders (if any) to check if a folder for this specific gene has already been created
         existing_folders = [f.path for f in os.scandir(downloaded_files_dir) if f.is_dir()]
