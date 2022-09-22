@@ -1,4 +1,0 @@
-gene_name,folder_name,full_path,n_mmCIF,n_pdb,n_fasta,mmCIF_ids,pdb_ids,fasta_ids
-NEK1,NEK1_2structures,/Users/debs/OneDrive - King's College London/Pipeline/MutaPipe_Repo/MutaPipe/mutafy/NEK1_2structures,2,0,2,"['4apc.cif', '4b9d.cif']",[],"['4apc.fasta', '4b9d.fasta']"
-SOD1,SOD1_128structures,/Users/debs/OneDrive - King's College London/Pipeline/MutaPipe_Repo/MutaPipe/mutafy/SOD1_128structures,1,0,1,['1fun.cif'],[],['1fun.fasta']
-KL,KL_1structures,/Users/debs/OneDrive - King's College London/Pipeline/MutaPipe_Repo/MutaPipe/mutafy/KL_1structures,1,0,1,['5w21.cif'],[],['5w21.fasta']
