@@ -5,6 +5,7 @@
 # ----------------------------------------------------------------------------------------------------------------------------------
 # Set up workspace
 import os
+from os.path import exists
 import pandas as pd
 import sys
 import argparse
@@ -35,6 +36,8 @@ target_directory = os.getcwd()   # set directory to create Results folder with n
                                                 # Default: set to current working directory (where this script is saved)
 create_search_log = False      # will create a file called search_log.txt with console output if set to True,
                                             # prints to console if set to False.
+web_run = True # indicate whether MutaPipe is run via the webserver; if true certain outputs/structure files will be stored in the background for future webserver runs
+mutafy_directory = f'{target_directory}/mutafy' # set path to mutafy folder (where structures and combined outputs of previous webserver runs will be/are stored)
                                             
 # ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -61,6 +64,8 @@ ap.add_argument("-o", "--organism", required = False, help=f'Specify species for
 ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'Write output to .log file in current directory if set to True, default = {str(create_search_log)}')
 ap.add_argument("-t", "--target", required = False, help=f'Specify target directory, default = {target_directory}')
 ap.add_argument("-a", "--all", type=str2bool, required = False, help=f'Retrieve all (True) vs max. 10 pdb IDs per gene (False), default = {str(all_hits)}')
+ap.add_argument("-w", "--web_run", type=str2bool, required = False, help=f'Indicate whether MutaPipe is run via a webserver (True) or not (False), default = {str(mutafy_directory)}')
+ap.add_argument("-m", "--mutafy", required = False, help=f'set path to mutafy directory where information from previous runs is stored, default = {mutafy_directory}')
 
 args = vars(ap.parse_args())
 
@@ -71,6 +76,8 @@ species_name = species_name if args["organism"] == None else args["organism"]
 create_search_log  = create_search_log  if args["log"]   == None else args["log"]
 target_directory  = target_directory if args["target"]   == None else args["target"]
 all_hits = all_hits if args["all"] == None else args["all"]
+web_run = web_run if args["web_run"] == None else args["web_run"]
+mutafy_directory = mutafy_directory if args["mutafy"] == None else args["mutafy"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -81,6 +88,13 @@ results_dir = f'{target_directory}/Results' #define path to results directory
 # create Results folder if it doesn't already exist
 if not os.path.exists(results_dir):
         os.makedirs(results_dir)
+        
+# If MutaPipe is run via webserver, some of the outputs and the downloaded files will (also) be stored in a separate directory
+# this is for Mutafy, the webserver, in order to minimise computing time and make sure we don't download/parse/analyse what has already been done
+
+# if this directory doesn't already exist, we create it:
+if not os.path.exists(mutafy_directory):
+    os.makedirs(mutafy_directory)
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -225,8 +239,47 @@ for gene in gene_list:
     search_overview.loc[len(search_overview)] = [gene, len(found_pdbs), found_pdbs]
     gene_counter += 1
 
-# write search_overview to csv file
-search_overview.to_csv(f'{results_dir}/00_search_overview_PDBids.csv')
+# write search_overview to csv file 
+search_overview.to_csv(f'{results_dir}/00_search_overview_PDBids.csv', index = False)
+# if we run MutaPipe via webserver, we also write the output in the mutafy directory:
+
+# HOOOKAAAY, SO THINK ABOUT THIS AGAIN (everything below added for the webserver)
+# CODE MAY BE USEFUL SOMEWHERE ELSE, BUT COULD PROBS BE SIMPLIFIED ANYWAY
+# BUUUT I DON'T NEED TO UPDATE THE FILE HERE, AS I NEED IT FOR COMPARISON IN THE SECOND SCRIPT. UPDATE THE FILE ONLY LATER IN THE PIPELINE!!
+# if web_run == True:
+#     # first we check if there is already a csv file in the mutafy directory called 00_search_overview_PDBids.csv
+#     # if so, we read in this table and update / append the new results
+#     if exists(f'{mutafy_directory}/00_search_overview_PDBids_mutafy.csv'):
+#         mutafy_search_overview = pd.read_csv(f'{mutafy_directory}/00_search_overview_PDBids.csv', usecols = ['gene_name', 'n_available_structures',
+#         'available_structures'])        
+#         # loop over the new search overview and compare to existing values in mutafy df
+#         # update mutafy df if new structures available or gene hasn't been searched before
+#         for index, row in search_overview.iterrows():
+#             # if the gene is in the mutafy_search_overview, we compare the number of available structures
+#             if row.gene_name in mutafy_search_overview.gene_name.values:
+#                 # if there are more structures now than before, we update the mutafy table
+#                 if row.n_available_structures > mutafy_search_overview[mutafy_search_overview.gene_name == row.gene_name].n_avalable_structures.values[0]:
+#                     # we append the row and then delete the older row later on
+#                     mutafy_search_overview = mutafy_search_overview.append(row)
+#                 # if there is the same number of structures available as in the previous search, we don't append the row
+#                 elif row.n_available_structures == mutafy_search_overview[mutafy_search_overview.gene_name == row.gene_name].n_avalable_structures.values[0]::
+#                     continue
+#             # if the gene is not yet in the mutafy_search_overview, we just append the row
+#             elif row.gene_name not in mutafy_search_overview.gene_name.values:
+#                 mutafy_search_overview = mutafy_search_overview.append(row)
+#                 
+#         # now we sort the mutafy_search_overview df first by gene_name and then by n_available structures
+#         mutafy_search_overview.sort_values(by = ['gene_name', 'n_available_structures'], ascending=[True, False], inplace = True)
+#         # now we can drop duplicate genes and only keep the first row (with the highest number of available structures)
+#         mutafy_search_overview.drop_duplicates(subset='gene_name', keep = 'first', inplace = True)
+#         
+#         # now we write the updated mutafy_search_overview to a csv file
+#         mutafy_search_overview.to_csv(f'{mutafy_directory}/00_search_overview_PDBids_mutafy.csv', index = False)
+
+    
+    # we also write the the search overview from this run (not the updated mutafy version) to the mutafy directory and the results directory
+#     search_overview.to_csv(f'{mutafy_directory}/00_search_overview_PDBids.csv', index = False)
+
 
 # write a csv file that contains a boolean value for each gene to indicate whether there are any structures available or not
 # create an empty dataframe

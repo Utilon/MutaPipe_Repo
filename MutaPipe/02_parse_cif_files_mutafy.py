@@ -17,8 +17,10 @@
 # Set up
 import pandas as pd
 import os
+import ast
 from os import listdir
 from os.path import isfile, join
+from os.path import exists
 import sys
 import argparse
 from datetime import datetime
@@ -53,7 +55,10 @@ create_search_log = False     # will create a file called search_log.txt with co
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
 extract_pp = True                 # specify whether to extract the polypeptide sequences or whther to skip this step
 delete_files= False                  # specify whether to delete cif files after parsing them or not
-download_files_to_separate_directory = True # specify if pdb mmcif and fasta files should be stored in separate directory
+# download_files_to_separate_directory = True # specify if pdb mmcif and fasta files should be stored in separate directory
+web_run = True # specify if pdb mmcif and fasta files should be stored in separate directory
+mutafy_directory = f'{target_directory}/mutafy' # set path to folder where structures will be/are stored
+                                            
                                             
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""****    This script takes a csv file (01_search_overview_folders.csv) containing information on the folders where the mmCIF files are stored as input and will:
@@ -71,7 +76,9 @@ ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write out
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
 ap.add_argument("-pp", "--polypeptides", type=str2bool, required = False, help=f'Specify whether to extract polypeptide sequence (True) or not (False), default = {str(extract_pp)}')
 ap.add_argument("-del", "--delete_files", type=str2bool, required = False, help=f'Specify whether to delete mmCIF files after parsing (True) or not (False), default = {str(delete_files)}')
-ap.add_argument("-s", "--sep_dir", type=str2bool, required = False, help=f'specify if pdb mmcif and fasta files should be stored in separate directory (True) or not (False), default = {str(download_files_to_separate_directory)}')
+# ap.add_argument("-s", "--sep_dir", type=str2bool, required = False, help=f'specify if pdb mmcif and fasta files should be stored in separate directory (True) or not (False), default = {str(download_files_to_separate_directory)}')
+ap.add_argument("-w", "--web_run", type=str2bool, required = False, help=f'Indicate whether MutaPipe is run via a webserver (True) or not (False), default = {str(mutafy_directory)}')
+ap.add_argument("-m", "--mutafy", required = False, help=f'set path to mutafy directory where information from previous runs is stored, default = {mutafy_directory}')
 
 args = vars(ap.parse_args())
 
@@ -81,8 +88,9 @@ create_search_log  = create_search_log  if args["log"]   == None else args["log"
 target_directory  = target_directory if args["target"]   == None else args["target"]
 extract_pp = extract_pp if args["polypeptides"] == None else args["polypeptides"]
 delete_files = delete_files if args["delete_files"] == None else args["delete_files"]
-download_files_to_separate_directory = download_files_to_separate_directory if args["sep_dir"]   == None else args["sep_dir"]
-
+# download_files_to_separate_directory = download_files_to_separate_directory if args["sep_dir"]   == None else args["sep_dir"]
+web_run = web_run if args["web_run"] == None else args["web_run"]
+mutafy_directory = mutafy_directory if args["mutafy"] == None else args["mutafy"]
 # ----------------------------------------------------------------------------------------------------------------------------------
 # We want to write all our Output into the Results directory
 
@@ -113,6 +121,10 @@ print(f'start: {start_time}\n')
 # Read in data from csv file
 folder_info = pd.read_csv(f'{results_dir}/01_search_overview_folders.csv', usecols=['gene_name', 'folder_name', 'full_path'])
 
+# if this is a web run, we also read in the csv file from script 01 which lists all the new pdb ID's to be downloaded / parsed!
+if web_run:
+    df_new_structures_to_download = pd.read_csv(f'{mutafy_directory}/01_new structures_to_be parsed_mutafy.csv')
+
 # define variable n_folders (number of folders to be checked for files) = number of rows in dataframe
 n_folders = len(folder_info)
 
@@ -129,22 +141,39 @@ df_all_info = pd.DataFrame(columns=['gene', 'structure_id', 'resolution', 'struc
 # we loop over the df containing the folder names and the full paths to each folder
 # we use this information to parse the files in each folder and extract information
 folder_counter = 0
-
+   
 for index, row in folder_info.iterrows():
     folder_counter += 1
-    gene = row.gene_name      
+    gene = row.gene_name
+    structure_folder = row.full_path
+    
+    # if this is a webrun, we first check if there are any new structures to be parsed in this folder/for this gene:
+    if web_run:
+        # get the list of pdb ids to be parsed        
+        new_structures_to_download = ast.literal_eval(df_new_structures_to_download[df_new_structures_to_download.gene == gene].new_pdb_ids.values[0])
+        # currently this list contains pdb ids, but in order for the rest of the loop to work, we need a variable called
+        # cif_files which contains mmCif filenames to be parsed (pdb.cif)
+        # so we do the following:
+        cif_files = [f'{pdb_id}.cif' for pdb_id in new_structures_to_download]
+        # if there are no new structures to be parsed, we can continue to the next gene/folder
+        if len(cif_files) == 0:
+            print(f'\nNo new mmCif files to be parsed for {gene} (gene {folder_counter} of {n_folders})')
+            continue
+        
+    elif web_run == False:      
+        # change to the folder containing the files to be parsed
+        os.chdir(structure_folder)              
+        # create list with filenames of all pdb/mmCIF files in this folder
+        files = [f for f in listdir(row.full_path) if isfile(join(row.full_path, f))]
+        cif_files = [f for f in files if '.cif' in f]
+        # sort list
+        cif_files.sort()
+        
+    print(f"""\nStarting to parse identified mmCif files for {gene} (gene {folder_counter} of {n_folders}):                   {len(cif_files)} mmCIF files""")
     
     # change to the folder containing the files to be parsed
-    os.chdir(row.full_path)      
+    os.chdir(structure_folder)      
         
-    # create list with filenames of all pdb/mmCIF files in this folder
-    files = [f for f in listdir(row.full_path) if isfile(join(row.full_path, f))]
-    cif_files = [f for f in files if '.cif' in f]
-    # sort list
-    cif_files.sort()
-        
-    print(f"""\nChecking folder content (folder {folder_counter} of {n_folders}) for gene {gene}:                   {len(cif_files)} mmCIF files""")
-    
     # add number of cif files in folder to total number of cif files:
     cif_total += len(cif_files)
     
@@ -227,17 +256,16 @@ for index, row in folder_info.iterrows():
     print(f'Complete!\n    All mmCIF files for {gene} have been parsed!')
                 
     # create csv files for each gene with resolution and all info of all structures for that gene
-    print(f'        >>> saving csv files containing resolution and all parsed info for all {gene} structures')
-    # if we use a separate directory for the downloaded files, we have to write them to the results forlder instead, so they do
-    # not get overwritten
-    if download_files_to_separate_directory == True:
-        df_all_resolutions[df_all_resolutions.gene == gene].to_csv(f'{results_dir}/{gene}_02_resolutions.csv', index = False)
-        df_all_info[df_all_info.gene == gene].to_csv(f'{results_dir}/{gene}_02_structure_info.csv', index = False)
-    else:
+    if web_run == False:
+        print(f'        >>> saving csv files containing resolution and all parsed info for all {gene} structures')
         # if the option is false, we store the csv files in the current directory (where the structure files are also stored)
         df_all_resolutions[df_all_resolutions.gene == gene].to_csv(f'{gene}_02_resolutions.csv', index = False)
         df_all_info[df_all_info.gene == gene].to_csv(f'{gene}_02_structure_info.csv', index = False)
-
+        # currently we don't write gene-specific outputs for the webrun! (thus commented out the code below)
+#     if web_run == True:
+#         df_all_resolutions[df_all_resolutions.gene == gene].to_csv(f'{results_dir}/{gene}_02_resolutions.csv', index = False)
+#         df_all_info[df_all_info.gene == gene].to_csv(f'{results_dir}/{gene}_02_structure_info.csv', index = False)
+    
     # now, only if --polypeptides is set to true, we want to
     # create csv file for each gene with sequences of all polypeptides of all structures for that gene
     if extract_pp == True:
@@ -262,18 +290,71 @@ for index, row in folder_info.iterrows():
             df = df.rename(columns={'index':'structure_id'})
             # sort dataframe by 'id' (alphabetically)
             df = df.sort_values(by=['structure_id'])
-            # save dataframe to csv file
-            print(f'        >>> saving csv file containing all polypeptide sequences for all {gene} structures')
-            if download_files_to_separate_directory == True:
-                df.to_csv(f'{results_dir}/{gene}_02_poly_seq.csv', index = False)
-            else:
+            # save dataframe to csv file (only if not web run)
+            if web_run == False:
+                print(f'        >>> saving csv file containing all polypeptide sequences for all {gene} structures')
                 df.to_csv(f'{gene}_02_poly_seq.csv', index = False)
             
             # to add it to the overall df df_all_poly_seq, we first add a column with the gene name
             df['gene'] = gene
+            cols = df.columns.tolist()
+            cols = cols[-1:] + cols[:-1]
+            df = df[cols]
             # now we can merge the two dfs with an outer merge.
             # we cannot simply append the df because they have different numbers of columns (due to different numbers of polypeptides)
-            df_all_poly_seq = df_all_poly_seq.merge(df, how='outer')
+            df_all_poly_seq = df.merge(df_all_poly_seq, how='outer')
+            
+            
+# now, if this is a webrun, we want to read in the data from previous mutafy runs and
+# get a slice for all the genes of the current seach (otherwise only new structures will be listed in the output file)
+# also, we want to update already existing mutafy data and add new structures to it!
+if web_run:
+    if exists(f'{mutafy_directory}/02_all_resolutions_mutafy.csv'):
+        mutafy_resolutions = pd.read_csv(f'{mutafy_directory}/02_all_resolutions_mutafy.csv')
+        # we update the mutafy data, concatenate it with our df and drop potential duplicates
+        updated_mutafy_resolutions = pd.concat([mutafy_resolutions, df_all_resolutions], ignore_index=True).drop_duplicates()
+        # we sort the df again first according to gene name and then structure id
+        updated_mutafy_resolutions.sort_values(by=['gene', 'structure_id'], inplace=True)
+        # we write the updated mutafy data to a csv file (which overwrites the one from the previous mutafy run)
+        updated_mutafy_resolutions.to_csv(f'{mutafy_directory}/02_all_resolutions_mutafy.csv', index=False)        
+        # we get a slice of the mutafy data with all the genes of the current search and save this to the results folder
+        # this is a df with all the resolutions for all the structures for all genes of the current webrun
+        df_all_resolutions = updated_mutafy_resolutions[updated_mutafy_resolutions.gene.isin(list(folder_info.gene_name.values))]
+    else:
+        # if the mutafy file doesn't exist yet, we write it out with the data from the current run
+        df_all_resolutions.to_csv(f'{mutafy_directory}/02_all_resolutions_mutafy.csv', index = False)
+
+    if exists(f'{mutafy_directory}/02_structure_info_mutafy.csv'):
+        mutafy_structure_info = pd.read_csv(f'{mutafy_directory}/02_structure_info_mutafy.csv')
+        # we update the mutafy data, concatenate it with our df and drop potential duplicates
+        updated_mutafy_structure_info = pd.concat([mutafy_structure_info, df_all_info], ignore_index=True).drop_duplicates()
+        # we sort the df again first according to gene name and then structure id
+        updated_mutafy_structure_info.sort_values(by=['gene', 'structure_id'], inplace=True)
+        # we write the updated mutafy data to a csv file (which overwrites the one from the previous mutafy run)
+        updated_mutafy_structure_info.to_csv(f'{mutafy_directory}/02_structure_info_mutafy.csv', index=False)        
+        # we get a slice of the mutafy data with all the genes of the current search and save this to the results folder
+        # this is a df with all the resolutions for all the structures for all genes of the current webrun
+        df_all_info = updated_mutafy_structure_info[updated_mutafy_structure_info.gene.isin(list(folder_info.gene_name.values))]
+    else:
+        # if the mutafy file doesn't exist yet, we write it out with the data from the current run
+        df_all_info.to_csv(f'{mutafy_directory}/02_structure_info_mutafy.csv', index = False)
+        
+# update mutafy polypeptide outputs from all runs
+    if exists(f'{mutafy_directory}/02_all_poly_seq_mutafy.csv'):
+        mutafy_pp_seq = pd.read_csv(f'{mutafy_directory}/02_all_poly_seq_mutafy.csv')
+        # we update the mutafy data, concatenate it with our df and drop potential duplicates
+        updated_mutafy_pp_seq = pd.concat([mutafy_pp_seq, df_all_poly_seq], ignore_index=True).drop_duplicates()
+        # we sort the df again first according to gene name and then structure id
+        updated_mutafy_pp_seq.sort_values(by=['gene', 'structure_id'], inplace=True)
+        # we write the updated mutafy data to a csv file (which overwrites the one from the previous mutafy run)
+        updated_mutafy_pp_seq.to_csv(f'{mutafy_directory}/02_all_poly_seq_mutafy.csv', index=False)
+        # we get a slice of the mutafy data with all the genes of the current search and save this to the results folder
+        # this is a df with all the resolutions for all the structures for all genes of the current webrun
+        df_all_poly_seq = updated_mutafy_pp_seq[updated_mutafy_pp_seq.gene.isin(list(folder_info.gene_name.values))]
+    else:
+        # if the mutafy file doesn't exist yet, we write it out with the data from the current run
+        df_all_poly_seq.to_csv(f'{mutafy_directory}/02_all_poly_seq_mutafy.csv', index = False)
+    
 
 # change back to Results directory
 os.chdir(results_dir)

@@ -15,7 +15,8 @@ import pandas as pd
 import numpy as np
 import os
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, exists
+import ast
 import re
 import sys
 import argparse
@@ -55,8 +56,10 @@ target_directory = os.getcwd()    # set target directory (where Results folder i
 
 # figure out path to uniprot fasta (no argument) to set the default value for uniprot_fasta (see one line further down)
 MutaPipe_dir = os.path.dirname(os.path.realpath(__file__))
-uniprot_fasta = f'{MutaPipe_dir}/Uniprot_reference_seqs/UP000005640_9606.fasta' # specify default path to uniprot reference fasta                                            
-        
+uniprot_fasta = f'{MutaPipe_dir}/Uniprot_reference_seqs/UP000005640_9606.fasta' # specify default path to uniprot reference fasta
+
+web_run = True # specify if pdb mmcif and fasta files should be stored in separate directory
+mutafy_directory = f'{target_directory}/mutafy' # set path to folder where structures will be/are stored        
 
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""****    This script takes a csv file (04_fasta_combined_info.csv) containing information for all input genes extracted from their
@@ -73,6 +76,8 @@ ap.add_argument('-bp','--blastp_path', required=False, help=f"Specify the path t
 ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'Write output to .log file in output directory if set to True, default = {str(create_search_log)}')
 ap.add_argument("-t", "--target", required = False, help=f'Specify target directory, default = {target_directory}')
 ap.add_argument("-refseq", "--reference_sequences", required = False, help=f'Specify path to uniprot reference fasta, default = {uniprot_fasta}')
+ap.add_argument("-w", "--web_run", type=str2bool, required = False, help=f'Indicate whether MutaPipe is run via a webserver (True) or not (False), default = {str(mutafy_directory)}')
+ap.add_argument("-m", "--mutafy", required = False, help=f'set path to mutafy directory where information from previous runs is stored, default = {mutafy_directory}')
 
 args = vars(ap.parse_args())
 
@@ -82,7 +87,8 @@ blastp_path = blastp_path if args["blastp_path"] == None else args["blastp_path"
 create_search_log  = create_search_log  if args["log"]   == None else args["log"]
 target_directory  = target_directory if args["target"]   == None else args["target"]
 uniprot_fasta = uniprot_fasta if args["reference_sequences"] == None else args["reference_sequences"]
-
+web_run = web_run if args["web_run"] == None else args["web_run"]
+mutafy_directory = mutafy_directory if args["mutafy"] == None else args["mutafy"]
 # ----------------------------------------------------------------------------------------------------------------------------------
 # We want to write all our Output into the Results directory
 
