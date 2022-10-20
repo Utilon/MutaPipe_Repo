@@ -118,6 +118,18 @@ start_time = datetime.now()
 print(f'start: {start_time}\n')
 # ----------------------------------------------------------------------------------------------------------------------------------
 
+# if there is no data in the PDB for any of the input genes, we don't have to run this script (or any of the
+# following scripts in the pipeline, apart from the AlphaFold one)
+# so we read in the file 00_search_overview_availability.csv from the results_dir to check if we have to run the script
+data_availability = pd.read_csv(f'{results_dir}/00_search_overview_availability.csv')
+# the data_availability df has two columns, one with the gene_name and one with a boolean value indicating if PDB data is available for this gene
+# if all values in the data_available column are False, we can skip this script
+if True not in data_availability.data_available.unique():
+    print('No PDB data available for any of the input genes')
+    print ('Exiting Python...')
+    sys.exit('No PDB data available for any of the input genes')
+
+
 # Read in data from csv file
 folder_info = pd.read_csv(f'{results_dir}/01_search_overview_folders.csv', usecols=['gene_name', 'folder_name', 'full_path'])
 

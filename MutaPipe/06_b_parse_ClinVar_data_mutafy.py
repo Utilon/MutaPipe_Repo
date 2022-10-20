@@ -38,7 +38,9 @@ def str2bool(v):
 
 create_search_log = False     # will create a file called search_log.txt with console output if set to True,
                                             # prints to console if set to False.
-target_directory = os.getcwd()    # set target directory (where Results folder is located)                                            
+target_directory = os.getcwd()    # set target directory (where Results folder is located)
+web_run = True # specify if pdb mmcif and fasta files should be stored in separate directory
+mutafy_directory = f'{target_directory}/mutafy' # set path to folder where structures will be/are stored        
                                             
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""**** This script takes no csv file as input, but will automatically read in and parse
@@ -50,6 +52,8 @@ It will:
 
 ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
+ap.add_argument("-w", "--web_run", type=str2bool, required = False, help=f'Indicate whether MutaPipe is run via a webserver (True) or not (False), default = {str(mutafy_directory)}')
+ap.add_argument("-m", "--mutafy", required = False, help=f'set path to mutafy directory where information from previous runs is stored, default = {mutafy_directory}')
 
 args = vars(ap.parse_args())
 
@@ -57,6 +61,8 @@ args = vars(ap.parse_args())
 # So we update our variables whenever there is a user input via the terminal:
 create_search_log  = create_search_log  if args["log"]   == None else args["log"]
 target_directory  = target_directory if args["target"]   == None else args["target"]
+web_run = web_run if args["web_run"] == None else args["web_run"]
+mutafy_directory = mutafy_directory if args["mutafy"] == None else args["mutafy"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 # We want to write all our Output into the Results directory
@@ -83,8 +89,24 @@ start_time = datetime.now()
 print(f'start: {start_time}\n')
 
 # ----------------------------------------------------------------------------------------------------------------------------------
+
+# if there is no data in the PDB for any of the input genes, we don't have to run this script (or any of the
+# following scripts in the pipeline, apart from the AlphaFold one)
+# so we read in the file 00_search_overview_availability.csv from the results_dir to check if we have to run the script
+data_availability = pd.read_csv(f'{results_dir}/00_search_overview_availability.csv')
+# the data_availability df has two columns, one with the gene_name and one with a boolean value indicating if PDB data is available for this gene
+# if all values in the data_available column are False, we can skip this script
+if True not in data_availability.data_available.unique():
+    print('No PDB data available for any of the input genes')
+    print ('Exiting Python...')
+    sys.exit('No PDB data available for any of the input genes')
+
+
 # change to ClinVar_Annotations  folder (where we have the data of all variants for all genes in xml files; from running the previous script 06_a)
-clinvar_dir = f'{results_dir}/ClinVar_Annotations'
+if web_run:
+    clinvar_dir = f'{mutafy_directory}/ClinVar_Annotations'
+else:
+    clinvar_dir = f'{results_dir}/ClinVar_Annotations'
 os.chdir(clinvar_dir)
 
 # make a df to populate with relevant info from clinvar xml output for all genes
@@ -186,27 +208,31 @@ for id_file in id_files:
 clinvar_data.to_csv(f'{results_dir}/06_b_ClinVar_Annotations.csv', index = False)
 
 # we also want to write gene specific files to all the gene folders
-# we can loop over all the gene names in the the clinvar_data df
-for gene in clinvar_data.gene.unique():
-    # get a slice of the clinvar_data df for only this gene
-    clinvar_slice = clinvar_data[clinvar_data.input_gene == gene]
-    # we get the name of the gene folder of the current gene like so
-    # gene_folder = [name for name in os.listdir(results_dir) if name.startswith(f'{gene}_')][0]
-    # for Mutafy/webserver, this needs to be updated like so (structures are stored in a different directory)
-    try:
+# we only do this if this is not a webrun
+if not web_run:
+    # we can loop over all the gene names in the the clinvar_data df
+    for gene in clinvar_data.gene.unique():
+        # get a slice of the clinvar_data df for only this gene
+        clinvar_slice = clinvar_data[clinvar_data.input_gene == gene]
+        # we get the name of the gene folder of the current gene like so
+        # gene_folder = [name for name in os.listdir(results_dir) if name.startswith(f'{gene}_')][0]
         gene_folder = [name for name in os.listdir(results_dir) if (name.startswith(f'{gene}_')) & ('structures' in name) & ('.csv' not in name)][0]
-    except IndexError:
-        # store in temp directory for Mutafy (update this /automise this / add arguments to specify where downloaded structures per gene are stored)
-        gene_folder = [name for name in os.listdir(f'{target_directory}/temp') if (name.startswith(f'{gene}_')) & ('structures' in name) & ('.csv' not in name)][0]
-    # and we write the clinvar slice df to a csv file in the gene folder
-# ###    # DO SOMETHING ABOUT THIS LINE SO IT WORKS FOR MUTARY. PUT IN TEMP STORAGE. ADD EXTRA OPTION OR SOMETHING!
-    try:
+        # and we write the clinvar slice df to a csv file in the gene folder
         clinvar_slice.to_csv(f'{results_dir}/{gene_folder}/{gene}_06_b_ClinVar_Annotations.csv', index=False)
-    except:
-        # store directly in results folder (where the other outputs are too)
-        clinvar_slice.to_csv(f'{results_dir}/{gene}_06_b_ClinVar_Annotations.csv', index=False)
-        # and maybe also: store in temp folder (automise and add arguments to script to specify this folder later!)
-        clinvar_slice.to_csv(f'{target_directory}/temp/{gene_folder}/{gene}_06_b_ClinVar_Annotations.csv', index=False)
+
+# Now, if this is a webrun, we will delete all the data downloaded from ClinVar again and only keep the parsed outputs
+# contained in the csv files we wrote.
+# we do this because this script to parse the ClinVar data will parse all ClinVar data in the set folder
+# as there are  continuosly more variants available in ClinVar, we have to download the data everytime anyway,
+# so it doesn't make sense to create a directory and add to it for every mutafy run (I think)
+
+# we delete all the data from ClinVar if this is a webrun
+if web_run:
+    # we change to the Clinvar folder
+    os.chdir(clinvar_dir)
+    # and we delete all the ClinVar files, they are stored in the list all_ClinVar_files
+    # we can do this with a list comprehension
+    [os.remove(file) for file in all_ClinVar_files]
 
 # change back to target directory
 os.chdir(target_directory)
@@ -214,16 +240,17 @@ os.chdir(target_directory)
 print('\n============================== Summary ================================================\n')
 print(f'Complete! \n    Parsed all ClinVar data for a total of {n_genes_clinvar_data} genes.')
 
-print('\nThe following files have been created for each gene and stored in the respective gene folder:')
-print('   o      GENENAME_06_b_ClinVar_Annotations.csv')
-print('            (lists all ClinVar annotations for all variants in this gene)')
+if not web_run:
+    print('\nThe following files have been created for each gene and stored in the respective gene folder:')
+    print('   o      GENENAME_06_b_ClinVar_Annotations.csv')
+    print('            (lists all ClinVar annotations for all variants in this gene)')
 
 print('\nThe following files have been created and stored in the Results folder:')
 print('   o      06_b_ClinVar_Annotations.csv')
 print('            (lists all ClinVar annotations for all variants in all genes)')
 
 # print script name to console/log file
-print(f'end of script {script_name}')
+print(f'\nend of script {script_name}')
 
 # store current date and time in an object and print to console / write to log file
 end_time = datetime.now()

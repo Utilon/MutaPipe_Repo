@@ -43,6 +43,8 @@ def str2bool(v):
 create_search_log = False     # will create a file called search_log.txt with console output if set to True,
                                             # prints to console if set to False.
 target_directory = os.getcwd()    # set target directory (where Results folder is located)
+web_run = True # specify if pdb mmcif and fasta files should be stored in separate directory
+mutafy_directory = f'{target_directory}/mutafy' # set path to folder where structures will be/are stored        
                                                                                       
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""****   This script takes a csv file (00_search_overview_availability.csv) containing the gene names of all available genes and unavailable genes (with/without PDB data) as input and will:
@@ -54,6 +56,8 @@ ap = argparse.ArgumentParser(description="""****   This script takes a csv file 
 
 ap.add_argument("-l", "--log", type=str2bool, required = False, help=f'write output to .log file in output directory if set to True, default = {str(create_search_log)}')
 ap.add_argument("-t", "--target", required = False, help=f'specify target directory, default = {target_directory}')
+ap.add_argument("-w", "--web_run", type=str2bool, required = False, help=f'Indicate whether MutaPipe is run via a webserver (True) or not (False), default = {str(mutafy_directory)}')
+ap.add_argument("-m", "--mutafy", required = False, help=f'set path to mutafy directory where information from previous runs is stored, default = {mutafy_directory}')
 
 args = vars(ap.parse_args())
 
@@ -61,6 +65,7 @@ args = vars(ap.parse_args())
 # So we update our variables whenever there is a user input via the terminal:
 create_search_log  = create_search_log  if args["log"]   == None else args["log"]
 target_directory  = target_directory if args["target"]   == None else args["target"]
+
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 # We want to write all our Output into the Results directory
@@ -88,17 +93,32 @@ print(f'start: {start_time}\n')
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 
+# if there is no data in the PDB for any of the input genes, we don't have to run this script (or any of the
+# following scripts in the pipeline, apart from the AlphaFold one)
+# so we read in the file 00_search_overview_availability.csv from the results_dir to check if we have to run the script
+data_availability = pd.read_csv(f'{results_dir}/00_search_overview_availability.csv')
+# the data_availability df has two columns, one with the gene_name and one with a boolean value indicating if PDB data is available for this gene
+# if all values in the data_available column are False, we can skip this script
+if True not in data_availability.data_available.unique():
+    print('No PDB data available for any of the input genes')
+    print ('Exiting Python...')
+    sys.exit('No PDB data available for any of the input genes')
+
 # read in data
 genes_df = pd.read_csv(f'{results_dir}/00_search_overview_availability.csv')
 # filter out genes that have available data
 avail_genes = genes_df[genes_df.data_available == True].reset_index()
 
-# make a new folder in current working directory called ClinVar_Annotations
-if not os.path.exists(f'{results_dir}/ClinVar_Annotations'):
-    os.makedirs(f'{results_dir}/ClinVar_Annotations')
+# make a new folder directory called ClinVar_Annotations
+if web_run:
+    clinvar_dir = f'{mutafy_directory}/ClinVar_Annotations'
+else:
+    clinvar_dir = f'{results_dir}/ClinVar_Annotations'
+    
+if not os.path.exists(clinvar_dir):
+    os.makedirs(clinvar_dir)
     
 # change to ClinVar_Annotations  folder
-clinvar_dir = f'{results_dir}/ClinVar_Annotations'
 os.chdir(clinvar_dir)
 
 # Set up edirect request to clinvar

@@ -114,17 +114,38 @@ start_time = datetime.now()
 print(f'start: {start_time}\n')
 
 # ----------------------------------------------------------------------------------------------------------------------------------
+
+# if there is no data in the PDB for any of the input genes, we don't have to run this script (or any of the
+# following scripts in the pipeline, apart from the AlphaFold one)
+# so we read in the file 00_search_overview_availability.csv from the results_dir to check if we have to run the script
+data_availability = pd.read_csv(f'{results_dir}/00_search_overview_availability.csv')
+# the data_availability df has two columns, one with the gene_name and one with a boolean value indicating if PDB data is available for this gene
+# if all values in the data_available column are False, we can skip this script
+if True not in data_availability.data_available.unique():
+    print('No PDB data available for any of the input genes')
+    print ('Exiting Python...')
+    sys.exit('No PDB data available for any of the input genes')
+
+
 # we make a new folder in the Results folder to store all reference sequences (permanently) and individual fasta files (temporarily)
 # which we need during our for loop when doing the blastp
-refseqs_dir = f'{results_dir}/RefSeqs'
+#  in case this is a webrun, the RefSeqs folder will be in the mutafy_directory
+if web_run:
+    refseqs_dir = f'{mutafy_directory}/RefSeqs'
+else:
+    refseqs_dir = f'{results_dir}/RefSeqs'
 if not os.path.isdir(refseqs_dir):
-    os.mkdir(f'{results_dir}/RefSeqs')
+    os.mkdir(f'{refseqs_dir}')
     
 # change to refseqs_dir
 os.chdir(refseqs_dir)
 
 # Read in data from csv files
 fasta_df = pd.read_csv(f'{results_dir}/04_fasta_combined_info.csv')
+
+# if this is a web run, we also read in the csv file from script 01 which lists all the new pdb ID's to be downloaded / parsed / blasted!
+if web_run:
+    df_new_structures_to_blast = pd.read_csv(f'{mutafy_directory}/01_new structures_to_be parsed_mutafy.csv')
 
 # create a df based on the fasta_df with additional columns to populate with results from blast p
 xml_df = pd.concat([fasta_df, pd.DataFrame(columns=['alignment_length', 'hsp_number',
@@ -158,6 +179,16 @@ gene_counter = 0
 # now we want to loop over the fasta_df and for each row perform a blast p against the reference sequence for that gene
 for fasta_df_index, row in fasta_df.iterrows():
     gene = row.gene_name
+    structure_id = row.structure_id
+    
+    # if this is a webrun, we first check if there are any new fasta files which have to be blasted (haha) in this folder/for this gene:
+    if web_run:
+        # we check if the gene and structure id for the current loop is found in the mutafy table of new structures
+        # if this is not the case, we continue / skip the rest of the loop for this row in the fasta_df as the BLASTp has
+        # already been performed in a previous mutafy run
+        if not (gene in df_new_structures_to_blast.gene.to_list()) & (structure_id in ast.literal_eval(df_new_structures_to_blast[df_new_structures_to_blast.gene == gene].new_pdb_ids.values[0])):
+            continue
+    
     sequence = Seq(row.sequence)
     # in order to store this sequence properly, we need to create a sequence record, see: http://biopython.org/DIST/docs/tutorial/Tutorial.html#sec35
     # Including an identifier is very important if we want to output the SeqRecord to a file.
@@ -436,8 +467,82 @@ if not os.path.isdir('PDB_seqs_and_blastp_outputs'):
     os.mkdir('PDB_seqs_and_blastp_outputs')
 # and move the files
 for PDB_fasta in PDB_fasta_files_for_blastp:
-    os.rename(f'{PDB_fasta}', f'PDB_seqs_and_blastp_outputs/{PDB_fasta}')
-              
+    os.rename(f'{PDB_fasta}', f'PDB_seqs_and_blastp_outputs/{PDB_fasta}')              
+
+# now, if this is a webrun, we want to read in the data from previous mutafy runs and
+# get a slice for all the genes of the current seach (otherwise only new structures will be listed in the output file)
+# also, we want to update already existing mutafy data and add new structures to it!
+if web_run:
+    if exists(f'{mutafy_directory}/05_blastp_results_mutafy.csv'):
+        mutafy_blastp_results = pd.read_csv(f'{mutafy_directory}/05_blastp_results_mutafy.csv')
+        # we drop all the rows from our xml_df for which we didn't try to perform a blastp
+        # we take only the rows with the new structure ids (for which we had to perform a blastp)
+        # the relevant structure ids are stored in the df_new_structures_to_blast
+        ids_to_add = df_new_structures_to_blast.new_pdb_ids.to_list()
+        ids_to_add = [ast.literal_eval(e) for e in ids_to_add]
+        # now we have a list of list, to flatten it we do the following:
+        # see this post: https://stackoverflow.com/questions/952914/how-do-i-make-a-flat-list-out-of-a-list-of-lists
+        ids_to_add = [item for sublist in ids_to_add for item in sublist]
+        # now we get a slice of the xml_df containing only the data for the ids_to_add (the ones with new blastp results)
+        # we also convert all the values to strings for concatenation (next step).
+        xml_slice_to_add = xml_df[xml_df.structure_id.isin(ids_to_add)].astype('str')
+        # no we can add the xml slice (containig the new blastp results) to the mutafy data from previous runs
+        # we update the mutafy data, concatenate it with our df and drop potential duplicates
+        updated_mutafy_blastp_results = pd.concat([mutafy_blastp_results, xml_slice_to_add], ignore_index=True).drop_duplicates()
+        # we sort the df again first according to gene name and then structure id
+        updated_mutafy_blastp_results.sort_values(by=['gene_name', 'structure_id', 'chain_name'], inplace=True)
+        # we write the updated mutafy data to a csv file (which overwrites the one from the previous mutafy run)
+        updated_mutafy_blastp_results.to_csv(f'{mutafy_directory}/05_blastp_results_mutafy.csv', index=False)        
+        # we get a slice of the mutafy data with all the genes of the current search and save this to the results folder
+        # this is a df with all the data for all the structures for all genes of the current webrun
+        xml_df = updated_mutafy_blastp_results[updated_mutafy_blastp_results.gene_name.isin(list(fasta_df.gene_name.unique()))]
+    else:
+        # if the mutafy file doesn't exist yet, we write it out with the data from the current run
+        xml_df.to_csv(f'{mutafy_directory}/05_blastp_results_mutafy.csv', index = False)
+        # we need a variable called xml_slice_to_add here anyway, to get the lenght of it later in a print statement
+        # and print the number of sequences blasted in this cycle
+        xml_slice_to_add = xml_df
+        
+    if exists(f'{mutafy_directory}/05_refseq_warnings_mutafy.csv'):
+        mutafy_refseq_warnings = pd.read_csv(f'{mutafy_directory}/05_refseq_warnings_mutafy.csv')
+        # we update the mutafy data, concatenate it with our df and drop potential duplicates
+        # in order to do that, we convert all the values in the refseq_warnings df to strings
+        refseq_warnings = refseq_warnings.astype('str')
+        # now we can concatenate the two dfs
+        # we update the mutafy data, concatenate it with our df and drop potential duplicates
+        updated_mutafy_refseq_warnings = pd.concat([mutafy_refseq_warnings, refseq_warnings], ignore_index=True).drop_duplicates()
+        # we sort the df again first according to gene name 
+        updated_mutafy_refseq_warnings.sort_values(by='gene', inplace=True)
+        # we write the updated mutafy data to a csv file (which overwrites the one from the previous mutafy run)
+        updated_mutafy_refseq_warnings.to_csv(f'{mutafy_directory}/05_refseq_warnings_mutafy.csv', index=False)        
+        # we get a slice of the mutafy data with all the genes of the current search and save this to the results folder
+        # this is a df with all the data for all the structures for all genes of the current webrun
+        refseq_warnings = updated_mutafy_refseq_warnings[updated_mutafy_refseq_warnings.gene.isin(list(fasta_df.gene_name.unique()))]
+    else:
+        # if the mutafy file doesn't exist yet, we write it out with the data from the current run
+        refseq_warnings.to_csv(f'{mutafy_directory}/05_refseq_warnings_mutafy.csv', index = False)
+        
+    
+    if exists(f'{mutafy_directory}/05_blastp_warnings_mutafy.csv'):
+        mutafy_blastp_warnings = pd.read_csv(f'{mutafy_directory}/05_blastp_warnings_mutafy.csv')
+        # we update the mutafy data, concatenate it with our df and drop potential duplicates
+        # in order to do that, we convert all the values in the refseq_warnings df to strings
+        blastp_warnings = blastp_warnings.astype('str')
+        # now we can concatenate the two dfs
+        # we update the mutafy data, concatenate it with our df and drop potential duplicates
+        updated_mutafy_blastp_warnings = pd.concat([mutafy_blastp_warnings, blastp_warnings], ignore_index=True).drop_duplicates()
+        # we sort the df again first according to gene name 
+        updated_mutafy_blastp_warnings.sort_values(by='gene', inplace=True)
+        # we write the updated mutafy data to a csv file (which overwrites the one from the previous mutafy run)
+        updated_mutafy_blastp_warnings.to_csv(f'{mutafy_directory}/05_blastp_warnings_mutafy.csv', index=False)        
+        # we get a slice of the mutafy data with all the genes of the current search and save this to the results folder
+        # this is a df with all the data for all the structures for all genes of the current webrun
+        blastp_warnings = updated_mutafy_blastp_warnings[updated_mutafy_blastp_warnings.gene.isin(list(fasta_df.gene_name.unique()))]
+    else:
+        # if the mutafy file doesn't exist yet, we write it out with the data from the current run
+        blastp_warnings.to_csv(f'{mutafy_directory}/05_blastp_warnings_mutafy.csv', index = False)
+
+
 # we change back to the results directory
 os.chdir(results_dir)
 
@@ -446,47 +551,99 @@ print(f'>>> writing csv file containing blastp results for all structures of all
 xml_df.to_csv('05_blastp_results.csv', index = False)
 
 # we also write the warnings to csv files
-refseq_warnings.to_csv('05_refeseq_warnings.csv', index = False)
+refseq_warnings.to_csv('05_refseq_warnings.csv', index = False)
 blastp_warnings.to_csv('05_blastp_warnings.csv', index = False)
 
 # Finally we want to write the gene-specific csv outputs in the respective gene folders:
-print(f'>>> writing all gene-specific csv files containing blastp results and storing them in the respective gene folders\n')
-for gene in xml_df.gene_name.unique():
-    # we take a slice of the xml df for only the current gene
-    xml_df_this_gene = xml_df[xml_df.gene_name == gene]
-    # we also take slices of the warnings for the current gene
-    refseq_warnings_this_gene = refseq_warnings[refseq_warnings.gene == gene]
-    blastp_warnings_this_gene = blastp_warnings[blastp_warnings.gene == gene]
-    # no we change to the relevant gene folder
-    for item in os.listdir():
-        # we loop over all items in this directory
-        # if it's a sudirectory AND it contains the gene name followed by an underscore, that's the relevant directory!
-        if (os.path.isdir(item)) & (f'{gene}_' in item):
-            # we change to the gene directory
-            os.chdir(item)
-            # and we write all the csv files
-            xml_df_this_gene.to_csv(f'{gene}_05_blastp_results.csv', index=False)
-            refseq_warnings_this_gene.to_csv(f'{gene}_05_refseq_warnings.csv', index=False)
-            blastp_warnings_this_gene.to_csv(f'{gene}_05_blastp_warnings.csv', index=False)    
-    
+# we only do this if this is NOT a webrun
+if not web_run:
+    print(f'>>> writing all gene-specific csv files containing blastp results and storing them in the respective gene folders\n')
+    for gene in xml_df.gene_name.unique():
+        # we take a slice of the xml df for only the current gene
+        xml_df_this_gene = xml_df[xml_df.gene_name == gene]
+        # we also take slices of the warnings for the current gene
+        refseq_warnings_this_gene = refseq_warnings[refseq_warnings.gene == gene]
+        blastp_warnings_this_gene = blastp_warnings[blastp_warnings.gene == gene]
+        # no we change to the relevant gene folder
+        for item in os.listdir():
+            # we loop over all items in this directory
+            # if it's a sudirectory AND it contains the gene name followed by an underscore, that's the relevant directory!
+            if (os.path.isdir(item)) & (f'{gene}_' in item):
+                # we change to the gene directory
+                os.chdir(item)
+                # and we write all the csv files
+                xml_df_this_gene.to_csv(f'{gene}_05_blastp_results.csv', index=False)
+                refseq_warnings_this_gene.to_csv(f'{gene}_05_refseq_warnings.csv', index=False)
+                blastp_warnings_this_gene.to_csv(f'{gene}_05_blastp_warnings.csv', index=False)
+                
+                
+                
+# Now if this is a webrun, we will also update the first mutafy csv file (00_search_overview_PDBids_mutafy.csv)
+# as all the new pdb id's associated with
+# the current run have now been downloaded/parsed and blasted, so we don't need to do this again
+# (except we want to change some of the parameters in the earlier scripts, e.g. blast parameters, but
+# we don't do this for now)
+# we read in the mutafy data (file called 00_search_overview_PDBids_mutafy.csv) from the mutafy_directory
+# and the file of the current run called 00_search_overview_PDBids.csv from the results_dir
+# then we will combine the two / updated the mutafy data
+# we have to use the rows from the data for the current run and overwrite the corresponding rows
+# in the mutafy data to do this
+# read in the data
+webrun_data = pd.read_csv(f'{results_dir}/00_search_overview_PDBids.csv', usecols=['gene_name', 'n_available_structures', 'available_structures'])
+
+# for the very first webrun (or whenever we delete this file for some reason), the mutafy file won't exist
+# so we add a try and exept statement and if the file doesn't exist, we write the webrun data to a csv file as a first
+# mutafy data file
+try:
+    mutafy_data = pd.read_csv(f'{mutafy_directory}/00_search_overview_PDBids_mutafy.csv', usecols=['gene_name', 'n_available_structures', 'available_structures'])
+except FileNotFoundError:
+    mutafy_data = None
+    webrun_data.to_csv(f'{mutafy_directory}/00_search_overview_PDBids_mutafy.csv', index=False)
+
+# we loop over the webrun_data and update the mutafy data
+# we obviously only do this if the mutafy data exisits (otherwise it doesn't have to be updated, we just
+# wrote the webrun data to a file in the lines of code above. It will be updated in the next mutafy run
+if mutafy_data is not None:
+    for index, row in webrun_data.iterrows():
+        gene = row.gene_name
+        # if there's an entry for this gene in the mutafy data, we update the entry
+        # so it reflects any new structures that have been downloaded/parsed/blasted
+        if gene in mutafy_data.gene_name.to_list():
+            # for some reason this doesn't work, but the line below does
+            # mutafy_data.loc[mutafy_data['gene_name'] == gene] = row
+            mutafy_data.loc[mutafy_data['gene_name'] == gene] = [row.gene_name, row.n_available_structures, row.available_structures]
+        # if there's no entry for this gene in the mutafy data, we append it data from the new run to the end of the
+        # mutafy data and then sort the df again
+        else:
+            mutafy_data.loc[len(mutafy_data)] = row
+            mutafy_data.sort_values(by='gene_name', inplace=True, ignore_index=True)
+        
+    # now that we looped over the entire webrun data and used each row to update the mutafy data
+    # we can write the mutafy data to a csv file for to be used for future webruns
+    # all structures listed in this file won't be downloaded/parsed/blasted again when running mutafy :-)
+    mutafy_data.to_csv(f'{mutafy_directory}/00_search_overview_PDBids_mutafy.csv', index=False)    
+        
 # change back to target directory
 os.chdir(target_directory)
     
 print('\n============================== Summary ================================================\n')
-print(f'Complete! \n    Performed BLASTp on a total of {len(fasta_df)} sequences listed in the file 04_fasta_combined_info.csv.\n')
+if web_run:
+    print(f'Complete! \n    Performed BLASTp on a total of {len(xml_slice_to_add)} sequences for {len(xml_slice_to_add.gene_name.unique())} gene(s) listed in the file 04_fasta_combined_info.csv.\n')
 
-print('     All reference sequences (one per gene) used for blastp have been stored in .fasta format in the Results/RefSeqs folder.')
-print('     All all unique sequences per structure used for blastp have been stored in .fasta format in the Results/RefSeqs/PDB_seqs_and_blastp_outputs folder.')
-print('     All BLASTp outputs are stored in .xml format in the Results/RefSeqs/PDB_seqs_and_blastp_outputs folder.')
+elif not web_run:
+    print(f'Complete! \n    Performed BLASTp on a total of {len(fasta_df)} sequences listed in the file 04_fasta_combined_info.csv.\n')
+    print('     All reference sequences (one per gene) used for blastp have been stored in .fasta format in the Results/RefSeqs folder.')
+    print('     All all unique sequences per structure used for blastp have been stored in .fasta format in the Results/RefSeqs/PDB_seqs_and_blastp_outputs folder.')
+    print('     All BLASTp outputs are stored in .xml format in the Results/RefSeqs/PDB_seqs_and_blastp_outputs folder.')
 
-print('\nThe following files have been created for each gene and stored in the respective folder:')
-print('   o      GENENAME_05_blastp_results.csv                 (lists all info contained in the input file as well as their blastp results)')
-print('   o      GENENAME_05_refeseq_warnings.csv                (contains warning if there is no or more than one identified reference sequence for this gene (only first one is used for further analyses))')
-print('   o      GENENAME_05_blastp_warnings.csv                (lists warnings regarding blastp for this gene, including if blastp failed or if there is more than one alignment (should only be one as only one reference is used)')
+    print('\nThe following files have been created for each gene and stored in the respective folder:')
+    print('   o      GENENAME_05_blastp_results.csv                 (lists all info contained in the input file as well as their blastp results)')
+    print('   o      GENENAME_05_refseq_warnings.csv                (contains warning if there is no or more than one identified reference sequence for this gene (only first one is used for further analyses))')
+    print('   o      GENENAME_05_blastp_warnings.csv                (lists warnings regarding blastp for this gene, including if blastp failed or if there is more than one alignment (should only be one as only one reference is used)')
 
 print('\nThe following files have been created and stored in the Results folder:')
 print('   o      05_blastp_results.csv                (lists all info contained in the input file as well as their blastp results)')
-print('   o      05_refeseq_warnings.csv                (lists genes with no or more than one identified reference sequence (only first one is used for further analyses))')
+print('   o      05_refseq_warnings.csv                (lists genes with no or more than one identified reference sequence (only first one is used for further analyses))')
 print('   o      05_blastp_warnings.csv                (lists warnings regarding blastp, including if blastp failed or if there is more than one alignment (should only be one as only one reference is used)\n\n')
 
 # print script name to console/log file

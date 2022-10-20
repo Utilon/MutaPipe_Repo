@@ -22,12 +22,12 @@ ORGANISM="Homo sapiens"
 ALL_PDB_IDS="True"
 FORMAT="cif pdb fasta"
 POLYPEPTIDES="True"
-DELETE_FILES="True"
+DELETE_FILES="False"
 BLASTp_PATH="blastp"
 UNIPROT_REFSEQS="$MUTAPIPE_DIRECTORY_FULL_PATH"/Uniprot_reference_seqs/UP000005640_9606.fasta
 RELATIVE_SEQUENCE_LENGTH="0.5"
 HSP_COVERAGE="0.1"
-N_BEST_STRUCTURES="1"
+N_BEST_STRUCTURES="5"
 EXCLUDE_UNSOLVED_MISMATCHES="False"
 
 ############################################################

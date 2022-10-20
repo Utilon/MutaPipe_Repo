@@ -96,6 +96,8 @@ target_directory = os.getcwd()    # set target directory (where Results folder i
 n_best_structures = 5 # number of top structures you want to include in the output table (1 for the best, 2 for the two best available one) per sequence/mismatch
 
 exclude_unsolved_mismatches = False # indicate if structures where the mismatch of interest is not solved in the crystal structure should be excluded (True) or not (False)
+web_run = True # specify if pdb mmcif and fasta files should be stored in separate directory
+mutafy_directory = f'{target_directory}/mutafy' # set path to folder where structures will be/are stored        
                                                                                     
 # Now we create an argument parser called ap to which we can add the arguments we want to have in the terminal
 ap = argparse.ArgumentParser(description="""****     Script to get best n structures per mutation. This script takes the following csv files as input:
@@ -132,6 +134,9 @@ ap.add_argument("-rsl", "--relative_sequence_length", type=restricted_float, req
 ap.add_argument("-cov", "--hsp_coverage", type=restricted_float, required = False, help=f'filter out sequences whose best hsp covers less than a given percentage of the reference sequence, default = {str(hsp_coverage)}')
 ap.add_argument("-n_best", "--n_best_structures", type=int , required = False, help=f'Specify number of top structures per sequence/variant to be included in final output, default = {str(n_best_structures)}')
 ap.add_argument("-e", "--exclude_unsolved_mismatches", type=str2bool, required = False, help=f'indicate whether to exclude cases where the mismatch of interest is not solved in the crystal structure (True) or not (False), default = {str(exclude_unsolved_mismatches)}')
+ap.add_argument("-w", "--web_run", type=str2bool, required = False, help=f'Indicate whether MutaPipe is run via a webserver (True) or not (False), default = {str(mutafy_directory)}')
+ap.add_argument("-m", "--mutafy", required = False, help=f'set path to mutafy directory where information from previous runs is stored, default = {mutafy_directory}')
+
 args = vars(ap.parse_args())
 
 # Now, in case an argument is used via the terminal, this input has to overwrite the default option we set above
@@ -142,6 +147,8 @@ relative_sequence_length = relative_sequence_length if args["relative_sequence_l
 hsp_coverage  = hsp_coverage if args["hsp_coverage"]   == None else args["hsp_coverage"]
 n_best_structures = n_best_structures if args["n_best_structures"] == None else args["n_best_structures"]
 exclude_unsolved_mismatches = exclude_unsolved_mismatches if args["exclude_unsolved_mismatches"] == None else args["exclude_unsolved_mismatches"]
+web_run = web_run if args["web_run"] == None else args["web_run"]
+mutafy_directory = mutafy_directory if args["mutafy"] == None else args["mutafy"]
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 # We want to write all our Output into the Results directory
@@ -166,6 +173,19 @@ print(f'script name: {script_name}')
 # store current date and time in an object and print to console / write to log file
 start_time = datetime.now()
 print(f'start: {start_time}\n')
+
+
+# ----------------------------------------------------------------------------------------------------------------------------------
+# if there is no data in the PDB for any of the input genes, we don't have to run this script (or any of the
+# following scripts in the pipeline, apart from the AlphaFold one)
+# so we read in the file 00_search_overview_availability.csv from the results_dir to check if we have to run the script
+data_availability = pd.read_csv(f'{results_dir}/00_search_overview_availability.csv')
+# the data_availability df has two columns, one with the gene_name and one with a boolean value indicating if PDB data is available for this gene
+# if all values in the data_available column are False, we can skip this script
+if True not in data_availability.data_available.unique():
+    print('No PDB data available for any of the input genes')
+    print ('Exiting Python...')
+    sys.exit('No PDB data available for any of the input genes')
 
 # ----------------------------------------------------------------------------------------------------------------------------------
 # Define functions
@@ -880,41 +900,25 @@ print('    >>> writing csv file called 07_best_structures_any_mutation.csv')
 print('            (contains the best structures for any mutation regardless of other mutations in the same structure for all genes')
 output_any_mutation.to_csv(f'{results_dir}/07_best_structures_any_mutation.csv', index=False)
 
+# if this is not a webrun, we also do this
 # and finally we write the gene specific outputs in the respective gene folders
 # we can loop over all the gene names in the structure_info df (contains all the genes for which structures are available)
-for gene in structure_info.gene_name.unique():
-    # we get the name of the gene folder of the current gene like so
-    # for Mutafy/webserver, this needs to be updated like so (structures are stored in a different directory)
-    try:
+if not web_run:    
+    for gene in structure_info.gene_name.unique():
+        # we get the name of the gene folder of the current gene like so
         gene_folder = [name for name in os.listdir(results_dir) if (name.startswith(f'{gene}_')) & ('structures' in name) & ('.csv' not in name)][0]
-    except IndexError:
-        # store in temp directory for Mutafy (update this /automise this / add arguments to specify where downloaded structures per gene are stored)
-        gene_folder = [name for name in os.listdir(f'{target_directory}/temp') if (name.startswith(f'{gene}_')) & ('structures' in name) & ('.csv' not in name)][0]
-# ###    # DO SOMETHING ABOUT THIS LINE SO IT WORKS FOR MUTARY. PUT IN TEMP STORAGE. ADD EXTRA OPTION OR SOMETHING!
-   
-    # get a slice of all the output dfs for just this gene:
-    output_slice_wt = output_wt[output_wt.gene_name == gene]
-    output_slice_SAV = output_SAV[output_SAV.gene_name == gene]
-    output_slice_unique_combi = output_unique_combi[output_unique_combi.gene_name == gene]
-    output_slice_any_mutation = output_any_mutation[output_any_mutation.gene_name == gene]    
         
-    # and we write the output slice dfs to csv files in the gene folder
-    try:
+        # get a slice of all the output dfs for just this gene:
+        output_slice_wt = output_wt[output_wt.gene_name == gene]
+        output_slice_SAV = output_SAV[output_SAV.gene_name == gene]
+        output_slice_unique_combi = output_unique_combi[output_unique_combi.gene_name == gene]
+        output_slice_any_mutation = output_any_mutation[output_any_mutation.gene_name == gene]    
+            
+        # and we write the output slice dfs to csv files in the gene folder
         output_slice_wt.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_wildtype_structures.csv', index=False)
         output_slice_SAV.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_best_structures_per_SAV.csv', index=False)
         output_slice_unique_combi.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_best_structures_all_unique_combinations.csv', index=False)
         output_slice_any_mutation.to_csv(f'{results_dir}/{gene_folder}/{gene}_07_best_structures_any_mutation.csv', index=False)
-    except:
-        # store directly in results folder (where the other outputs are too)
-        output_slice_wt.to_csv(f'{results_dir}/{gene}_07_wildtype_structures.csv', index=False)
-        output_slice_SAV.to_csv(f'{results_dir}/{gene}_07_best_structures_per_SAV.csv', index=False)
-        output_slice_unique_combi.to_csv(f'{results_dir}/{gene}_07_best_structures_all_unique_combinations.csv', index=False)
-        output_slice_any_mutation.to_csv(f'{results_dir}/{gene}_07_best_structures_any_mutation.csv', index=False)
-        # and maybe also: store in temp folder (automise and add arguments to script to specify this folder later!)
-        output_slice_wt.to_csv(f'{target_directory}/temp/{gene_folder}/{gene}_07_wildtype_structures.csv', index=False)
-        output_slice_SAV.to_csv(f'{target_directory}/temp/{gene_folder}/{gene}_07_best_structures_per_SAV.csv', index=False)
-        output_slice_unique_combi.to_csv(f'{target_directory}/temp/{gene_folder}/{gene}_07_best_structures_all_unique_combinations.csv', index=False)
-        output_slice_any_mutation.to_csv(f'{target_directory}/temp/{gene_folder}/{gene}_07_best_structures_any_mutation.csv', index=False)
 
 # change back to target directory
 os.chdir(target_directory)
@@ -924,15 +928,16 @@ print(f'Complete! \n    Extraced best structures for a total of {len(unique_gene
 print(f'    hsp coverage threshold: {hsp_coverage}')
 print(f'    relative sequence length: {relative_sequence_length}')
 
-print('\nThe following files have been created for each gene and stored in the respective gene folder:')
-print('   o      GENENAME_07_best_structures_per_SAV.csv')
-print('            (lists best structures for each point mutation (one mutation per structure) in this gene)')    
-print('   o      GENENAME_07_best_structures_all_unique_combinations.csv')
-print('            (lists best structures for all unique mismatch combinations for this gene)')
-print('   o      GENENAME_07_best_structures_any_mutation.csv')
-print('            (lists best structures for any mismatch regardless of other mismatches in this gene)')
-print('   o      GENENAME_07_wildtype_structures.csv')
-print('            (lists all available WT structures for this gene)')
+if not web_run:
+    print('\nThe following files have been created for each gene and stored in the respective gene folder:')
+    print('   o      GENENAME_07_best_structures_per_SAV.csv')
+    print('            (lists best structures for each point mutation (one mutation per structure) in this gene)')    
+    print('   o      GENENAME_07_best_structures_all_unique_combinations.csv')
+    print('            (lists best structures for all unique mismatch combinations for this gene)')
+    print('   o      GENENAME_07_best_structures_any_mutation.csv')
+    print('            (lists best structures for any mismatch regardless of other mismatches in this gene)')
+    print('   o      GENENAME_07_wildtype_structures.csv')
+    print('            (lists all available WT structures for this gene)')
 
 print('\nThe following files have been created and stored in the Results folder:')
 print('   o      07_best_structures_per_SAV.csv')

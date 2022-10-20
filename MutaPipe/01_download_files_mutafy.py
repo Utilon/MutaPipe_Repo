@@ -106,13 +106,29 @@ start_time = datetime.now()
 print(f'start: {start_time}\n')
 # ----------------------------------------------------------------------------------------------------------------------------------
 
+# if there is no data in the PDB for any of the input genes, we don't have to run this script (or any of the
+# following scripts in the pipeline, apart from the AlphaFold one)
+# so we read in the file 00_search_overview_availability.csv from the results_dir to check if we have to run the script
+data_availability = pd.read_csv(f'{results_dir}/00_search_overview_availability.csv')
+# the data_availability df has two columns, one with the gene_name and one with a boolean value indicating if PDB data is available for this gene
+# if all values in the data_available column are False, we can skip this script
+if True not in data_availability.data_available.unique():
+    print('No PDB data available for any of the input genes')
+    print ('Exiting Python...')
+    sys.exit('No PDB data available for any of the input genes')
 
 # load pdb ids to download
 pdb_ids = pd.read_csv(f'{results_dir}/00_search_overview_PDBids.csv', usecols=['gene_name', 'available_structures'], index_col='gene_name')
 
 # if this is a webserver run we also load the pdb ids of all already downloaded and parsed structures from the mutafy directory:
+# this won't work if the file doesn't exist yet (first webrun) or if it has been deleted, so we add a try and except statement
 if web_run == True:
-    mutafy_pdb_ids = pd.read_csv(f'{mutafy_directory}/00_search_overview_PDBids_mutafy.csv', usecols=['gene_name', 'available_structures'], index_col='gene_name')
+    try:
+        mutafy_pdb_ids = pd.read_csv(f'{mutafy_directory}/00_search_overview_PDBids_mutafy.csv', usecols=['gene_name', 'available_structures'], index_col='gene_name')
+    except FileNotFoundError:
+        # if the file doesn't exist, we create an empty df so the rest of the code works well
+        mutafy_pdb_ids = pd.DataFrame(columns=['gene_name', 'available_structures'])
+        mutafy_pdb_ids.set_index('gene_name', inplace=True)
 
 # create an empty list to populate with folder names of all created folders:
 created_folders = []

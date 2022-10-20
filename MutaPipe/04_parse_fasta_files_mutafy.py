@@ -115,6 +115,17 @@ start_time = datetime.now()
 print(f'start: {start_time}\n')
 
 # ----------------------------------------------------------------------------------------------------------------------------------
+# if there is no data in the PDB for any of the input genes, we don't have to run this script (or any of the
+# following scripts in the pipeline, apart from the AlphaFold one)
+# so we read in the file 00_search_overview_availability.csv from the results_dir to check if we have to run the script
+data_availability = pd.read_csv(f'{results_dir}/00_search_overview_availability.csv')
+# the data_availability df has two columns, one with the gene_name and one with a boolean value indicating if PDB data is available for this gene
+# if all values in the data_available column are False, we can skip this script
+if True not in data_availability.data_available.unique():
+    print('No PDB data available for any of the input genes')
+    print ('Exiting Python...')
+    sys.exit('No PDB data available for any of the input genes')
+
 # Read in data from csv file
 folder_info = pd.read_csv(f'{results_dir}/01_search_overview_folders.csv')#, usecols=['folder_name', 'full_path'])
 
@@ -143,6 +154,9 @@ fasta_df = pd.DataFrame(columns=['gene_name', 'structure_id', 'record_id', 'chai
 
 # make a df to store info from all fasta_ex files
 fasta_ex_df = pd.DataFrame(columns=['gene_name', 'structure_id', 'record_id', 'chain_name', 'uniprot_id', 'description', 'sequence'])
+
+# we also define an empty df called combined_df so the code works in case there are no new fastas to be parsed at all
+combined_df = pd.DataFrame(columns=['gene_name', 'structure_id', 'chain_name', 'uniprot_id', 'description', 'species', 'description_ex', 'sequence'])
 
 # we loop over the df containing the folder names and the full paths to each folder
 # we use this information to parse the files in each folder and extract information
@@ -380,21 +394,29 @@ if web_run:
         # we sort the df again first according to gene name and then structure id
         updated_mutafy_fasta_combi_info.sort_values(by=['gene_name', 'structure_id', 'chain_name'], inplace=True)
         # we write the updated mutafy data to a csv file (which overwrites the one from the previous mutafy run)
-        updated_mutafy_fasta_combi_info.to_csv(f'{mutafy_directory}/04_fasta_combi_info_mutafy.csv', index=False)        
+        updated_mutafy_fasta_combi_info.to_csv(f'{mutafy_directory}/04_fasta_combined_info_mutafy.csv', index=False)        
         # we get a slice of the mutafy data with all the genes of the current search and save this to the results folder
         # this is a df with all the resolutions for all the structures for all genes of the current webrun
         combined_df = updated_mutafy_fasta_combi_info[updated_mutafy_fasta_combi_info.gene_name.isin(list(folder_info.gene_name.values))]
     else:
         # if the mutafy file doesn't exist yet, we write it out with the data from the current run
-        combined_df.to_csv(f'{mutafy_directory}/04_fasta_combi_info_mutafy.csv', index = False)        
+        # we add a try and except statement in case the combined_df is empty (no new fastas parsed)
+#         try:
+        combined_df.to_csv(f'{mutafy_directory}/04_fasta_combined_info_mutafy.csv', index = False)
+#         except NameError:
+#             pass
 
 print(f'>>> writing csv files with information on all genes to {results_dir}') 
 print('    >>> writing csv file containing information extracted from fasta files for all genes...')
 fasta_df.to_csv('04_fasta_info.csv', index = False)
 print('    >>> writing csv file containing information extracted from fasta_ex files for all genes...')
 fasta_ex_df.to_csv('04_fasta_ex_info.csv', index = False)
-print('    >>> writing csv file containing combined information extracted from fasta and fasta_ex files for all genes...')
+# we add a try and except statement in case the combined_df is empty (no new fastas parsed)
+# try:
 combined_df.to_csv('04_fasta_combined_info.csv', index = False)
+print('    >>> writing csv file containing combined information extracted from fasta and fasta_ex files for all genes...')
+# except NameError:
+#     pass
 print('Complete!\n')
 # change back to target directory
 os.chdir(target_directory)
