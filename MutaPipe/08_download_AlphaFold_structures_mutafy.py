@@ -32,7 +32,7 @@ target_directory = os.getcwd()   # set directory to create Results folder with n
                                                 # Default: set to current working directory (where this script is saved)
 create_search_log = False      # will create a file called search_log.txt with console output if set to True,
                                             # prints to console if set to False.
-                                            
+
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 # use argparse to make it so we can pass arguments to script via terminal
@@ -69,9 +69,11 @@ target_directory  = target_directory if args["target"]   == None else args["targ
 # We want to write all our Output into the Results directory
 results_dir = f'{target_directory}/Results' #define path to results directory
 
-# create Results folder if it doesn't already exist
-if not os.path.exists(results_dir):
-        os.makedirs(results_dir)
+# No need for this on Mutafy, so commented out
+# # create Results folder if it doesn't already exist
+# if not os.path.exists(results_dir):
+#         os.makedirs(results_dir)
+
 # ----------------------------------------------------------------------------------------------------------------------------------
 #  create log file for console output:
 if create_search_log == True:
@@ -174,55 +176,84 @@ def get_AlphaFold_structure(uniprot_id):
 # we change to the results directory
 os.chdir(results_dir)
 
-# make a folder to store all AlphaFold structures if it doesn't already exist:
-alphafold_dir = f'{results_dir}/AlphaFold_structures' #define path
-# create Results folder if it doesn't already exist
-if not os.path.exists(alphafold_dir):
-        os.makedirs(alphafold_dir)
+# we don't need this for Mutafy as we do not download the AF predicted stuctures onto the server
+# code is thus commented out
+# # make a folder to store all AlphaFold structures if it doesn't already exist:
+# alphafold_dir = f'{results_dir}/AlphaFold_structures' #define path
+# # create AlphaFold folder if it doesn't already exist
+# if not os.path.exists(alphafold_dir):
+#         os.makedirs(alphafold_dir)
 
-# Now we can use the function above to get data from UniProt for all our gene names and store this data in a dataframe
 print('>>> getting UniProt identifiers...')
 uniprot_data = get_UniProt_data(genes)
 print(f'Complete!\n    Identified {len(uniprot_data)} UniProt enries for a total of {len(genes)} input genes\n')
 # We define a df to output at the end of the script, containing relevant information from uniprot and a link to the AlphaFold Database entry
 output_df = pd.concat([uniprot_data, pd.DataFrame(columns=['Link AlphaFold Database', 'Status'])])
 
+# For mutafy webserver output we want to add 2 extra cols
+# we want to add an extra column with the name of the input gene (not multiple gene names like in the uniprot_df Gene Names column!)
+output_df['Gene'] = ''
+# we also add an extra column 'Link to AF mmCIF'
+output_df['Link to AF mmCIF'] = ''
+
+# For Mutafy loop over this table and fill it in, but don't download the AF predicted structures, so
+# part of the code is commented out because it's not needed!
 # We loop over this table and get the Alphafold structure for each UniProt ID (stored in the column 'Entry') using the function defined above
 # we will simultaneously fill in the table with additional data (the link to the entry in the AlphaFold database, and the download status)
-print('>>> getting AlphaFold2 predicted structures...')
-# first we change to the alphafold folder so the structures get saved in the correct place
-os.chdir(alphafold_dir)
+# print('>>> getting AlphaFold2 predicted structures...')
+# # first we change to the alphafold folder so the structures get saved in the correct place
+# os.chdir(alphafold_dir)
 for index, row in output_df.iterrows():
+    # we identify the original input gene name for this row and write it to the new
+    # column "gene" because there may be one or more gene names for each
+    # row in column output_df['Gene names']
+    gene_name = [gene_name for gene_name in output_df.loc[index, 'Gene Names'].split(' ') if gene_name.upper() in genes][0]
+    output_df.loc[index, 'Gene'] = gene_name
     uniprot_id = row.Entry
-    # download AlphaFold structure
-    # the function returns 1 if download was succesful and 0 if it failed (the structure is downloaded in the background)
-    # so we use this information to fill in the download status column in the output table
-    if get_AlphaFold_structure(uniprot_id) == 1:
-        output_df.loc[index, 'Status'] = 'downloaded'
-        # we also rename the downloaded structure file (currently in format: uniprotID_AFprediction.cif)
-        # it should also contain the gene name (one or more gene names for each structure stored in column output_df['Gene names']
-        gene_name = [gene_name for gene_name in output_df.loc[index, 'Gene Names'].split(' ') if gene_name.upper() in genes][0]
-        os.rename(f'{uniprot_id}_AFprediction.cif', f'{gene_name}_{uniprot_id}_AFprediction.cif')        
-    else:
-        output_df.loc[index, 'Status'] = 'failed'
     # we also add the link to this Entry in the AlphaFold Database to the table
     output_df.loc[index, 'Link AlphaFold Database'] = f'https://www.alphafold.ebi.ac.uk/entry/{uniprot_id}'
-print('Complete!\n    All AlphaFold structures have been dowloaded.')
+    ## for Mutafy
+    # as we don't want to download the structures and store them on the mutafy server,
+    # we can skip the download bit below (commented out)
+    # we just need to add info to the output df instead
+    # we only need the links:
+    # we add the link to the mmCif structure to the column 'Link to AF mmCIF'
+    output_df.loc[index, 'Link to AF mmCIF'] = f'https://alphafold.ebi.ac.uk/files/AF-{uniprot_id}-F1-model_v2.cif'
+    
+#     # download AlphaFold structure
+#     # the function returns 1 if download was succesful and 0 if it failed (the structure is downloaded in the background)
+#     # so we use this information to fill in the download status column in the output table
+#     if get_AlphaFold_structure(uniprot_id) == 1:
+#         output_df.loc[index, 'Status'] = 'downloaded'
+#         # we add the link to the mmCif structure to the column 'Link to AF mmCIF'
+#         output_df.loc[index, 'Link to AF mmCIF'] = f'https://alphafold.ebi.ac.uk/files/AF-{uniprot_id}-F1-model_v2.cif'
+#         # we also rename the downloaded structure file (currently in format: uniprotID_AFprediction.cif)
+#         os.rename(f'{uniprot_id}_AFprediction.cif', f'{gene_name}_{uniprot_id}_AFprediction.cif')        
+#     else:
+#         output_df.loc[index, 'Status'] = 'failed'
+
+# print('Complete!\n    All AlphaFold structures have been dowloaded.')
 # ==========================================================================================
+
+# modify the output for Mutafy webserver:
+# gene name, uniprot id, protein name, length, link to alphafold database
+# and links to download structures from alphafold database
+rel_cols = ['Gene', 'Entry', 'Protein names', 'Length', 'Link AlphaFold Database',  'Link to AF mmCIF']
 
 # write output to a csv file in the results directory
 os.chdir(results_dir)
-output_df.to_csv('08_AlphaFold_structures.csv', index = False)
+output_df[rel_cols].to_csv('08_AlphaFold_structures.csv', index = False)
 
 # change back to target directory
 os.chdir(target_directory)
 
 print('\n============================== Summary ================================================\n')
 print(f'    o      A total of {len(uniprot_data)} UniProt IDs have been found for the inputted {len(genes)} genes.')
-print(f'    o      AlphaFold predicted structures have been downloaded for {len(output_df[output_df.Status == "downloaded"])} out of {len(uniprot_data)} identified UniProt IDs.\n')
+print(f'    o      Crosslinks to the corresponding entry page in the AlphaFold database and to download data have been added.')
+# print(f'    o      AlphaFold predicted structures have been downloaded for {len(output_df[output_df.Status == "downloaded"])} out of {len(uniprot_data)} identified UniProt IDs.\n')
 
 print('The following files have been created:')
-print('   o      08_AlphaFold_structures.csv      (contains information on downloaded AlphaFold structures)\n\n')
+print('   o      08_AlphaFold_structures.csv      (contains information on identified AlphaFold structures)\n\n')
 
 # print script name to console/log file
 print(f'end of script {script_name}')
