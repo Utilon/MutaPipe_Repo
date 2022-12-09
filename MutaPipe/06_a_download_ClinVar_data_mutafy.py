@@ -14,6 +14,7 @@ import pandas as pd
 import requests
 import math
 import os
+from os.path import exists
 import sys
 import argparse
 from datetime import datetime
@@ -106,8 +107,28 @@ if True not in data_availability.data_available.unique():
 
 # read in data
 genes_df = pd.read_csv(f'{results_dir}/00_search_overview_availability.csv')
-# filter out genes that have available data
+# filter out genes that have available PDB data
 avail_genes = genes_df[genes_df.data_available == True].reset_index()
+
+# CHECK FOR WHICH GENES WE NEED TO DOWNLOAD CLINVAR DATA
+# read in mutafy data (06_b_ClinVar_Annotations_mutafy.csv) if available
+# we will use this to see if ClinVar data has already been downloaded for the genes of interest in a previous webrun
+if web_run:
+    if exists(f'{mutafy_directory}/06_b_ClinVar_Annotations_mutafy.csv'):
+        annotations_mutafy = pd.read_csv(f'{mutafy_directory}/06_b_ClinVar_Annotations_mutafy.csv')
+        # for now, we only download the ClinVar annotations once per gene (newly published variants will be neglegted)
+        # so we will use the annotations_mutafy to see if we have data for any of the avail_genes already
+        # and we update avail_genes accordingly (so it only contains new genes for which ClinVar data still hast to be downloaded)
+        # get list of unique genes for which data is already available
+        genes_with_ClinVar_data = list(annotations_mutafy.input_gene.unique())
+        # get list of unique genes of current run
+        genes_current_run = list(avail_genes.gene_name.unique())
+        # now we update the list avail_genes, which stores all the genes for which ClinVar data will be downloaded in the
+        # next step. For this, we drop all the genes in the genes_current_run list if they are already in the genes_with_ClinVar_data
+        # list
+        new_genes = [gene for gene in genes_current_run if gene not in genes_with_ClinVar_data]
+        avail_genes = avail_genes[avail_genes.gene_name.isin(new_genes)]
+
 
 # make a new folder directory called ClinVar_Annotations
 if web_run:

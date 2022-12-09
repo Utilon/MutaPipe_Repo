@@ -11,7 +11,7 @@
 import pandas as pd
 import os
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, exists
 import sys
 import argparse
 from datetime import datetime
@@ -204,8 +204,41 @@ for id_file in id_files:
                 # this file will be overwritten everytime a new row is added.
                 clinvar_data.to_csv(f'{results_dir}/06_b_ClinVar_Annotations.csv', index = False)
                     
-# write df to csv
-clinvar_data.to_csv(f'{results_dir}/06_b_ClinVar_Annotations.csv', index = False)
+
+# In case this is a webrun:
+# Now that all the newly downloaded ClinVar data has been parsed and added to the clinvar_data df
+# we can acccess the mutafy data from previous runs and update it and get data from genes for which data
+# has been downloaded in previous runs.
+if web_run:
+    if exists(f'{mutafy_directory}/06_b_ClinVar_Annotations_mutafy.csv'):
+        mutafy_annotations = pd.read_csv(f'{mutafy_directory}/06_b_ClinVar_Annotations_mutafy.csv')
+        # we update the mutafy_annotations by concatenating it with the clinvar_data df from the current run
+        updated_mutafy_annotations = pd.concat([mutafy_annotations, clinvar_data], ignore_index=True)
+        # we sort updated_mutafy_annotations acccording to input_gene
+        updated_mutafy_annotations.sort_values(by='input_gene', inplace= True, ignore_index=True)
+        # now that we have updated the mutafy data with the data from the current run, we can write it to
+        # a csv file again:
+        updated_mutafy_annotations.to_csv(f'{mutafy_directory}/06_b_ClinVar_Annotations_mutafy.csv')
+        
+        # now we can use the already updated mutafy_annotations df to get all the data for the input genes
+        # of the current run!
+        # we get all the input genes stored in a list like so:
+        input_genes = list(data_availability.gene_name.unique())
+        # we get all the rows for the input genes from the mutafy data (from previous runs)
+        mutafy_slice = updated_mutafy_annotations[updated_mutafy_annotations.input_gene.isin(input_genes)]
+        # and we can write this df containing data on the input genes to the results dir
+        # write df to csv
+        mutafy_slice.to_csv(f'{results_dir}/06_b_ClinVar_Annotations.csv', index = False)
+    # if the mutafy csv file doesn't exist (because no previous runs / or it has been deleted), we write out the clinvar
+    # data from the current run as the first mutafy csv file:
+    else:
+        clinvar_data.to_csv(f'{mutafy_directory}/06_b_ClinVar_Annotations_mutafy.csv', index=False)
+        # we also write the data from the current run to the results directory
+        clinvar_data.to_csv(f'{results_dir}/06_b_ClinVar_Annotations.csv', index = False)
+# if this isn't a web_run, we simply write the clinvar_data to a csv file in the results_directory
+else:
+    # write df to csv
+    clinvar_data.to_csv(f'{results_dir}/06_b_ClinVar_Annotations.csv', index = False)
 
 # we also want to write gene specific files to all the gene folders
 # we only do this if this is not a webrun
@@ -233,6 +266,9 @@ if web_run:
     # and we delete all the ClinVar files, they are stored in the list all_ClinVar_files
     # we can do this with a list comprehension
     [os.remove(file) for file in all_ClinVar_files]
+    
+    # we also want to write out/update the mutafy csv with data from this run
+    
 
 # change back to target directory
 os.chdir(target_directory)
