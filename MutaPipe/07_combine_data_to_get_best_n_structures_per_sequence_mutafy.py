@@ -810,7 +810,7 @@ for pdb_id in all_pdb_ids:
 try:
     all_val_reports.drop(columns='resolution', inplace=True)
 except:
-    continue
+    pass
 
 # now we can merge the 4 dfs with the all_val_reports df on pdb_id
 df_wt = pd.merge(df_wt, all_val_reports, how='left', on='structure_id')
