@@ -805,7 +805,12 @@ for pdb_id in all_pdb_ids:
     all_val_reports = all_val_reports.append(validation_report, ignore_index=True)
     
 # we drop the column 'resolution' from the all_val_reports, because we don't need this / we already have this info in our dfs (extracted from mmCif files)
-all_val_reports.drop(columns='resolution', inplace=True)
+# sometimes when using this script on create I get an error that resolution is not a columns in the df, so try and except
+# statement added below
+try:
+    all_val_reports.drop(columns='resolution', inplace=True)
+except:
+    continue
 
 # now we can merge the 4 dfs with the all_val_reports df on pdb_id
 df_wt = pd.merge(df_wt, all_val_reports, how='left', on='structure_id')
