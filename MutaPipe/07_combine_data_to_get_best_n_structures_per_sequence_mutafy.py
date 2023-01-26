@@ -805,18 +805,17 @@ for pdb_id in all_pdb_ids:
     all_val_reports = all_val_reports.append(validation_report, ignore_index=True)
     
 # we drop the column 'resolution' from the all_val_reports, because we don't need this / we already have this info in our dfs (extracted from mmCif files)
-# sometimes when using this script on create I get an error that resolution is not a columns in the df, so try and except
-# statement added below
-try:
+# this only works if there is data in this all_val_reports and it's not empty
+# (i.e. it's empty when all_pdb_ids doesn't contain any elements)
+if len(all_val_reports) > 0:
     all_val_reports.drop(columns='resolution', inplace=True)
-except:
-    pass
 
-# now we can merge the 4 dfs with the all_val_reports df on pdb_id
-df_wt = pd.merge(df_wt, all_val_reports, how='left', on='structure_id')
-df_SAV = pd.merge(df_SAV, all_val_reports, how='left', on='structure_id')
-df_unique_combi = pd.merge(df_unique_combi, all_val_reports, how='left', on='structure_id')
-df_any_mutation =  pd.merge(df_any_mutation, all_val_reports, how='left', on='structure_id')
+    # now we can merge the 4 dfs with the all_val_reports df on pdb_id
+    # this too only works if there is data in this all_val_reports and it's not empty
+    df_wt = pd.merge(df_wt, all_val_reports, how='left', on='structure_id')
+    df_SAV = pd.merge(df_SAV, all_val_reports, how='left', on='structure_id')
+    df_unique_combi = pd.merge(df_unique_combi, all_val_reports, how='left', on='structure_id')
+    df_any_mutation =  pd.merge(df_any_mutation, all_val_reports, how='left', on='structure_id')
 
 # we have the following dfs with the following cols (see paragraph below for legend)
 # df_wt:                              52 cols 
