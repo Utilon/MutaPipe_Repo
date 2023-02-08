@@ -204,7 +204,13 @@ for index, row in folder_info.iterrows():
         
         # load structure object:
         print(f'    Getting {gene} structure object for {structure_id}                                                                ({cif_counter} of {len(cif_files)} from mmCIF files for {gene})')
-        structure = parser.get_structure(structure_id, cif_file)
+        # added try and except statement to capture cases where the cif file doesn't exist (no clue why this should be the case,
+        # but we will print a WARNING if that's the case)
+        try:
+            structure = parser.get_structure(structure_id, cif_file)
+        except FileNotFoundError:
+            print(f'WARNING! No file {cif_file} exists')
+            continue
                 
         # we can also extract a FASTA file with the sequence in FASTA format:
         print(f'        >>> creating FASTA file extracted from mmCIF file for {structure_id}')
