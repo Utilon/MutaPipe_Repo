@@ -25,6 +25,8 @@ try:
         genes.remove('')
 except FileNotFoundError:
     genes = ['DCTN1', 'ERBB4', 'SOD1']
+    
+genes = ['ACSL5', 'AGT', 'ALAD', 'ALS2', 'ALS3', 'ALS7', 'ANG', 'ANXA11', 'APEX1', 'APOE', 'AR', 'ARHGEF28', 'ARPP21', 'ATXN1', 'ATXN2', 'B4GALT6', 'BCL11B', 'BCL6', 'C21ORF2', 'C9ORF72', 'CAMTA1', 'CAV1', 'CAV2', 'CCNF', 'CCS', 'CDH13', 'CDH22', 'CFAP410', 'CHCHD10', 'CHGB', 'CHMP2B', 'CNTF', 'CNTN4', 'CNTN6', 'CRIM1', 'CRYM', 'CSNK1G3', 'CST3', 'CX3CR1', 'CYP27A1', 'CYP2D6', 'DAO', 'DCTN1', 'DIAPH3', 'DISC1', 'DNAJC7', 'DNMT3A', 'DNMT3B', 'DOC2B', 'DPP6', 'DYNC1H1', 'EFEMP1', 'ELP3', 'ENAH', 'EPHA3', 'EPHA4', 'ERBB4', 'ERLIN1', 'EWSR1', 'EPHA3', 'FEZF2', 'FGGY', 'FIG4', 'FUS', 'GARS', 'GGNBP2', 'GLE1', 'GLT8D1', 'GPX3', 'GRB14', 'GRN', 'HEXA', 'HFE', 'HNRNPA1', 'HNRNPA2B1', 'IDE', 'ITPR2', 'KBTBD3', 'KDR', 'KIAA1600', 'KIF5A', 'KIFAP3', 'LIF', 'LIPC', 'LMNB1', 'LOX', 'LUM', 'MAOB', 'MAPT', 'MATR3', 'MOBP', 'MTND2P1', 'NAIP', 'NEFH', 'NEFL', 'NEK1', 'NETO1', 'NIPA1', 'NT5C1A', 'NT5C3L', 'ODR4', 'OGG1', 'OMA1', 'OPTN', 'PARK7', 'PCP4', 'PFN1', 'PLEKHG5', 'PNPLA6', 'PON1', 'PON2', 'PON3', 'PRPH', 'PSEN1', 'PVR', 'RAMP3', 'RBMS1', 'RFTN1', 'RNASE2', 'RNF19A', 'SARM1', 'SCFD1', 'SCN7A', 'SELL', 'SEMA6A', 'SETX', 'SIGMAR1', 'SLC1A2', 'SLC39A11', 'SLC52A3', 'SMN1', 'SMN2', 'SNCG', 'SOD1', 'SOD2', 'SOX5', 'SPAST', 'SPG11', 'SPG7', 'SQSTM1', 'SS18L1', 'STMN2', 'SUSD1', 'SYNE1', 'SYT9', 'TAF15', 'TARDBP', 'TBK1', 'TFIP11', 'TIA1', 'TMEM225B', 'TNIP1', 'TRPM7', 'TUBA4A', 'TUBGCP4', 'UBQLN1', 'UBQLN2', 'UNC13A', 'VAPB', 'VCP', 'VDR', 'VEGFA', 'VPS54', 'VRK1', 'ZFP64', 'ZNF512B', 'ZNF746', 'ZNHIT3', 'ADAMTS2', 'ANKRD18B', 'APTX', 'AQP3', 'AQP7', 'ARHGEF39', 'ARID3C', 'ATOSB', 'ATP5PO', 'B4GALT1', 'BAG1', 'BSCL2', 'C21orf62', 'C22orf15', 'C5orf60', 'C9orf131', 'C9orf72', 'CA9', 'CAMK1D', 'CANX', 'CBR1', 'CBR3', 'CBY3', 'CCDC107', 'CCDC3', 'CCIN', 'CCL19', 'CCL21', 'CCL27', 'CD72', 'CFAP298', 'CHAF1B', 'CHMP5', 'CIMIP2B', 'CLDN14', 'CLIC6', 'CLTA', 'CNTFR', 'CREB3', 'CRYZL1', 'CSNK2A1', 'CYLD', 'CYLD-AS2', 'DCAF12', 'DCTN3', 'DNAI1', 'DNAJA1', 'DNAJB5', 'DNAJC28', 'DONSON', 'DOP1B', 'DYRK1A', 'EGILA', 'ENHO', 'EVA1C', 'EXOSC3', 'FAM166B', 'FAM205A', 'FAM214B', 'FAM219A', 'FAM221B', 'FANCG', 'FBXO10', 'FRMPD1', 'GALT', 'GART', 'GBA1', 'GBA2', 'GLIPR2', 'GNE', 'GRHPR', 'GRM6', 'HINT2', 'HLCS', 'HNRNPH1', 'HNRNPUL2-BSCL2', 'HRCT1', 'HUNK', 'IFNAR1', 'IFNAR2', 'IFNGR2', 'IL10RB', 'IL11RA', 'ITSN1', 'KCNE1', 'KCNE2', 'KCNJ6', 'KIF24', 'LOC106627981', 'LOC108903148', 'LOC108903149', 'LOC109504728', 'LOC117038776', 'LOC121366042', 'LOC124629354', 'LOC126807526', 'LOC126860782', 'LOC126860783', 'LTC4S', 'MAML1', 'MASP2', 'MCM10', 'MELK', 'MGAT4B', 'MIS18A', 'MORC3', 'MPP4', 'MRAP', 'MRPS6', 'MSMP', 'MYORG', 'NDUFB6', 'NFX1', 'NOL6', 'NPR2', 'NUDT2', 'OLIG1', 'OLIG2', 'OR13J1', 'OR2S2', 'PAX5', 'PAXBP1', 'PHF24', 'PIGO', 'PIGP', 'POLR1C', 'POLR1E', 'POU1F1', 'PRSS3', 'RBCK1', 'RCAN1', 'RECK', 'RGP1', 'RIGI', 'RIPPLY3', 'RMRP', 'RNASE4', 'RNF38', 'RPP25L', 'RUFY1', 'RUNX1', 'RUSC2', 'SCAF4', 'SCRT2', 'SETD4', 'SIM2', 'SIT1', 'SLC5A3', 'SMIM11', 'SMU1', 'SNHG4', 'SON', 'SPAG8', 'SPATA31F1', 'SPINK4', 'SPMIP6', 'SRXN1', 'STOML2', 'SYNJ1', 'TAF1L', 'TBC1D20', 'TCF15', 'TCP10L', 'TESK1', 'TIAM1', 'TLN1', 'TMEM215', 'TMEM237', 'TMEM50B', 'TMEM8B', 'TOMM5', 'TOPORS', 'TPM2', 'TRMT10B', 'TROAP-AS1', 'TTC3', 'UBAP1', 'UBAP2', 'UBE2R2', 'UNC13B', 'URB1', 'VPS26C', 'ZBTB5', 'ZCCHC7', 'ZFP91-CNTF', 'ZNF354C', 'ZNF879']
 # set default values for arguments we want to implement
 # we have to do this here if we want to print the default values in the help message
 # specify other search terms and search operator:
@@ -201,14 +203,23 @@ output_df['Link to AF mmCIF'] = ''
 # We loop over this table and get the Alphafold structure for each UniProt ID (stored in the column 'Entry') using the function defined above
 # we will simultaneously fill in the table with additional data (the link to the entry in the AlphaFold database, and the download status)
 # print('>>> getting AlphaFold2 predicted structures...')
+# in order to link the gene names from the output_df to the genes in the gene list (input genes)
+# we have to make sure to make the list case-insensitive, i.e. we convert all gene names to capital letters with upper()
+genes_upper = [gene.upper() for gene in genes]
 # # first we change to the alphafold folder so the structures get saved in the correct place
 # os.chdir(alphafold_dir)
 for index, row in output_df.iterrows():
     # we identify the original input gene name for this row and write it to the new
     # column "gene" because there may be one or more gene names for each
     # row in column output_df['Gene names']
-    gene_name = [gene_name for gene_name in output_df.loc[index, 'Gene Names'].split(' ') if gene_name.upper() in genes][0]
-    output_df.loc[index, 'Gene'] = gene_name
+    gene_name = [gene_name for gene_name in output_df.loc[index, 'Gene Names'].split(' ') if gene_name.upper() in genes_upper]
+    # if there are multiple matches with our input gene names, we list all of them, otherwise we list only the first one
+    # so if the length of the gene_name list is 1, we take only the first element of the list, otherwise we take the entire list
+    if len(gene_name) == 1:
+        gene_name = gene_name[0]
+    
+    # now we attach the identified gene name(s) to the output_df    
+    output_df.loc[index, 'Gene'] = str(gene_name)
     uniprot_id = row.Entry
     # we also add the link to this Entry in the AlphaFold Database to the table
     output_df.loc[index, 'Link AlphaFold Database'] = f'https://www.alphafold.ebi.ac.uk/entry/{uniprot_id}'
