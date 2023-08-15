@@ -199,12 +199,24 @@ for gene, structures in pdb_ids.iterrows():
     # it could be the case that a folder for the current gene already exists, but that there are more structures available now
     # in this case we change to the existing folder for the current gene, and rename it to adequately reflect the number of structures available now
     # this ensures that we don't download all already downloaded files again into a new folder
-    if any(f'{gene}_' in existing_folder for existing_folder in existing_folders) & any('structures' in existing_folder for existing_folder in existing_folders):
-        # if a folder for the current gene exists, we rename it
-        # first we get a list of all folders containing the current gene name and take the first (and only) element
-        existing_folder_name = [existing_folder for existing_folder in existing_folders if f'{gene}_' in existing_folder][0]
-        # now we rename the folder
-        os.rename (existing_folder_name, folder_name)
+    # we check if any of the existing folders start with the gene name and a '_' (e.g. 'SOD1_')
+    # first we get a list of all currently existing folder which fulfill these conditions
+    # each element in the list existing_folders is an entire folder path, e.g.
+    #  '/scratch/users/k1800109/2023/MutaPipe_Repo/MutaPipe/mutafy/MORC3_6structures'
+    # we have to split each folder path at '/' and then check if the last element + one more character correspond to the gene name + '_' (e.g. 'SOD1_')
+    if any(f'{gene}_' == existing_folder.split('/')[-1][:len(gene)+1] for existing_folder in existing_folders):
+        matching_existing_folders = [existing_folder for existing_folder in existing_folders if existing_folder.split('/')[-1][:len(gene)+1] == f'{gene}_']
+        # this list will have at least one element, because we check with any() before we make it and only create it if at least one element in the
+        # existing folders list fulfills the criteria
+        # if there is 1 element, this is the folder for the current gene and we change to that and rename it
+        # if there is more than just 1 entry in the list, we print a warning!!! and then make a new folder / treat it as if there were no matching folders!
+        if len(matching_existing_folders) == 1:
+            existing_folder_name = matching_existing_folders[0]        
+            # if a folder for the current gene exists, we rename it
+            os.rename (existing_folder_name, folder_name)
+        elif len(matching_existing_folders) > 1:
+            print(f'\nWARNING !!! WARNING !!! WARNING!!! \nMultiple folders potentially matching your gene ({gene}) have been identified:\n{[e for e in matching_existing_folders]}\n')
+                                  
     # create folder if it doesn't already exist
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
