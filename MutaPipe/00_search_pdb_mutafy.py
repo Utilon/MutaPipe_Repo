@@ -155,35 +155,41 @@ n_pdbs_all_genes = 0
 genes_data_available = []
 genes_no_data_available = []
 search_overview = pd.DataFrame(columns=['gene_name', 'n_available_structures', 'available_structures'])
+# adding data to a df in a for-loop is inefficient, so we create a list to be merged with this df later on!
+# explanation: make list instead and merge to df later of using .loc (or .concat) in every loop; see here: https://stackoverflow.com/questions/75956209/error-dataframe-object-has-no-attribute-append
+search_overview_list = []
 
 print(f'\n======================== Searching PDB IDs for {n_genes} inputted genes ========================\n')
 
+# Required arguments for all nodes in search sent to pdb 
+query_type1 = "group"     # "terminal" or " group"
+
+query_type2 = "terminal"
+query_service2 = "text"     # also possible to search for 'sequence', 'seqmotif', 'structure', 'strucmotif' etc. (see documentation)
+
+query_type3 = "terminal"
+query_service3 = "text"
+
+return_type = "entry"       # 'assembly', 'polymer_entitiy' etc. (see documentation)
+
+# Optional arguments for terminal nodes
+parameter_attribute2 = "rcsb_entity_source_organism.rcsb_gene_name.value" # we want to search for a specific gene
+parameter_operator2 = "exact_match"
+# in the loop below we will have to define parameter_value2 based on each gene name with this line of code:
+# parameter_value2 =  gene_name.replace(" ", "%20") # to replace spaces in search term with '%20' to make it url-conform
+
+parameter_attribute3 = "rcsb_entity_source_organism.taxonomy_lineage.name" # we want to search for a species (i.e. Homo Sapiens')
+parameter_operator3 = "exact_match"
+parameter_value3 =  species_name.replace(" ", "%20") #replace spaces in search term with '%20' to make it url-conform
+
+
 for gene in gene_list:
     gene_name = gene
-    
-    # Required arguments for all nodes in search sent to pdb 
-    query_type1 = "group"     # "terminal" or " group"
-    
-    query_type2 = "terminal"
-    query_service2 = "text"     # also possible to search for 'sequence', 'seqmotif', 'structure', 'strucmotif' etc. (see documentation)
-    
-    query_type3 = "terminal"
-    query_service3 = "text"
-    
-    return_type = "entry"       # 'assembly', 'polymer_entitiy' etc. (see documentation)
-    
-    # Optional arguments for terminal nodes
-    parameter_attribute2 = "rcsb_entity_source_organism.rcsb_gene_name.value" # we want to search for a specific gene
-    parameter_operator2 = "exact_match"
-    parameter_value2 =  gene_name.replace(" ", "%20") #replace spaces in search term with '%20' to make it url-conform
-    
-    parameter_attribute3 = "rcsb_entity_source_organism.taxonomy_lineage.name" # we want to search for a species (i.e. Homo Sapiens')
-    parameter_operator3 = "exact_match"
-    parameter_value3 =  species_name.replace(" ", "%20") #replace spaces in search term with '%20' to make it url-conform
-    
     # ----------------------------------------------------------------------------------------------------------------------------------
     # Build query string (no packages required)
     # Make json string url-compatible
+    
+    parameter_value2 =  gene_name.replace(" ", "%20") # to replace spaces in search term with '%20' to make it url-conform
     
     # Currently this script only works with this exact query format
     # in json format, this would like like this (without the three quotation marks on each side)
@@ -234,65 +240,40 @@ for gene in gene_list:
     print(f'            Number of PDB IDs retrieved :            {len(found_pdbs)} \n')
     # add number of found pdb ID's to counter n_pdbs_all_genes
     n_pdbs_all_genes += len(found_pdbs)
-    # append information to search_overview df to later write to file
-    # in order to add a new row to the bottom of the df, we use .loc and specify the index as the current df lenght!
-    search_overview.loc[len(search_overview)] = [gene, len(found_pdbs), found_pdbs]
+    # append information to the search_overview_list
+    # we create a dict for this gene's data and add it to our list (which will later be converted to a df)
+    gene_dict = {'gene_name' : gene, 'n_available_structures' : len(found_pdbs), 'available_structures' : found_pdbs}
+    search_overview_list.append(gene_dict)
     gene_counter += 1
+
+# Now that the loop is completed and we have all the new rows we want to append to the df search_overview
+# stored in the search_overview_list, we can use concat to combine the two
+# we convert the search_overview_list to a df and us concat to add it to the search_overview df!!!
+search_overview = pd.concat([search_overview, pd.DataFrame(search_overview_list)], ignore_index=True)
 
 # write search_overview to csv file 
 search_overview.to_csv(f'{results_dir}/00_search_overview_PDBids.csv', index = False)
 # if we run MutaPipe via webserver, we also write the output in the mutafy directory:
 
-# HOOOKAAAY, SO THINK ABOUT THIS AGAIN (everything below added for the webserver)
-# CODE MAY BE USEFUL SOMEWHERE ELSE, BUT COULD PROBS BE SIMPLIFIED ANYWAY
-# BUUUT I DON'T NEED TO UPDATE THE FILE HERE, AS I NEED IT FOR COMPARISON IN THE SECOND SCRIPT. UPDATE THE FILE ONLY LATER IN THE PIPELINE!!
-# if web_run == True:
-#     # first we check if there is already a csv file in the mutafy directory called 00_search_overview_PDBids.csv
-#     # if so, we read in this table and update / append the new results
-#     if exists(f'{mutafy_directory}/00_search_overview_PDBids_mutafy.csv'):
-#         mutafy_search_overview = pd.read_csv(f'{mutafy_directory}/00_search_overview_PDBids.csv', usecols = ['gene_name', 'n_available_structures',
-#         'available_structures'])        
-#         # loop over the new search overview and compare to existing values in mutafy df
-#         # update mutafy df if new structures available or gene hasn't been searched before
-#         for index, row in search_overview.iterrows():
-#             # if the gene is in the mutafy_search_overview, we compare the number of available structures
-#             if row.gene_name in mutafy_search_overview.gene_name.values:
-#                 # if there are more structures now than before, we update the mutafy table
-#                 if row.n_available_structures > mutafy_search_overview[mutafy_search_overview.gene_name == row.gene_name].n_avalable_structures.values[0]:
-#                     # we append the row and then delete the older row later on
-#                     mutafy_search_overview = mutafy_search_overview.append(row)
-#                 # if there is the same number of structures available as in the previous search, we don't append the row
-#                 elif row.n_available_structures == mutafy_search_overview[mutafy_search_overview.gene_name == row.gene_name].n_avalable_structures.values[0]::
-#                     continue
-#             # if the gene is not yet in the mutafy_search_overview, we just append the row
-#             elif row.gene_name not in mutafy_search_overview.gene_name.values:
-#                 mutafy_search_overview = mutafy_search_overview.append(row)
-#                 
-#         # now we sort the mutafy_search_overview df first by gene_name and then by n_available structures
-#         mutafy_search_overview.sort_values(by = ['gene_name', 'n_available_structures'], ascending=[True, False], inplace = True)
-#         # now we can drop duplicate genes and only keep the first row (with the highest number of available structures)
-#         mutafy_search_overview.drop_duplicates(subset='gene_name', keep = 'first', inplace = True)
-#         
-#         # now we write the updated mutafy_search_overview to a csv file
-#         mutafy_search_overview.to_csv(f'{mutafy_directory}/00_search_overview_PDBids_mutafy.csv', index = False)
-
-    
-    # we also write the the search overview from this run (not the updated mutafy version) to the mutafy directory and the results directory
-#     search_overview.to_csv(f'{mutafy_directory}/00_search_overview_PDBids.csv', index = False)
-
-
 # write a csv file that contains a boolean value for each gene to indicate whether there are any structures available or not
-# create an empty dataframe
-df = pd.DataFrame(columns=['gene_name', 'data_available'])
-# populate df with information on availability
+
+# create a list to store all rows for a new df generated in the loop
+availability_list = []
+
+# loop over genes in gene list to check if data is available or not
 for gene in gene_list:
+    # check if data for this gene is available or not
     if gene in genes_data_available:
-        df.loc[len(df)] = [gene, True]
-    elif gene in genes_no_data_available:
-        df.loc[len(df)] = [gene, False]
+        availability = True
     else:
-        df.loc[len(df)] = [gene, np.nan]
-        
+        availability = False
+    # create row in dict format (can easily be converted to df later)
+    row = {'gene_name' : gene, 'data_available' : True}
+    availability_list.append(row)
+
+# create a df from the availability_list
+df = pd.DataFrame(availability_list)
+# write availability data to file        
 df.to_csv(f'{results_dir}/00_search_overview_availability.csv', index = False)
 
 # change back to target directory
