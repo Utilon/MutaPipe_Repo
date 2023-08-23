@@ -74,7 +74,6 @@ target_directory  = target_directory if args["target"]   == None else args["targ
 web_run = web_run if args["web_run"] == None else args["web_run"]
 mutafy_directory = mutafy_directory if args["mutafy"] == None else args["mutafy"]
 
-
 # ----------------------------------------------------------------------------------------------------------------------------------
 # We want to write all our Output into the Results directory
 
@@ -135,16 +134,15 @@ created_folders = []
 
 # set variable n_genes: number of genes with available structures to be downloaded
 n_genes = len(pdb_ids)
-# mutafy_n_genes = (len(mutafy_pdb_ids))
 
 # set variable to count total number of pdb ids for which we download files:
 n_structures = 0                  
 
-# create empty df to populate with gene and number of structures:
-df_n_structures = pd.DataFrame(columns=['gene', 'n_structures'])
+# create an empty list to populate with gene and number of structures for each gene
+list_n_structures = []
 
-# for the webrun, we want to also create a df to keep track of how many *new* structures per gene we have to download
-df_new_structures_mutafy = pd.DataFrame(columns=['gene', 'n_structures', 'n_new_structures', 'new_pdb_ids'])
+# for the webrun, we want to also create a list to keep track of how many *new* structures per gene we have to download
+list_new_structures_mutafy = []
 
 # Initiate for loop to iterate over pdb_ids df and download all mmCIF, pdb and fasta files for each gene
 gene_counter = 0
@@ -160,10 +158,12 @@ for gene, structures in pdb_ids.iterrows():
     # update total number of structures
     n_structures += len(found_pdbs)
     
-    # append a row with the gene name and the number of available structures for this gene to the df_n_structures df
-    df_n_structures.loc[len(df_n_structures)] = [gene, len(found_pdbs)]
+    # create a row with the gene name and the number of available structures for this gene
+    # and append row to list_n_structures list
+    list_n_structures.append({'gene': gene, 'n_structures': len(found_pdbs)})
     
-    # now for the webserver run, we check if the identified PDB ids have already been
+    # COMPARE WITH DATA FROM PREVIOUS MUTAFY RUNS (IN MUTAFY DATABASE)
+    # for the webserver run, we check if the identified PDB ids have already been
     # found/downloaded/parsed in a previous search/run
     if web_run == True:
         # check if the gene is already in the mutafy database (meaning it has been processed in previous webserver runs)
@@ -181,10 +181,12 @@ for gene, structures in pdb_ids.iterrows():
             n_new_structures = len(found_pdbs)
             pdb_ids_to_download = found_pdbs
         
-        # we add these values to the df_new_structures_mutafy which we'll write to a file at the end of the script
-        # this file will be used in the following scripts to ensure we only parse new files (and not all files in a folder, which is the current default)
-        df_new_structures_mutafy.loc[len(df_new_structures_mutafy)] = [gene, len(found_pdbs), n_new_structures, pdb_ids_to_download]
-                    
+        # we add these values to the list_new_structures_mutafy which we'll convert to a df
+        # and write to a file at the end of the script
+        # this file will be used in the following scripts to ensure we only parse new files (and not all files in a folder)
+        list_new_structures_mutafy.append({'gene': gene, 'n_structures': len(found_pdbs), 'n_new_structures': n_new_structures, 'new_pdb_ids': pdb_ids_to_download})
+        
+        # SET UP FOLDER STRUCTURE FOR WEBRUN VS NO WEBRUN 
         # create new folder to save all pdb/mmcif/fasta files found for the query gene:
         # create the folder name for this gene
         folder_name = f'{mutafy_directory}/{gene}_{len(found_pdbs)}structures'
@@ -224,148 +226,103 @@ for gene, structures in pdb_ids.iterrows():
     os.chdir(folder_name)
     created_folders.append(folder_name)
      
+    
+    ## DOWNLOAD THE FILES
+    #####################
     # now we download the files - if this is a webserver run, we only download the new ones 
-    # download all mmCIF files to newly created folder
-    # if-statement added, so mmCif files are only downloaded if specified (default)
+    # First we identify which files already exist in the current folder
+    # to do this we get a list of all files
+    files = [f for f in listdir(folder_name) if isfile(join(folder_name, f))]
+    cif_files = [file for file in files if ('.cif' in file)]
+    pdb_files = [file for file in files if ('.pdb' in file)]
+    fasta_files = [file for file in files if ('.fasta' in file)]
+    
+    # for mmCIF files
     if 'cif' in download_format:
+        # identify which cif files still need to be downloaded
         if web_run == True:
-            # check if there are any new structures to be downloaded for this gene
-            if n_new_structures >= 1:
-                print(f'\n>>> Initiating download of mmCIF files for {n_new_structures} structures for gene {gene_counter} of {n_genes}: {gene}')
-                # we create a PDBList object to download the files with BioPython
-                # for mmCIF files
-                cifl = PDBList()
-                cifl.download_pdb_files(pdb_ids_to_download, file_format='mmCif', pdir=folder_name)
-            elif n_new_structures == 0:
-                print(f'No new mmCIF structures to be dowloaded for gene {gene}')
-        elif web_run == False:                
-            print(f'\n>>> Initiating download of mmCIF files for {len(found_pdbs)} structures for gene {gene_counter} of {n_genes}: {gene}')
+            cif_to_download = [pdb_id for pdb_id in pdb_ids_to_download if f'{pdb_id}.cif' not in cif_files]
+        elif web_run == False:
+            cif_to_download = [pdb_id for pdb_id in found_pdbs if f'{pdb_id}.cif' not in cif_files]
+        
+        if len(cif_to_download) >= 1:
+            print(f'\n>>> Initiating download of mmCIF files for {len(cif_to_download)} structures for gene {gene_counter} of {n_genes}: {gene}')
             # we create a PDBList object to download the files with BioPython
             # for mmCIF files
             cifl = PDBList()
-            cifl.download_pdb_files(found_pdbs, file_format='mmCif', pdir=folder_name)
-            
-    # for PDB files
-    # if-statement added, so pdb files are only downloaded if specified (default)
-    if 'pdb' in download_format:
-        if web_run == True:
-            if n_new_structures >= 1:
-                print(f'\n>>> Initiating download for pdb files for {n_new_structures} structures for gene {gene_counter} of {n_genes}: {gene}')
-                # we create a PDBList object to download the files with BioPython
-                pdbl = PDBList()
-                pdbl.download_pdb_files(pdb_ids_to_download, file_format='pdb', pdir=folder_name)
-                # currently all pdb files have a name like 'pdb4uxy.ent'
-                # so in order to rename the files to pdb_id.pdb (e.g. 4uxy.pdb), we do the following:
-                # First, we get a list of all pdb files stored in this folder
-                files = [f for f in listdir(folder_name) if isfile(join(folder_name, f))]
-                pdb_files = [f for f in files if '.ent' in f]
-                for file in pdb_files:
-                    # the pdb id is the last four letters of the first element of the split
-                    pdb_id = file.split('.')[0][-4:]
-                    os.rename(file, pdb_id+'.pdb')
-            elif n_new_structures == 0:
-                print(f'No new pdb structures to be dowloaded for gene {gene}')
-        elif web_run == False: 
-            print(f'\n>>> Initiating download for pdb files for {len(found_pdbs)} structures for gene {gene_counter} of {n_genes}: {gene}')
-            # first we check which pdb files are available (if any) in this folder, so we don't download the same files again:
-            # create list with filenames of all pdb files in this folder
-            files = [f for f in listdir(folder_name) if isfile(join(folder_name, f))]
-            pdb_files = [file for file in files if ('.pdb' in file)]
-            # in order to check if we have downloaded the same structures again, we need to reconvert the name
-            # of these files to their original name, which is in the format 'pdb4uxy.ent'
-            # (they are currently in the format ''4uxy.pdb')
-            for file in pdb_files:
-                orig_name = 'pdb' + file[:4] + '.ent'
-                os.rename(file, orig_name)
-            
-            # now we can download the structures and will automatically
-            # get a warning if the structure is already available in our directory as we do for the mmCif files
-            # (this doesn't work for the fasta files as I don't use BioPython for it, so I implemented it manually, see further below)
-            # we create a PDBList object to download the files with BioPython        
-            pdbl = PDBList()
-            pdbl.download_pdb_files(found_pdbs, file_format='pdb', pdir=folder_name)
-        
-            # currently all pdb files have a name like 'pdb4uxy.ent'
-            # so in order to rename the files to pdb_id.pdb (e.g. 4uxy.pdb), we do the following:
-            # First, we get a list of all pdb files stored in this folder
-            files = [f for f in listdir(folder_name) if isfile(join(folder_name, f))]
-            pdb_files = [f for f in files if '.ent' in f]
-            for file in pdb_files:
-                # the pdb id is the last four letters of the first element of the split
-                pdb_id = file.split('.')[0][-4:]
-                os.rename(file, pdb_id+'.pdb')
+            cifl.download_pdb_files(pdb_ids_to_download, file_format='mmCif', pdir=folder_name)
+        elif len(cif_to_download) == 0:
+            print(f'No new mmCIF structures to be dowloaded for gene {gene_counter} of {n_genes}: {gene}')
 
-    # now we download the fasta file for this structure
-    # if-statement added, so fasta files are only downloaded if specified (default)
-    if 'fasta' in download_format:
+    # for PDB files
+    if 'pdb' in download_format:        
+        # figure out which structures still need to be downloaded and which ones exist
         if web_run == True:
-            if n_new_structures >= 1:
-                print(f'\n>>> Initiating download for fasta files for {n_new_structures} structures for gene {gene_counter} of {n_genes}: {gene}')
-                # in the else statement (when it's not a webserver run), we also have additional code which deals with already existing fasta files to ensure
-                # anything that has been downloaded already isn't downloaded again. This is not necessary in the section of code here (for the webserver run)
-                # because we only download the NEW pdb ids anyway
-                for pdb_id in pdb_ids_to_download:
-                    fasta_filename = f'{pdb_id}.fasta'
-                    fasta_url = f'https://www.rcsb.org/fasta/entry/{pdb_id.upper()}'
-                    response = requests.get(fasta_url)
-                    if response.status_code == 200:
-                        print(f'Downloading fasta file for {pdb_id}...')
-                        with open(fasta_filename, 'w') as fasta:
-                            fasta.write(response.text)
-                    else:
-                        # If there is no data, print status code and response
-                        print(response.status_code, response.text)
-                        print(f'No fasta file retrieved for {pdb_id}\n')        
-                
-            elif n_new_structures == 0:
-                print(f'No new fasta files to be dowloaded for gene {gene}')
-            
+            still_to_be_downloaded = [pdb_id for pdb_id in pdb_ids_to_download if f'{pdb_id}.pdb' not in pdb_files]
         elif web_run == False:
-            print(f'\n>>> Initiating download for fasta files for {len(found_pdbs)} structures for gene {gene_counter} of {n_genes}: {gene}')
-            # first we check which fasta files are available (if any) in this folder, so we don't download the same files again:
-            # create list with filenames of all fasta files in this folder
-            files = [f for f in listdir(folder_name) if isfile(join(folder_name, f))]
-            fasta_files = [file for file in files if ('.fasta' in file)]
+            still_to_be_downloaded = [pdb_id for pdb_id in found_pdbs if f'{pdb_id}.pdb' not in pdb_files]
+        
+        if len(still_to_be_downloaded) >= 1:
+            print(f'\n>>> Initiating download for pdb files for {len(still_to_be_downloaded)} structures for gene {gene_counter} of {n_genes}: {gene}')
+            # we create a PDBList object to download the files with BioPython
+            pdbl = PDBList()
+            pdbl.download_pdb_files(still_to_be_downloaded, file_format='pdb', pdir=folder_name)
+        elif len(still_to_be_downloaded) == 0:
+            print(f'No new pdb structures to be dowloaded for gene {gene_counter} of {n_genes}: {gene}')
+        
+        # now we change the names of all pdb files in the folder to be like 4uxy.pdb
+        # currently all pdb files have a name like 'pdb4uxy.ent'
+        # First, we get an updated list of all pdb files stored in this folder
+        files = [f for f in listdir(folder_name) if isfile(join(folder_name, f))]
+        new_pdb_files = [f for f in files if '.ent' in f]
+        for file in new_pdb_files:
+            # the pdb id is the last four letters of the first element of the split
+            pdb_id = file.split('.')[0][-4:]
+            os.rename(file, pdb_id+'.pdb')
+
+    # for fasta files
+    if 'fasta' in download_format:
+        # check which fasta files are availalble (if any) and which still need to be downloaded
+        # we make a list list with the ones that have to be downloaded
+        # if this is a web run, we have to use the list pdb_ids_to_download as a basis (only includes new structures)
+        if web_run == True:
+            fastas_to_download = [pdb_id for pdb_id in pdb_ids_to_download if f'{pdb_id}.fasta' not in fasta_files]
+        # if this isn't a webrun, we have to use the list found_pdbs instead
+        elif web_run == False:
+            fastas_to_download = [pdb_id for pdb_id in found_pdbs if f'{pdb_id}.fasta' not in fasta_files]
+        
+        # now we download all fastas which haven't been downloaded already
+        if len(fastas_to_download) >= 1:
+            print(f'\n>>> Initiating download for fasta files for {len(fastas_to_download)} structures for gene {gene_counter} of {n_genes}: {gene}')
+            for pdb_id in fastas_to_download:
+                fasta_filename = f'{pdb_id}.fasta'    
+                fasta_url = f'https://www.rcsb.org/fasta/entry/{pdb_id.upper()}'
+                response = requests.get(fasta_url)
+                if response.status_code == 200:
+                    print(f'Downloading fasta file for {pdb_id}...')
+                    with open(fasta_filename, 'w') as fasta:
+                        fasta.write(response.text)
+                else:
+                    print(response.status_code, response.text)
+                    print(f'No fasta file retrieved for {pdb_id}\n')        
+        elif len(fastas_to_download) == 0:
+            print(f'No new fasta files to be dowloaded for gene {gene_counter} of {n_genes}: {gene}')
             
-            # we loop over the pdb ids and check if each fasta file exists or not
-            for pdb_id in found_pdbs:
-                fasta_filename = f'{pdb_id}.fasta'
-                if fasta_filename in fasta_files:
-                    print(f'Fasta file exists: {os.getcwd()}/{fasta_filename}')
-                    continue
-                else:                                    
-                    fasta_url = f'https://www.rcsb.org/fasta/entry/{pdb_id.upper()}'
-                    response = requests.get(fasta_url)
-                    if response.status_code == 200:
-                        print(f'Downloading fasta file for {pdb_id}...')
-                        with open(fasta_filename, 'w') as fasta:
-                            fasta.write(response.text)
-                    else:
-                        # If there is no data, print status code and response
-                        print(response.status_code, response.text)
-                        print(f'No fasta file retrieved for {pdb_id}\n')        
-                    
     print(f'Complete!\n    All corresponding files (format: {download_format}) for {gene} are stored in: \n    {folder_name}\n')
     # remove created folder 'obsolete' (obsolete structure would be stored here if we set obsolete=True for the pdb/cif file download)
     try:
         os.rmdir(folder_name + '/obsolete')
     except:
-        continue
+        pass
+    
     # change directory back to results to create next gene folder there
     os.chdir(results_dir) 
-    
-# change back to results directory
-os.chdir(results_dir)    
 
-# create df with information on folder and contents
-df_folders = pd.DataFrame(columns=['gene_name', 'folder_name', 'full_path', 'n_mmCIF', 'n_pdb', 'n_fasta', 'mmCIF_ids', 'pdb_ids', 'fasta_ids'])
-
-# create lists with filenames of all mmCIF and fasta files in this folder
+# create file with information on folder and contents
+# we create an empty list to store rows for a df we create later
+list_folders = []
+# create lists with filenames of all mmCIF, pdb, and fasta files in this folder
 for folder in created_folders:
-    if web_run == True:
-        gene_name = folder.replace((mutafy_directory+'/'), '').split('_')[0] #this is the name of the gene
-    else:
-        gene_name = folder.replace((results_dir+'/'), '').split('_')[0] #this is the name of the gene
     files = [f for f in listdir(folder) if isfile(join(folder, f))]
     cif_files = [f for f in files if '.cif' in f]
     pdb_files = [f for f in files if '.pdb' in f]
@@ -374,26 +331,43 @@ for folder in created_folders:
     cif_files.sort()
     pdb_files.sort()
     fasta_files.sort()
-    # append data to df_folders df:
-    # 'folder_name', 'full_path', 'n_mmCIF', 'n_fasta', 'mmCIF_ids', 'fasta_ids'
+    # we get the gene name and the isolated folder name for the current folder
+    # e.g. just "ERBB4_10structures" (i.e. not the full path "/Users/debs/OneDrive - King's College London/2023/Mutafy/MutaPipe_Repo/MutaPipe/mutafy/ERBB4_10structures")
     if web_run == True:
-        df_folders.loc[len(df_folders)] = [gene_name, folder[len(mutafy_directory)+1:], folder, len(cif_files), len(pdb_files), len(fasta_files), cif_files, pdb_files, fasta_files]
+        gene_name = folder.replace((mutafy_directory+'/'), '').split('_')[0] #this is the name of the gene
+        isolated_folder_name = folder[len(mutafy_directory)+1:]
     else:
-        df_folders.loc[len(df_folders)] = [gene_name, folder[len(results_dir)+1:], folder, len(cif_files), len(pdb_files), len(fasta_files), cif_files, pdb_files, fasta_files]
+        gene_name = folder.replace((results_dir+'/'), '').split('_')[0] #this is the name of the gene
+        isolated_folder_name = folder[len(results_dir)+1:]
     
+    # we append data to our list list_folders which we can later convert into a df and write to a file
+    # 'folder_name', 'full_path', 'n_mmCIF', 'n_fasta', 'mmCIF_ids', 'fasta_ids'
+    list_folders.append({'gene_name': gene_name,
+                         'folder_name': isolated_folder_name,
+                         'full_path': folder,
+                         'n_mmCIF': len(cif_files),
+                         'n_pdb': len(pdb_files),
+                         'n_fasta': len(fasta_files),
+                         'mmCIF_ids': cif_files,
+                         'pdb_ids': pdb_files,
+                         'fasta_ids': fasta_files})
+
+# now we create dfs from our lists, list_folders and list_n_structures
+df_folders = pd.DataFrame(list_folders)
+df_n_structures   = pd.DataFrame(list_n_structures)
+
 # write csv files
 df_folders.to_csv('01_search_overview_folders.csv', index = False)
-
 df_n_structures.to_csv('01_search_overview_n_structures.csv', index= False)
 
-# if this is a webrun, we need to write the df_new_structures_mutafy to a file
+# if this is a webrun, we need to convert the list_new_structures_mutafy to a df and write to a file too
 # or update the file if it already exists
 if web_run:
+    df_new_structures_mutafy = pd.DataFrame(list_new_structures_mutafy)
     df_new_structures_mutafy.to_csv(f'{mutafy_directory}/01_new structures_to_be parsed_mutafy.csv', index=False)
 
 # change back to target directory
 os.chdir(target_directory)
-
 
 print('\n============================== Summary ================================================\n')
 print(f'Complete! \n    downloaded all files (in specified format: {download_format}) for a total of {n_structures} PDB IDs associated with {n_genes} genes\n')
@@ -409,7 +383,6 @@ else:
 print('\nThe following files have been created:')
 print('   o      01_search_overview_folders.csv              (lists all the the created/updated folders and their contents)')
 print('   o      01_search_overview_n_structures.csv          (lists number of structures retrieved per gene)\n\n')
-
 
 # print script name to console/log file
 print(f'end of script {script_name}')
