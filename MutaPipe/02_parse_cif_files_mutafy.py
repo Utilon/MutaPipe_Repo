@@ -280,9 +280,7 @@ for index, row in folder_info.iterrows():
 # Convert the lists to dfs so we can concatencate with existing mutafy data and write them to csv files
 df_all_resolutions = pd.DataFrame(list_all_resolutions)
 df_all_info = pd.DataFrame(list_all_info)
-df_all_poly_seq = pd.DataFrame(list_all_poly_seq)
-# convert list columns to string, otherwise concatenation later doesn't work
-df_all_poly_seq = df_all_poly_seq.astype({'polypeptides':'str'})
+df_all_poly_seq = pd.DataFrame(list_all_poly_seq).astype('str') # convert to string, otherwise concatenation later doesn't work for columns 'polypeptides'
 
 # now, if this is a webrun, we want to read in the data from previous mutafy runs and
 # get a slice for all the genes of the current seach (otherwise only new structures will be listed in the output file)

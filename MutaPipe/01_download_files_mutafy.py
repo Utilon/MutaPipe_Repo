@@ -353,8 +353,8 @@ for folder in created_folders:
                          'fasta_ids': fasta_files})
 
 # now we create dfs from our lists, list_folders and list_n_structures
-df_folders = pd.DataFrame(list_folders)
-df_n_structures   = pd.DataFrame(list_n_structures)
+df_folders = pd.DataFrame(list_folders).astype('str')
+df_n_structures   = pd.DataFrame(list_n_structures).astype('str')
 
 # write csv files
 df_folders.to_csv('01_search_overview_folders.csv', index = False)
