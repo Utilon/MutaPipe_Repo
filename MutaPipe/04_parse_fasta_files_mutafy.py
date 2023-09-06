@@ -83,7 +83,6 @@ args = vars(ap.parse_args())
 create_search_log  = create_search_log  if args["log"]   == None else args["log"]
 target_directory  = target_directory if args["target"]   == None else args["target"]
 delete_files = delete_files if args["delete_files"] == None else args["delete_files"]
-# download_files_to_separate_directory = download_files_to_separate_directory if args["sep_dir"]   == None else args["sep_dir"]
 web_run = web_run if args["web_run"] == None else args["web_run"]
 mutafy_directory = mutafy_directory if args["mutafy"] == None else args["mutafy"]
 # ----------------------------------------------------------------------------------------------------------------------------------
@@ -145,18 +144,11 @@ fasta_ex_total = 0
 #                                  'description_code' # description code (extracted from fasta_ex file)
 #                                  'uniprot_id', # uniprot id of this sequence (extracted from fasta_ex file)
 
-## CHANGE HERE
 # make two empty lists to populate with information from all fasta files and all fasta_ex files
 fasta_list = []
 fasta_ex_list = []
 # and one list for the combined info from fasta and fasta_ex files
 combined_list = []
-# # make a df to store info from all fasta files
-# fasta_df = pd.DataFrame(columns=['gene_name', 'structure_id', 'record_id', 'chain_name', 'species', 'description', 'sequence'])
-# # make a df to store info from all fasta_ex files
-# fasta_ex_df = pd.DataFrame(columns=['gene_name', 'structure_id', 'record_id', 'chain_name', 'uniprot_id', 'description', 'sequence'])
-# # we also define an empty df called combined_df so the code works in case there are no new fastas to be parsed at all
-# combined_df = pd.DataFrame(columns=['gene_name', 'structure_id', 'chain_name', 'uniprot_id', 'description', 'species', 'description_ex', 'sequence'])
 
 # we loop over the df containing the folder names and the full paths to each folder
 # we use this information to parse the files in each folder and extract information
@@ -169,13 +161,14 @@ for index, row in folder_info.iterrows():
     # change to the folder containing the files to be parsed
     os.chdir(structure_folder)   
     
-### OKAY, SO HERE I WANNA SIMPLYFY THE LOOP, AND WILL ADD ### AT THE END OF THE EDITING SECTION
-    # I WILL KEEP THE ORIGINAL CODE RIGHT BELOW THE ###
-    
     # create list with filenames of all fasta and fasta_ex files in this folder
     files = [f for f in listdir(structure_folder) if isfile(join(structure_folder, f))]
     fasta_files = [file for file in files if ('.fasta' in file) & ('_ex.' not in file)]
     fasta_ex_files = [file for file in files if ('.fasta' in file) & ('_ex.' in file)]
+    
+    print(f"""\nChecking folder content (folder {folder_counter} of {n_folders}) for gene {gene}:""")
+    print(f"            number of fasta files ('.fasta'):                       {len(fasta_files)}")
+    print(f"            number of fasta_ex files ('_ex.fasta'):            {len(fasta_ex_files)}")    
     
     # if this is a webrun, we check if there are any *new* fasta files to be parsed in this folder/for this gene:
     if web_run:
@@ -186,58 +179,30 @@ for index, row in folder_info.iterrows():
         # so we do the following:
         fasta_files = [f'{pdb_id}.fasta' for pdb_id in new_structures_to_download]
         fasta_ex_files = [f'{pdb_id}_ex.fasta' for pdb_id in new_structures_to_download]
+    
+    # if there are no new fasta files or fasta_ex files to be parsed, we can print a statement, and continue to the next folder
+    if len(fasta_files)==0 & len(fasta_ex_files)==0:
+        print(f'\nNo new fasta or fasta_ex files have to be parsed for {gene} (gene {folder_counter} of {len(folder_info)})\n')
+        continue
         
     # sort lists
     fasta_files.sort()
-    fasta_ex_files.sort()    
+    fasta_ex_files.sort()
     
-    # if there are no new fasta files to be parsed, we can continue to the next gene/folder
-    if len(fasta_files) == 0:
-        print(f'\nNo new fasta or fasta_ex files have to be parsed for {gene} (gene {folder_counter} of {len(folder_info)})\n')
-        continue
-
     # add number of fasta and fasta_ex files to be parsed to total number of fasta and fasta_ex files, respectively:
     fasta_total += len(fasta_files)
     fasta_ex_total += len(fasta_ex_files)
+    
+# THIS SECTION IS INCLUDED ABOVE NOW, DELETE HERE IF EVERYTHING WORKS AS INTENDED!
+#     # if there are no new fasta files to be parsed, we can continue to the next gene/folder
+#     if len(fasta_files) == 0:
+#         print(f'\nNo new fasta or fasta_ex files have to be parsed for {gene} (gene {folder_counter} of {len(folder_info)})\n')
+#         continue
 
-    print(f"""\nChecking folder content (folder {folder_counter} of {n_folders}) for gene {gene}:""")
-    print(f"            number of fasta files ('.fasta'):                       {len(fasta_files)}")
-    print(f"            number of fasta_ex files ('_ex.fasta'):            {len(fasta_ex_files)}")    
-    
-### END OF EDITING SECTION
-    # ORIGINAL CODE BELOW AND COMMENTED OUT   
-    
-#     # if this is a webrun, we first check if there are any new fasta files to be parsed in this folder/for this gene:
-#     if web_run:
-#         # get the list of pdb ids to be parsed        
-#         new_structures_to_download = ast.literal_eval(df_new_structures_to_download[df_new_structures_to_download.gene == gene].new_pdb_ids.values[0])
-#         # currently this list contains pdb ids, but in order for the rest of the loop to work, we need a variable called
-#         # pdb_files which contains pdb filenames to be parsed (pdb.pdb)
-#         # so we do the following:
-#         fasta_files = [f'{pdb_id}.fasta' for pdb_id in new_structures_to_download]
-#         fasta_ex_files = [f'{pdb_id}_ex.fasta' for pdb_id in new_structures_to_download]
-        # if there are no new fasta files to be parsed, we can continue to the next gene/folder
-#         if len(fasta_files) == 0:
-#             print(f'\nNo new fasta or fasta_ex files have to be parsed for {gene} (gene {folder_counter} of {len(folder_info)})\n')
-#             continue
-        
-#     elif web_run == False:
-#         # create list with filenames of all fasta and fasta_ex files in this folder
-#         files = [f for f in listdir(structure_folder) if isfile(join(structure_folder, f))]
-#         fasta_files = [file for file in files if ('.fasta' in file) & ('_ex.' not in file)]
-#         fasta_ex_files = [file for file in files if ('.fasta' in file) & ('_ex.' in file)]
-#         # sort list
-#         fasta_files.sort()
-#         fasta_ex_files.sort()
-#             
-#         print(f"""\nChecking folder content (folder {folder_counter} of {n_folders}) for gene {gene}:""")
-#         print(f"            number of fasta files ('.fasta'):                       {len(fasta_files)}")
-#         print(f"            number of fasta_ex files ('_ex.fasta'):            {len(fasta_ex_files)}")    
-#         
-#     # add number of fasta and fasta_ex files in folder to total number of fasta and fasta_ex files, respectively:
-#     fasta_total += len(fasta_files)
-#     fasta_ex_total += len(fasta_ex_files)
-#### END OF COMMENTED OUT SECTION (ALL INCLUDED IN EDITED SECTOIN ABOVE)
+# THIS SECTION IS INCLUDED ABOVE NOW, DELETE HERE IF EVERYTHING WORKS AS INTENDED!
+#     print(f"""\nChecking folder content (folder {folder_counter} of {n_folders}) for gene {gene}:""")
+#     print(f"            number of fasta files ('.fasta'):                       {len(fasta_files)}")
+#     print(f"            number of fasta_ex files ('_ex.fasta'):            {len(fasta_ex_files)}")    
     
     # LOOP OVER FASTA FILES
     # -------------------------------------
@@ -276,7 +241,7 @@ for index, row in folder_info.iterrows():
             # we also want to extract the sequence for this record/chain
             sequence = record.seq
             
-            # now we add all this data to the fasta_list which will be converted into a df later
+            # now we add all this data to the fasta_list which will be converted to a df later
             fasta_list.append({'gene_name': gene,
                               'structure_id': fasta.replace('.fasta', ''),
                               'record_id': record_id,
@@ -284,9 +249,6 @@ for index, row in folder_info.iterrows():
                               'species': species,
                               'description': description,
                               'sequence': sequence})
-#             # now we append all the defined variables in a new row to the bottom of the fasta_df
-#             #     the columns are:    ['gene_name', 'structure_id', 'record_id', 'chain_name', 'species', 'description', 'sequence'])
-#             fasta_df.loc[len(fasta_df)] = [gene, fasta.replace('.fasta', ''), record_id, chain_name, species, description, sequence]
          
     # LOOP OVER FASTA_EX FILES
     # -------------------------------------
@@ -351,84 +313,21 @@ for index, row in folder_info.iterrows():
                                   'uniprot_id': uniprot_id_ex,
                                   'description': description_ex,
                                   'sequence': sequence_ex})
-#             
-#             # now we append all the defined variables in a new row to the bottom of temporary df
-#             #     the columns are:    ['gene_name', 'structure_id', 'record_id', 'chain_name', 'uniprot_id', 'description', 'sequence'])
-#             # we create a small df for just this sequence /record and append it to the other df
-#             temp_ex_df = pd.DataFrame.from_dict({'gene_name':[gene], 'structure_id':[fasta_ex.replace('_ex.fasta', '')], 'record_id':[record_id], 'chain_name':[chain_name], 'uniprot_id':[uniprot_id], 'description':[description], 'sequence':[sequence]})     
-#             fasta_ex_df = fasta_ex_df.append(temp_ex_df, ignore_index=True)
-
-### START OF EDITING SECTION
-    ## WILL BE TERMINATED WITH ### AGAIN
-    #  ORIGINAL CODE IS KEPT AT THE END OF EDITING SECTION AND BE COMMENTED OUT
-    
-    ### HMMM IDEA:
-    # MAYBE TO GET THE COMBINED INFO I WILL HAVE TO COMBINE THE LOOPS FOR FASTA AND FASTA_EX FILES
-    # I WOULD DO THAT BY FINDING THE CORRESPONDING FASTA_EX FILE PER FASTA FILE (IN THE LOOP)
-    # AND ALSO PARSING THIS!
-    # MIGHT BE WORTH A TRY!!!
-    # BUUUT:
-    # I AM NOT SURE THAT WILL WORK ACTUALLY BECAUSE MAYBE THE SEQUENCES IN THE FASTA
-    # AND FASTA_EX FILES COME IN A DIFFERENT ORDER OR SOMETHING...
-    # THEY DEFO HAVE A DIFFERENT NUMBER OF CHAINS, BECAUSE IN FASTA_EX, ALL CHAINS ARE LISTED EVEN IF
-    # THEY HAVE THE SAME SEQUENCE AND IN FASTA THERE IS ONLY ONE CHAIN PER SEQUENCE
-    # THAT COULD BE A PROBLEM
-    
-    # THIS COULD BE INTEGRATED IN A COMBINED LOOP WITH THE CORRECT VARIABLES...
-    # now that we have all data for this gene (fasta and fasta_ex) we can append it to the fasta_combined_list
-#     combined_list.append({'gene_name': ,
-#                           'structure_id': ,
-#                           'chain_name': ,
-#                           'uniprot_id': ,
-#                           'description': ,
-#                           'species': ,
-#                           'description_ex': ,
-#                           'sequence'})
-    
-    # OTHER IDEA IS TO MAKE DFS AFTER THE LOOP AND THEN MERGE THEM LIKE IN THE ORIGINAL CODE BELOW
-    # THEY ARE MERGED ON GENE, STRUCTURE ID AND SEQUENCE
-    
-    # I WILL DO THIS AND ALSO SKIP THE WRITING GENE-SPECIFIC OUTPUTS TO CSV FILES, SO THIS WILL BE COMMENTED OUT BELOW
-    # IN FACT, THE LOOP CAN END HERE, I THINK AS ALL THE FASTA AND FASTA_EX INFO IS STORED IN OUR LISTS AND
-    # CAN BE CONVERTED TO DFS NOW
-
-
 
 # COMBINE FASTA AND FASTA_EX INFORMSTION
-# now that we have all data for this gene (fasta and fasta_ex), we convert them to dfs and combine them
+# now that we have all data for all genes (fasta and fasta_ex), we convert them to dfs and combine them
 fasta_df = pd.DataFrame(fasta_list).astype('str') # convert all values to string for concatenate to work later
 fasta_ex_df = pd.DataFrame(fasta_ex_list).astype('str')
 # in fasta_ex_df, each chain is listed in a separate row even if it has the same sequence as other chains in the same structure
 # in this case, all the information except for the record_id, and the chain_name are the same for all these rows.
-# we can thus drop all these rows and just keep the first one
-# we save the result in a new df called fasta_ex_df_no_duplicates
-# fasta_ex_df_no_duplicates = fasta_ex_df.drop_duplicates(subset=['gene_name', 'structure_id', 'uniprot_id', 'description', 'sequence'])
-
-### OKAY, SO THE ABOVE CODE TO CREATE THE DF WITHOUT DUPLICATES NEEDS TO BE ADJUSTED I THINK
-# SOMETIMES THE DUPLICATE ROWS DONT' HAVE THE SAME INFO, I.E. THEY HAVE THE SAME
-# STRUCTURE ID AND GENE AND SEQUENCE OF COURSE, BUT MAYBE THE DESCRIPTION AND UNIPROT ID IS KNOWN
-# FOR ONE OF THEM BUT NOT THE OTHER
-# IN A CASE LIKE THIS I NEED TO CHANGE THE CODE SO IT USES THE ROWS WITHOUT 'UNKNOWN'
-# MAYBE I CAN CHANGE THE UNKNOWN VALUES FOR NA'S AND THEN FILTER THEM OUT SOMEHOW?
-
-# okay, so i think i can just drop duplicates based solely on gene_name, structure_id, and sequence, buuuut, I need to keep the rows which
-# have a valid description/uniprot_id and don't have 'unknown'...
-# maybe best idea is to make an extra col with boolean values if uniprot_id and description are 'unknown'
+# Problem: sometimes the rows are the same as described above (same gene, sequence, structure_id)
+# but some might have an unknown  description/uniprot_id while others may not
+# In order to keep the rows with valid description/uniprot_id we first have to sort the df so that the row with valid a
+# description/uniprot_id always comes first (before the one with unknown description/uniprot_id)
+# So we make an extra col with boolean values if uniprot_id and description are 'unknown'
 # they are always either both unknown or both not unknown
 
-# can I get a df with all the unknowns and then check for unique sequences there and only keep the ones which
-# are not also a duplicate in the known rows..?
-
-# # get df with known and df with unknown fasta ex info and drop duplicates
-# df_known = fasta_ex_df[fasta_ex_df.description != 'unknown'].drop_duplicates()
-# df_unknown = fasta_ex_df[fasta_ex_df.description == 'unknown'].drop_duplicates()
-# 
-# # get list of all unique sequences in the df_unknown and check if any of them is not in
-# # df_known, if so, keep that row!
-# keep = []
-# unique_unknown sequences
-
-# We add an extra col in fasta_ex_df to indicate if it contains unknown stuff
+# We add an extra col in fasta_ex_df to indicate if each row contains unknown stuff
 fasta_ex_df['contains_unknowns'] = fasta_ex_df.description.apply(lambda x: True if 'unknown' in x else False)
 
 # now we can sort the df and also use the new column 'contains_unknowns'
@@ -446,55 +345,16 @@ for df in [fasta_ex_df, fasta_ex_df_no_duplicates]:
     df.drop('contains_unknowns', inplace=True, axis=1)
     df.sort_index(inplace=True)
 
-
 # now we merge the two dataframes fasta_df and fasta_ex_no_duplicates
 combined_df = pd.merge(fasta_df, fasta_ex_df_no_duplicates, how='left', on=['gene_name', 'structure_id', 'sequence'], suffixes=(None, '_ex'))
 # we rearrange the columns of the combined dataframe to make the output easily readible
 # current cols = ['gene_name', 'structure_id', 'record_id', 'chain_name', 'species',
-#   'description', 'sequence', 'record_id_ex', 'chain_name_ex',
-#  'uniprot_id', 'description_ex']
+#                        'description', 'sequence', 'record_id_ex', 'chain_name_ex', 'uniprot_id', 'description_ex']
 # we also drop the following columns as we don't need their info in the output: record_id, record_id_ex, chain_name_ex
 combined_df = combined_df[['gene_name', 'structure_id', 'chain_name', 'uniprot_id', 'description', 'species', 'description_ex', 'sequence']]
 
-
-
-##### END OF EDITING SECTION (ORIGINAL CODE BELOW AND COMMENTED OUT   
-    
-#     # now that we have all data for this gene (fasta and fasta_ex), we can combine them
-#     # for each row in fasta_df, we want to find the corresponding information in fasta_ex_df and append it
-#     
-#     # in fasta_ex_df, each chain is listed in a separate row even if it has the same sequence as other chains in the same structure
-#     # in this case, all the information except for the record_id, and the chain_name are the same for all these rows.
-#     # we can thus drop all these rows and just keep the first one
-#     # we save the result in a new df called fasta_ex_df_no_duplicates
-#     fasta_ex_df_no_duplicates = fasta_ex_df.drop_duplicates(subset=['gene_name', 'structure_id', 'uniprot_id', 'description', 'sequence'])
-#     
-#     # now we merge the two dataframes
-#     combined_df = pd.merge(fasta_df, fasta_ex_df_no_duplicates, how='left', on=['gene_name', 'structure_id', 'sequence'], suffixes=(None, '_ex'))
-#     # we rearrange the columns of the combined dataframe to make the output easily readible
-#     # current cols = ['gene_name', 'structure_id', 'record_id', 'chain_name', 'species',
-#     #   'description', 'sequence', 'record_id_ex', 'chain_name_ex',
-#     #  'uniprot_id', 'description_ex']
-#     # we also drop the following columns as we don't need their info in the output: record_id, record_id_ex, chain_name_ex
-#     combined_df = combined_df[['gene_name', 'structure_id', 'chain_name', 'uniprot_id', 'description', 'species', 'description_ex', 'sequence']]
-#    
-# #    WE SKIP WRITING THE GENE-SPECIFIC OUTPUTS
-#     if not web_run:         
-#         # before we change to the next folder, we write the gene-specific csv files with info on fasta and fasta ex into the current directory
-#         print(f'\n    >>> writing csv file containing information extracted from fasta files for gene {gene}...')
-#         print(f'    >>> writing csv file containing information extracted from fasta_ex files for gene {gene}...')
-#         print(f'    >>> writing csv file containing combined information extracted from fasta and fasta_ex files for gene {gene}...')
-# 
-#         fasta_df[fasta_df['gene_name'] == gene].to_csv(f'{gene}_04_fasta_info.csv', index = False)
-#         fasta_ex_df[fasta_ex_df['gene_name'] == gene].to_csv(f'{gene}_04_fasta_ex_info.csv', index = False)
-#         combined_df[combined_df['gene_name'] == gene].to_csv(f'{gene}_04_fasta_combined_info.csv', index = False)
-# 
-#         print('\nComplete!\n        All gene-specific csv files have been stored in their respective folders\n')
-
 # change back to results dir and write output files with information on all fasta files from all genes
 os.chdir(results_dir)
-
-
 
 # now, if this is a webrun, we want to read in the data from previous mutafy runs and
 # get a slice for all the genes of the current seach (otherwise only new structures will be listed in the output file)
@@ -517,7 +377,6 @@ if web_run:
     else:
         # if the mutafy file doesn't exist yet, we write it out with the data from the current run
         fasta_df.to_csv(f'{mutafy_directory}/04_fasta_info_mutafy.csv', index = False)
-        
         
     if exists(f'{mutafy_directory}/04_fasta_ex_info_mutafy.csv'):
         mutafy_fasta_ex_info = pd.read_csv(f'{mutafy_directory}/04_fasta_ex_info_mutafy.csv')
@@ -553,24 +412,20 @@ if web_run:
         combined_df = updated_mutafy_fasta_combi_info[updated_mutafy_fasta_combi_info.gene_name.isin(list(folder_info.gene_name.values))].reset_index(drop=True)
     else:
         # if the mutafy file doesn't exist yet, we write it out with the data from the current run
-        # we add a try and except statement in case the combined_df is empty (no new fastas parsed)
-#         try:
         combined_df.to_csv(f'{mutafy_directory}/04_fasta_combined_info_mutafy.csv', index = False)
-#         except NameError:
-#             pass
 
+# WRITE RESULTS TO CSV FILES
 print(f'>>> writing csv files with information on all genes to {results_dir}') 
 print('    >>> writing csv file containing information extracted from fasta files for all genes...')
-fasta_df.to_csv('04_fasta_info.csv', index = False)
 print('    >>> writing csv file containing information extracted from fasta_ex files for all genes...')
-fasta_ex_df.to_csv('04_fasta_ex_info.csv', index = False)
-# we add a try and except statement in case the combined_df is empty (no new fastas parsed)
-# try:
-combined_df.to_csv('04_fasta_combined_info.csv', index = False)
 print('    >>> writing csv file containing combined information extracted from fasta and fasta_ex files for all genes...')
-# except NameError:
-#     pass
+
+fasta_df.to_csv('04_fasta_info.csv', index = False)
+fasta_ex_df.to_csv('04_fasta_ex_info.csv', index = False)
+combined_df.to_csv('04_fasta_combined_info.csv', index = False)
+
 print('Complete!\n')
+
 # change back to target directory
 os.chdir(target_directory)
 
