@@ -1,6 +1,6 @@
 # This script takes a csv file (04_fasta_combined_info.csv) containing information for all genes extracted from their
 #  respective fasta files and fasta_ex files as input and will:
-#      - download the reference sequence for the gene from uniprot
+#      - extract the reference sequence for the gene from the uniprot fasta file
 #      - perform BLASTp with each sequence of each structure (=each row of the df) against the respective
 #        reference sequence (e.g. FUS canonical sequence for all sequences in all FUS structures)
 #      - uses the blast output (xml files) to identify mismatches and add this information to the df
@@ -146,31 +146,11 @@ fasta_df = pd.read_csv(f'{results_dir}/04_fasta_combined_info.csv')
 if web_run:
     df_new_structures_to_blast = pd.read_csv(f'{mutafy_directory}/01_new structures_to_be parsed_mutafy.csv')
 
-
-### CHANGE HERE
 # create an empty list to populate with results from blastp
 xml_list = []
-# # create a df based on the fasta_df with additional columns to populate with results from blast p
-# xml_df = pd.concat([fasta_df, pd.DataFrame(columns=['alignment_length', 'hsp_number',
-#                                                     'hsp_length', 'score', 'bit', 'e-value', 'similarity',
-#                                                     'mismatches_incl_gaps', 'mismatches_excl_gaps',
-#                                                     'close_mismatches', 'mismatch_substitutions',
-#                                                     'close_mismatch_substitutions',
-#                                                     'gaps', 'gaps_in_query', 'gaps_in_sbct', 'gaps_start_pos_query',
-#                                                     'gaps_length_query', 'query_del_sbcjt_ins', 'gaps_start_pos_sbjct',
-#                                                     'gaps_length_sbjct', 'sbjct_del_query_ins', 'query_sequence',
-#                                                     'sbjct_sequence', 'match_sequence'])])                                            
-
-### CHANGE HERE
 # we also create empty lists to capture all our WARNINGS (as defined by me, haha) and write them to a csv file at the end
-# a df to store all genes for which no or more than one reference sequence is found in the uniprot reference fasta
 refseq_warnings_list = []
 blastp_warnings_list = []
-# 
-# # we also create empty dfs to capture all our WARNINGS (as defined by me, haha) and write them to a csv file at the end
-# # a df to store all genes for which no or more than one reference sequence is found in the uniprot reference fasta
-# refseq_warnings = pd.DataFrame(columns=['gene', 'n_refseqs_identified'])
-# blastp_warnings = pd.DataFrame(columns=['gene', 'blast_status', 'n_alignments'])
 
 # we also read in the fasta file downloaded from uniprot containing all canonical sequences for the human genome:
 uniprot_refseqs = list(SeqIO.parse(uniprot_fasta, 'fasta'))
@@ -190,30 +170,6 @@ for fasta_df_index, row in fasta_df.iterrows():
     structure_id = row.structure_id
     
     # if this is a webrun, we first check if there are any new fasta files which have to be blasted (haha) in this folder/for this gene:
-#     if web_run:
-#         # we check if the gene and structure id for the current loop is found in the mutafy table of new structures
-#         # if this is not the case, it is not a new structure, so we continue / skip the rest of the loop for this row
-#         # as the BLASTp has already been performed in a previous mutafy run for this structure
-#         if not (gene in df_new_structures_to_blast.gene.to_list()) & (structure_id in ast.literal_eval(df_new_structures_to_blast[df_new_structures_to_blast.gene == gene].new_pdb_ids.values[0])):
-#             continue
-#         ## MAYBE CHECK IF THE 'IF NOT' CONDITION ABOVE WORKS AS INTENDED, JUST BEEN CONFUSED WHEN READING THE CODE NOW...
-#         OKAY, SO I JUST FIGURED IT OUUUUT, YAY, I HAVE TO DO IT LIKE THIS INSTEAD
-#         THE CONTINUE STATEMENT WILL ONLY BE EXECUTED IF BOTH CONDITIONNS ARE NOT MET :-)
-#         if not (gene in df_new_structures_to_blast.gene.to_list()) and not (structure_id in ast.literal_eval(df_new_structures_to_blast[df_new_structures_to_blast.gene == gene].new_pdb_ids.values[0])):
-#             continue
-# ### OKAY, SO NOT SURE ABOUT THIS... MAYBE THE FIRST ONE IS RIGHT AFTER ALL... REASON!
-# if not (1==1) and not (3==2): print('yes')  ## DOESN'T PRINT YES
-# if not (1==1) & (3==2): print('yes')  ## DOES PRINT YES
-# so it could be that the gene is in the df but the structure id is not (the other was around doesn't make sense)
-# or that both the gene and the structure id are not in the df (or that both are)
-# if the gene is in the df but the structure id is not, we can continue because this structure id doesn not need to be blasted!
-# so we need to go for the version which prints yes, so the original one, haha, all in vain
-# will comment out the edited code and uncomment the original again ;-)
-# CAUTION
-# Buuuut this will now give an error if the gene is not in the table, aargh!!!
-# WTF, I think the siimplest way to do this, is to just check if the gene is in the df and if not, we continue
-# then in a seperate line of code, and only if the gene is there, check if the structure id is in the df and if not, we continue
-# okay, so we do the following:
     if web_run:
             # we check if the gene and structure id for the current loop is found in the mutafy df of new structures
             # if this is not the case, it means this is not a new structure, so we continue / skip the rest of the loop for this row
@@ -224,7 +180,6 @@ for fasta_df_index, row in fasta_df.iterrows():
             # and then we check if the the specific structure id is in the mutafy df listing new structures 
             elif not (structure_id in ast.literal_eval(df_new_structures_to_blast[df_new_structures_to_blast.gene == gene].new_pdb_ids.values[0])):
                 continue            
-# OKAY SO THIS ABOVE HERE WORKS, DELETE ALL THE REST BEFORE (FROM LINE 193- 216)
 
     sequence = Seq(row.sequence)
     # in order to store this sequence properly, we need to create a sequence record, see: http://biopython.org/DIST/docs/tutorial/Tutorial.html#sec35
@@ -251,8 +206,6 @@ for fasta_df_index, row in fasta_df.iterrows():
         # print WARNING if more than one reference sequence has been identified (in this case the first one is taken as a reference sequence for the next step)
         if len(potential_reference_sequences) > 1:
             print(f'WARNING: more than 1 reference sequence identified for gene {gene}: {len(potential_reference_sequences)} potential reference sequences \n               First identified sequence with GN={gene} will be used to continue for gene {gene}')
-#             CHANGE HERE
-#             refseq_warnings.loc[len(refseq_warnings)] = [gene, len(potential_reference_sequences)]
             refseq_warnings_list.append({'gene': gene, 'n_refseqs_identified': len(potential_reference_sequences)})
         # but e.g. for SMN1 there's no reference at all (its name is snm2 for some reason!? download new uniprot fasta!)
         # so we add a try and and except statement:
@@ -260,10 +213,7 @@ for fasta_df_index, row in fasta_df.iterrows():
             reference_sequence = potential_reference_sequences[0]
         except IndexError:
             print(f'WARNING!        No reference sequence found for gene {gene}')
-#             CHANGE HERE
-#             refseq_warnings.loc[len(refseq_warnings)] = [gene, 0]
-            # if we don't find a reference sequence for this gene, 
-            # we add info to refseq_warnings_list
+            # if we don't find a reference sequence for this gene, we add info to refseq_warnings_list
             refseq_warnings_list.append({'gene': gene, 'n_refseqs_identified': 0})
             # and reset the variables for previous_refseq, previous_gene, and previous_refseq_fasta
             previous_refseq = None
@@ -288,8 +238,12 @@ for fasta_df_index, row in fasta_df.iterrows():
         # in order to prevent potential bugs, we still update our variable reference_sequence for this gene,
         # even if this is potentially redundant as we don't need this variable but the fasta file
         reference_sequence = previous_refseq
-        # the fasta file is the same as the previous one
+        # the reference fasta file is the same as the previous one
         refseq_fasta = previous_refseq_fasta
+        # if there is no reference sequence for this gene (because it's not available / couldn't be extracted),
+        # we use continue to skip the rest of the loop
+        if reference_sequence is None:
+            continue
         
     # so now that we have the sequence and the reference sequence in fasta format,
     # we want to perform a blastp of the two
@@ -305,8 +259,6 @@ for fasta_df_index, row in fasta_df.iterrows():
         stdout, stderr = blastp_cline()
     except:
         print(f'        blastp UNSUCCESFUL for {gene} fasta {fasta}')
-#         CHANGE HERE
-#         blastp_warnings.loc[len(blastp_warnings)] = [gene, f'FAILED for {fasta}', np.nan]
         # If BLASTP failed, we add a warning to the warning list and continue (skip rest of the loop)
         blastp_warnings_list.append({'gene': gene, 'blast_status': f'FAILED for {fasta}', 'n_alignments': np.nan})
         continue 
@@ -319,7 +271,7 @@ for fasta_df_index, row in fasta_df.iterrows():
     # =======================================================================
     # now we can use the blast_record to extract information on mismatches, gaps etc.
     
-    # there is ideally only one alignment in the blast_record (only one subject sequence given, i.e. our reference sequence for each gene)
+    # there is ideally only one alignment in the blast_record (only 1 subject sequence given, i.e. our reference sequence for each gene)
     # or there could be no alignments, so we add a try and except statement
     try:
         alignment = blast_record.alignments[0]
@@ -327,12 +279,10 @@ for fasta_df_index, row in fasta_df.iterrows():
         blastp_warnings_list.append({'gene': gene, 'blast_status': f'No alignments for {fasta}', 'n_alignments': 0})
         continue
     
-    # in case there are more than one alignment: print warning
+    # in case there is more than one alignment: print warning
     if len(blast_record.alignments) > 1:
         print(f'WARNING: more than one alignment found in blastp output {fasta.replace("fasta", "xml")}')
         print('            NOTE: only first top alignment used in further analysis')
-#        CHANGE HERE
-#         blastp_warnings.loc[len(blastp_warnings)] = [gene, f'>1 alignment for {fasta}', len(blast_record.alignments)]
         blastp_warnings_list.append({'gene': gene, 'blast_status': f'>1 alignment for {fasta}', 'n_alignments': len(blast_record.alignments)})
     
     # Get the best high scoring segment pair for the current alignment
@@ -483,8 +433,7 @@ for fasta_df_index, row in fasta_df.iterrows():
     gap_seqs_dict_sbjct[sbjct_seq] = query_seq
     gaps_len_sbjct = [len(gap) for gap in gaps_list_sbjct]
     
-#     CHANGE HERE
-    # now we have all the information from the blastp output stored in variables and can store them in a dataframe:
+    # now we have all the information from this blastp output stored in variables, we add it to our xml_list:
     xml_list.append({'gene_name': row.gene_name , 'structure_id': row.structure_id, 'chain_name': row.chain_name,
                      'uniprot_id': row.uniprot_id, 'description': row.description, 'species': row.species,
                      'description_ex': row.description_ex, 'sequence': row.sequence, 'alignment_length': alignment.length,
@@ -499,32 +448,6 @@ for fasta_df_index, row in fasta_df.iterrows():
                      'gaps_length_sbjct': str(gaps_len_sbjct), 'sbjct_del_query_ins': str(gap_seqs_dict_sbjct),
                      'query_sequence': hsp.query, 'sbjct_sequence': hsp.sbjct, 'match_sequence': hsp.match})
                      
-#     # now we have all the information from the blastp output stored in variables and can store them in a dataframe:
-#     xml_df.loc[fasta_df_index, 'alignment_length'] = alignment.length
-#     xml_df.loc[fasta_df_index, 'hsp_number'] =  best_hsp_counter     
-#     xml_df.loc[fasta_df_index, 'hsp_length'] = hsp.align_length
-#     xml_df.loc[fasta_df_index, 'score'] = hsp.score
-#     xml_df.loc[fasta_df_index, 'bit'] = hsp.bits
-#     xml_df.loc[fasta_df_index, 'e-value'] = hsp.expect
-#     xml_df.loc[fasta_df_index, 'similarity'] = hsp.identities / hsp.align_length
-#     xml_df.loc[fasta_df_index, 'mismatches_incl_gaps'] = mismatches
-#     xml_df.loc[fasta_df_index, 'mismatches_excl_gaps'] = mismatches_excl_gaps
-#     xml_df.loc[fasta_df_index, 'close_mismatches'] = close_mismatches
-#     xml_df.loc[fasta_df_index, 'mismatch_substitutions'] = str(mismatch_substitutions)
-#     xml_df.loc[fasta_df_index, 'close_mismatch_substitutions'] = str(close_mismatch_substitutions)
-#     xml_df.loc[fasta_df_index, 'gaps'] = hsp.gaps
-#     xml_df.loc[fasta_df_index, 'gaps_in_query'] = all_gaps_query
-#     xml_df.loc[fasta_df_index, 'gaps_in_sbct'] = all_gaps_sbjct
-#     xml_df.loc[fasta_df_index, 'gaps_start_pos_query'] = str(gaps_start_pos_query)
-#     xml_df.loc[fasta_df_index, 'gaps_length_query'] = str(gaps_len_query)
-#     xml_df.loc[fasta_df_index, 'query_del_sbcjt_ins'] = str(gap_seqs_dict_query)
-#     xml_df.loc[fasta_df_index, 'gaps_start_pos_sbjct'] = str(gaps_start_pos_sbjct)
-#     xml_df.loc[fasta_df_index, 'gaps_length_sbjct'] = str(gaps_len_sbjct)
-#     xml_df.loc[fasta_df_index, 'sbjct_del_query_ins'] = str(gap_seqs_dict_sbjct)
-#     xml_df.loc[fasta_df_index, 'query_sequence'] = hsp.query
-#     xml_df.loc[fasta_df_index, 'sbjct_sequence'] = hsp.sbjct
-#     xml_df.loc[fasta_df_index, 'match_sequence'] = hsp.match
-
 # Now that we have all the information from all the records for all genes, we convert the xml_list
 # to a df and call it xml_df, and the warning lists to dfs as well
 xml_df = pd.DataFrame(xml_list)
@@ -627,32 +550,6 @@ xml_df.to_csv('05_blastp_results.csv', index = False)
 # we also write the warnings to csv files
 refseq_warnings.to_csv('05_refseq_warnings.csv', index = False)
 blastp_warnings.to_csv('05_blastp_warnings.csv', index = False)
-
-# CHANGE HERE
-# THE FOLLOWING SECTION TO WRITE THE GENE-SPECIFIC OUTPUT FILES IS COMMENTED OUT BECAUSE
-# WE SKIP THIS STEP. WILL DELETE COMPLETELY THIS CODE IN FOLLOWING COMMIT!
-# # Finally we want to write the gene-specific csv outputs in the respective gene folders:
-# # we only do this if this is NOT a webrun
-# if not web_run:
-#     print(f'>>> writing all gene-specific csv files containing blastp results and storing them in the respective gene folders\n')
-#     for gene in xml_df.gene_name.unique():
-#         # we take a slice of the xml df for only the current gene
-#         xml_df_this_gene = xml_df[xml_df.gene_name == gene]
-#         # we also take slices of the warnings for the current gene
-#         refseq_warnings_this_gene = refseq_warnings[refseq_warnings.gene == gene]
-#         blastp_warnings_this_gene = blastp_warnings[blastp_warnings.gene == gene]
-#         # no we change to the relevant gene folder
-#         for item in os.listdir():
-#             # we loop over all items in this directory
-#             # if it's a sudirectory AND it contains the gene name followed by an underscore, that's the relevant directory!
-#             if (os.path.isdir(item)) & (f'{gene}_' in item):
-#                 # we change to the gene directory
-#                 os.chdir(item)
-#                 # and we write all the csv files
-#                 xml_df_this_gene.to_csv(f'{gene}_05_blastp_results.csv', index=False)
-#                 refseq_warnings_this_gene.to_csv(f'{gene}_05_refseq_warnings.csv', index=False)
-#                 blastp_warnings_this_gene.to_csv(f'{gene}_05_blastp_warnings.csv', index=False)
-                
                 
 # Now if this is a webrun, we will also update the first mutafy csv file (00_search_overview_PDBids_mutafy.csv)
 # as all the new pdb ids associated with the current run have now been downloaded/parsed and blasted,
@@ -675,14 +572,9 @@ try:
 except FileNotFoundError:
     mutafy_data = None
     webrun_data.to_csv(f'{mutafy_directory}/00_search_overview_PDBids_mutafy.csv', index=False)
-
-# CHANGE HERE
-# I WANNA TRY TO ALSO GET RID OF THE .LOC THING HERE AND USE A LIST INSTEAD
-# I THINK I CAN PROBS JUST MERGE THE DFS AND KEEP THE INFORMATION FROM THE WEBRUN DF IF THERE IS A CLASH
-# MAYBE I CAN MERGE ON GENE NAME AND KEEP THE ONE WITH HIGHER N_AVAILABLE_STRUCTURES!?
-
-# no we update the mutafy_data df if it exists
-# we can update the mutafy data with the webrun_data using DataFrame.update, which aligns on indices
+    
+# now we update the mutafy_data df if it exists
+# we can update it with the webrun_data using DataFrame.update, which aligns on indices
 # (https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.update.html)
 if mutafy_data is not None:    
     mutafy_data.set_index('gene_name', inplace=True) # we need the gene name to be the index
@@ -692,32 +584,6 @@ if mutafy_data is not None:
     # now that we updated the mutafy data, we write it to a csv file to be used for future runs
     # all structures listed in this file won't be downloaded/parsed/blasted again when running mutafy :-)
     mutafy_data.to_csv(f'{mutafy_directory}/00_search_overview_PDBids_mutafy.csv', index=False)  
-    
-# CODE BELOW IS COMMENTED OUT AND WRITTEN DIFFERENTLY ABOVE
-# we loop over the webrun_data and update the mutafy data
-# we obviously only do this if the mutafy data exisits (otherwise it doesn't have to be updated, we just
-# wrote the webrun data to a file in the lines of code above. It will be updated in the next mutafy run
-# if mutafy_data != None:
-#     for index, row in webrun_data.iterrows():
-#         gene = row.gene_name
-#         # if there's an entry for this gene in the mutafy data, we update the entry
-#         # so it reflects any new structures that have been downloaded/parsed/blasted
-#         if gene in mutafy_data.gene_name.to_list():
-#             # for some reason this doesn't work, but the line below does
-#             # mutafy_data.loc[mutafy_data['gene_name'] == gene] = row
-#             # this line works: mutafy_data.loc[mutafy_data['gene_name'] == gene] = [row.gene_name, row.n_available_structures, row.available_structures]
-#             # But I think this could work instead though and it's more elegant:
-#             mutafy_data.loc[mutafy_data['gene_name'] == gene] = list(row)
-#         # if there's no entry for this gene in the mutafy data, we append the data from the new run to the end of the
-#         # mutafy data and then sort the df again
-#         else:
-#             mutafy_data.loc[len(mutafy_data)] = list(row)
-#             mutafy_data.sort_values(by='gene_name', inplace=True, ignore_index=True)
-#         
-#     # now that we looped over the entire webrun data and used each row to update the mutafy data
-#     # we can write the mutafy data to a csv file for to be used for future webruns
-#     # all structures listed in this file won't be downloaded/parsed/blasted again when running mutafy :-)
-#     mutafy_data.to_csv(f'{mutafy_directory}/00_search_overview_PDBids_mutafy.csv', index=False)    
         
 # change back to target directory
 os.chdir(target_directory)
@@ -731,12 +597,6 @@ elif not web_run:
     print('     All reference sequences (one per gene) used for blastp have been stored in .fasta format in the Results/RefSeqs folder.')
     print('     All all unique sequences per structure used for blastp have been stored in .fasta format in the Results/RefSeqs/PDB_seqs_and_blastp_outputs folder.')
     print('     All BLASTp outputs are stored in .xml format in the Results/RefSeqs/PDB_seqs_and_blastp_outputs folder.')
-
-# WE SKIP WRITING GENE-SPECIFIC OUTPUTS ALTOGETHER SO THE CODE BELOW IS COMMENTED OUT
-#     print('\nThe following files have been created for each gene and stored in the respective folder:')
-#     print('   o      GENENAME_05_blastp_results.csv                 (lists all info contained in the input file as well as their blastp results)')
-#     print('   o      GENENAME_05_refseq_warnings.csv                (contains warning if there is no or more than one identified reference sequence for this gene (only first one is used for further analyses))')
-#     print('   o      GENENAME_05_blastp_warnings.csv                (lists warnings regarding blastp for this gene, including if blastp failed or if there is more than one alignment (should only be one as only one reference is used)')
 
 print('\nThe following files have been created and stored in the Results folder:')
 print('   o      05_blastp_results.csv                (lists all info contained in the input file as well as their blastp results)')
