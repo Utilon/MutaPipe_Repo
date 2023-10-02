@@ -67,7 +67,6 @@ args = vars(ap.parse_args())
 create_search_log  = create_search_log  if args["log"]   == None else args["log"]
 target_directory  = target_directory if args["target"]   == None else args["target"]
 
-
 # ----------------------------------------------------------------------------------------------------------------------------------
 # We want to write all our Output into the Results directory
 
@@ -108,7 +107,7 @@ if True not in data_availability.data_available.unique():
 # read in data
 genes_df = pd.read_csv(f'{results_dir}/00_search_overview_availability.csv')
 # filter out genes that have available PDB data
-avail_genes = genes_df[genes_df.data_available == True].reset_index()
+avail_genes = genes_df[genes_df.data_available == True]
 
 # CHECK FOR WHICH GENES WE NEED TO DOWNLOAD CLINVAR DATA
 # read in mutafy data (06_b_ClinVar_Annotations_mutafy.csv) if available
@@ -189,9 +188,8 @@ for gene in avail_genes.gene_name:
     # make a string of identiefiers (from the list identifiers) which we can insert into a link to get esummary
     # string must be without commas
     # problem: sometimes there are so many identifiers, we can get problems with the url getting too long
+    # e.g. for AARS1, there are 695 identifiers and if we send all of them in one query string, it doesn't work.
     # solution: we send only 250 identifiers at once
-    # it seems the url cannot be too long, e.g. for AARS1, there are 695 identifiers and if we send all of them in
-    # one query string, it doesn't work.
     # I have tried and it works when we send a string with less than 4500 characters
     # identifiers usually have up to 7 characters from what I've seen, so taking 250 at once should be fine (7*250 = 1'750)
     batch_counter = 0
@@ -212,10 +210,11 @@ for gene in avail_genes.gene_name:
 
         if response.status_code == 200:
             print(f'        Downloading ClinVar data for {gene} variants: Batch {batch_counter} of {math.ceil(len(identifiers)/250)}')
-            # new added because sometimes I get an error that the unicode can't be decoded: we write bytes to file instead.
+            # new added because 
             # previous code is commented out, but not deleted! here:
-            # actually, for some reason this takes aaages on rosalind, so instead of just writing bytes as a default, I added
-            # a try and except statement to try write the data normally ('w') (previous code) except there is an error,
+            # sometimes I get an error that the unicode can't be decoded: we write bytes to file instead.
+            # Writing bytes as default takes much longer, so we only do it if we can't write out normally!
+            # try and except statement to try write the data normally ('w') (previous code) except if there is an error,
             # in which case we write bytes ('wb')
             try:
                 with open(f'06_a_ClinVar_{gene}_data_batch_{batch_counter}_of_{math.ceil(len(identifiers)/250)}.xml', 'w') as file:
