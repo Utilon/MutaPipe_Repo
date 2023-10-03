@@ -107,10 +107,17 @@ if web_run:
     clinvar_dir = f'{mutafy_directory}/ClinVar_Annotations'
 else:
     clinvar_dir = f'{results_dir}/ClinVar_Annotations'
+# create folder if it doesn't already exist and change working directory
+if not os.path.exists(clinvar_dir):
+   os.makedirs(clinvar_dir)
 os.chdir(clinvar_dir)
 
-# make a df to populate with relevant info from clinvar xml output for all genes
-clinvar_data = pd.DataFrame(columns=['input_gene', 'gene', 'accession', 'title', 'variant_type',  'protein_change', 'aliases', 'clinical significance', 'last_evaluated', 'review_status', 'associated_traits', 'dbs_and_accessions'])
+### CHANGE HERE
+# make a list to populate with relevant info from clinvar xml outputs for all genes
+clinvar_data_list = []
+# 
+# # make a df to populate with relevant info from clinvar xml output for all genes
+# clinvar_data = pd.DataFrame(columns=['input_gene', 'gene', 'accession', 'title', 'variant_type',  'protein_change', 'aliases', 'clinical significance', 'last_evaluated', 'review_status', 'associated_traits', 'dbs_and_accessions'])
 
 # count how many batches there are per gene and how many genes we have data for:
 all_ClinVar_files = [f for f in listdir(clinvar_dir) if isfile(join(clinvar_dir, f))]
@@ -121,8 +128,11 @@ id_files = [f for f in all_ClinVar_files if 'ids.xml' in f]
 # we have data for this number of genes:
 n_genes_clinvar_data = len(id_files)
 
-# we create an empty df to populate with all gene names and the corresponding number of data batches (each up to 250 variants)
-genes_batches = pd.DataFrame(columns=['gene', 'n_data_batches'])
+#### CHANGE HERE
+# make an empty list to populate with all gene names and the corresponding number of data batches (each up to 250 variants)
+genes_batches_list = []
+# # we create an empty df to populate with all gene names and the corresponding number of data batches (each up to 250 variants)
+# genes_batches = pd.DataFrame(columns=['gene', 'n_data_batches'])
 
 # we can loop over the list with the id files to parse all corresponding xml batches
 for id_file in id_files:
@@ -134,8 +144,11 @@ for id_file in id_files:
     # now we get a list of all the corresponding batch xml files for this gene:
     batch_files = [f for f in all_ClinVar_files if f'{this_gene}_data_batch' in f]
     
-    # in order to populate the genes_batches df, we get the length of the batch_files list we just created
-    genes_batches.loc[len(genes_batches)] = [this_gene, len(batch_files)]
+###    # CHANGE HERE
+    # in order to populate the genes_batches_list, we get the length of the batch_files list we just created
+    genes_batches_list.append({'gene': this_gene, 'n_data_batches' : len(batch_files)})
+#     # in order to populate the genes_batches df, we get the length of the batch_files list we just created
+#     genes_batches.loc[len(genes_batches)] = [this_gene, len(batch_files)]
     
     print(f'\n***Gene: {this_gene}***')
     print(f'There are {len(batch_files)} xml batch files for {this_gene}')
@@ -193,17 +206,33 @@ for id_file in id_files:
                             db_name = db[0].text
                             db_accession = db[1].text
                             dbs_and_accessions[db_name] = db_accession
-            
-            # now we append all these variables to the df clinvar_data
+# ### CHANGE HERE
+            # now we append all these variables to the df clinvar_data_list
             # however, sometimes the retrieved variants are associated with other genes (not the current query gene)
-            # we only append a row to the df if it's for the correct gene (the current query gene)
+            # we only append a row to the list if it's for the correct gene (the current query gene)
             if this_gene == sum_gene:
-                clinvar_data.loc[len(clinvar_data)] = [this_gene, sum_gene, accession, title, variant_type, protein_change, all_aliases, clinical_significance, last_evaluated, review_status, all_associated_traits, dbs_and_accessions]
-                
-                # whenever, we create a new row in the clinvar_data df, we write the current version to a csv file.
-                # this file will be overwritten everytime a new row is added.
-                clinvar_data.to_csv(f'{results_dir}/06_b_ClinVar_Annotations.csv', index = False)
-                    
+                clinvar_data_list.append({'input_gene': this_gene, 'gene': sum_gene, 'accession': accession,
+                                          'title': title, 'variant_type': variant_type,  'protein_change': protein_change,
+                                          'aliases': all_aliases, 'clinical significance': clinical_significance,
+                                          'last_evaluated': last_evaluated, 'review_status': review_status,
+                                          'associated_traits': all_associated_traits, 'dbs_and_accessions': dbs_and_accessions})
+
+#             # now we append all these variables to the df clinvar_data
+#             # however, sometimes the retrieved variants are associated with other genes (not the current query gene)
+#             # we only append a row to the df if it's for the correct gene (the current query gene)
+#             if this_gene == sum_gene:
+#                 clinvar_data.loc[len(clinvar_data)] = [this_gene, sum_gene, accession, title, variant_type, protein_change, all_aliases, clinical_significance, last_evaluated, review_status, all_associated_traits, dbs_and_accessions]
+
+
+# # ### CHANGE HERE, I WILL SKIP UPDATING THE OUTPUT FILE ALTOGETHER AND ONLY WRITE IT OUT AT THE END
+#                 # whenever, we create a new row in the clinvar_data df, we write the current version to a csv file.
+#                 # this file will be overwritten everytime a new row is added.
+#                 clinvar_data.to_csv(f'{results_dir}/06_b_ClinVar_Annotations.csv', index = False)
+#                     
+
+# Now that all the xml files have been parsed and all data added to the clinvar_data_list,
+# we convert the list to a df and write it out
+clinvar_data = pd.DataFrame(clinvar_data_list)
 
 # In case this is a webrun:
 # Now that all the newly downloaded ClinVar data has been parsed and added to the clinvar_data df
@@ -240,38 +269,53 @@ else:
     # write df to csv
     clinvar_data.to_csv(f'{results_dir}/06_b_ClinVar_Annotations.csv', index = False)
 
-# we also want to write gene specific files to all the gene folders
-# we only do this if this is not a webrun
-if not web_run:
-    # we can loop over all the gene names in the the clinvar_data df
-    for gene in clinvar_data.gene.unique():
-        # get a slice of the clinvar_data df for only this gene
-        clinvar_slice = clinvar_data[clinvar_data.input_gene == gene]
-        # we get the name of the gene folder of the current gene like so
-        # gene_folder = [name for name in os.listdir(results_dir) if name.startswith(f'{gene}_')][0]
-        gene_folder = [name for name in os.listdir(results_dir) if (name.startswith(f'{gene}_')) & ('structures' in name) & ('.csv' not in name)][0]
-        # and we write the clinvar slice df to a csv file in the gene folder
-        clinvar_slice.to_csv(f'{results_dir}/{gene_folder}/{gene}_06_b_ClinVar_Annotations.csv', index=False)
+# CODE BELOW COMMENTED OUT AS WE SKIP WRITING OUT GENE-SPECIFIC FILES
+# # we also want to write gene specific files to all the gene folders
+# # we only do this if this is not a webrun
+# if not web_run:
+#     # we can loop over all the gene names in the the clinvar_data df
+#     for gene in clinvar_data.gene.unique():
+#         # get a slice of the clinvar_data df for only this gene
+#         clinvar_slice = clinvar_data[clinvar_data.input_gene == gene]
+#         # we get the name of the gene folder of the current gene like so
+#         # gene_folder = [name for name in os.listdir(results_dir) if name.startswith(f'{gene}_')][0]
+#         gene_folder = [name for name in os.listdir(results_dir) if (name.startswith(f'{gene}_')) & ('structures' in name) & ('.csv' not in name)][0]
+#         # and we write the clinvar slice df to a csv file in the gene folder
+#         clinvar_slice.to_csv(f'{results_dir}/{gene_folder}/{gene}_06_b_ClinVar_Annotations.csv', index=False)
 
-# Now, if this is a webrun, we will delete all the data downloaded from ClinVar again and only keep the parsed outputs
-# contained in the csv files we wrote.
-# we do this because this script to parse the ClinVar data will parse all ClinVar data in the set folder
-# as there are  continuosly more variants available in ClinVar, we have to download the data everytime anyway,
-# so it doesn't make sense to create a directory and add to it for every mutafy run (I think)
-
-# we delete all the data from ClinVar if this is a webrun
-if web_run:
-    # we change to the Clinvar folder
-    os.chdir(clinvar_dir)
-    # and we delete all the ClinVar files, they are stored in the list all_ClinVar_files
-    # we can do this with a list comprehension
-    [os.remove(file) for file in all_ClinVar_files]
-    
-    # we also want to write out/update the mutafy csv with data from this run
-    
+# Now we delete all the xml files downloaded from ClinVar as they have been parsed already
+# change to the Clinvar folder
+os.chdir(clinvar_dir)
+# and we delete all the ClinVar files, they are stored in the list all_ClinVar_files
+# we can do this with a list comprehension
+[os.remove(file) for file in all_ClinVar_files]
 
 # change back to target directory
 os.chdir(target_directory)
+# now we can also remove the clinvar Folder as it is empty anyway
+os.rmdir(clinvar_dir)
+
+# ### CHANGE HERE
+# CODE BELOW IS COMMENTED OUT AND I HAVE USED BITS OF IT ABOVE
+# I NOW DECIDED TO ALWAYS DELETE THE XML FILES AND THE CLINVAR FOLDER INSTEAD OF ONLY FOR WEBRUNS
+# THE XML FILES ARE NOT NEEDED I THINK
+# Now, if this is a webrun, we will delete all the data downloaded from ClinVar again and only keep the parsed outputs
+# contained in the csv files we wrote.
+# we do this because this script to parse the ClinVar data will parse all ClinVar data in the set folder
+# as there are continuosly more variants available in ClinVar, we have to download the data everytime anyway,
+# so it doesn't make sense to create a directory and add to it for every mutafy run (I think)
+
+# # we delete all the data from ClinVar if this is a webrun
+# if web_run:
+#     # we change to the Clinvar folder
+#     os.chdir(clinvar_dir)
+#     # and we delete all the ClinVar files, they are stored in the list all_ClinVar_files
+#     # we can do this with a list comprehension
+#     [os.remove(file) for file in all_ClinVar_files]
+    
+# 
+# # change back to target directory
+# os.chdir(target_directory)
 
 print('\n============================== Summary ================================================\n')
 print(f'Complete! \n    Parsed all ClinVar data for a total of {n_genes_clinvar_data} genes.')
